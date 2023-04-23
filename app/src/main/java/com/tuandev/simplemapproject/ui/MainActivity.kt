@@ -1,9 +1,10 @@
-package com.tuandev.simplemapproject
+package com.tuandev.simplemapproject.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.google.android.gms.maps.SupportMapFragment
+import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.extension.addFragment
+import com.tuandev.simplemapproject.ui.maptool.MapToolFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,7 +13,7 @@ class MainActivity : AppCompatActivity() {
 
         addFragment(
             containerId = getContainerId(),
-            fragment = MapFragment.newInstance(),
+                        fragment = MapToolFragment.newInstance(),
             addToBackStack = true
         )
     }
