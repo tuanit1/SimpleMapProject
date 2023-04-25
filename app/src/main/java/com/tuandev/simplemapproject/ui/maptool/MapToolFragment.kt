@@ -5,18 +5,22 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.databinding.FragmentMapToolBinding
 import com.tuandev.simplemapproject.extension.addFragment
+import com.tuandev.simplemapproject.ui.base.BaseFragment
 import com.tuandev.simplemapproject.util.Constants
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class MapToolFragment : BaseFragment<FragmentMapToolBinding, MapToolViewModel>(FragmentMapToolBinding::inflate) {
 
 
-class MapToolFragment : Fragment() {
-
-    private var binding: FragmentMapToolBinding? = null
     private var supportMapFragment: SupportMapFragment? = null
     private var currentZoomLevel: Float = 0F
     private var mapBound = LatLngBounds(
@@ -28,12 +32,7 @@ class MapToolFragment : Fragment() {
         fun newInstance() = MapToolFragment()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentMapToolBinding.inflate(inflater)
-
+    override fun initView() {
         supportMapFragment = SupportMapFragment.newInstance(
             GoogleMapOptions()
                 .mapType(GoogleMap.MAP_TYPE_NORMAL)
@@ -51,14 +50,14 @@ class MapToolFragment : Fragment() {
         handleMap()
 
         handleListener()
-
-        return binding?.root
     }
 
     private fun handleListener() {
         binding?.run {
             btnAddPoint.setOnClickListener {
-
+                viewModel.showOut {
+                    Toast.makeText(context, "zzzzzzzzzz", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

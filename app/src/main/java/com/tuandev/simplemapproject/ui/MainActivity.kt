@@ -5,7 +5,9 @@ import android.os.Bundle
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.extension.addFragment
 import com.tuandev.simplemapproject.ui.maptool.MapToolFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -13,7 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         addFragment(
             containerId = getContainerId(),
-                        fragment = MapToolFragment.newInstance(),
+            fragment = MapToolFragment.newInstance(),
             addToBackStack = true
         )
     }
