@@ -1,28 +1,19 @@
-package com.tuandev.simplemapproject.ui.base
+package com.tuandev.simplemapproject.base
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.viewbinding.ViewBinding
-import dagger.hilt.android.AndroidEntryPoint
 
 typealias Inflate<T> = (LayoutInflater, ViewGroup?, Boolean) -> T
 
-@AndroidEntryPoint
-abstract class BaseFragment<VB : ViewBinding, VM: BaseViewModel>(
-    private val inflate: Inflate<VB>
+abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewState>(
+    private val inflate: Inflate<VB>,
 ) : Fragment() {
     private var _binding: VB? = null
-    val viewModel: VM by viewModels()
-    val binding get() = _binding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    protected val binding get() = _binding
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +26,11 @@ abstract class BaseFragment<VB : ViewBinding, VM: BaseViewModel>(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.viewState.observe(viewLifecycleOwner) {
+            viewStateObserver(it)
+        }
+
         initView()
         initListener()
     }
@@ -47,4 +43,7 @@ abstract class BaseFragment<VB : ViewBinding, VM: BaseViewModel>(
     open fun initView() {}
     open fun initListener() {}
 
+    protected abstract val viewModel: VM
+
+    protected abstract val viewStateObserver: (viewState: VS) -> Unit
 }

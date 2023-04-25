@@ -1,10 +1,10 @@
-package com.tuandev.simplemapproject.ui
+package com.tuandev.simplemapproject.activity
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.ui.maptool.MapToolFragment
+import com.tuandev.simplemapproject.ui.toolmap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         addFragment(
             containerId = getContainerId(),
-            fragment = MapToolFragment.newInstance(),
+            fragment = ToolMapFragment.newInstance(),
             addToBackStack = true
         )
     }
