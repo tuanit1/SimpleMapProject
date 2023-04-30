@@ -6,17 +6,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 sealed class BaseMapViewState: ViewState(){
-    object Tuna : BaseMapViewState()
-    data class ShiBa(val text: String): BaseMapViewState()
+
 }
 
 @HiltViewModel
 class BaseMapViewModel @Inject constructor() : BaseViewModel<BaseMapViewState>() {
-    fun showOut() {
-        updateViewState(BaseMapViewState.Tuna)
-    }
-
-    fun showOut2(text: String){
-        updateViewState(BaseMapViewState.ShiBa(text))
-    }
+    var currentTouchEvent: String = ""
 }

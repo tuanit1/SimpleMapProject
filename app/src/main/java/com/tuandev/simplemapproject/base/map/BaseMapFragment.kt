@@ -1,8 +1,10 @@
 package com.tuandev.simplemapproject.base.map
 
-import android.widget.Toast
 import androidx.fragment.app.viewModels
-import com.google.android.gms.maps.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
@@ -16,22 +18,22 @@ class BaseMapFragment :
     BaseFragment<FragmentBaseMapBinding, BaseMapViewModel, BaseMapViewState>(FragmentBaseMapBinding::inflate) {
 
     companion object {
+        object TouchEvent {
+            const val DRAW_MARKER = "draw_marker"
+            const val OFF = "off"
+        }
         fun newInstance() = BaseMapFragment()
     }
 
     private var supportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
+    var onMarkerClick: (Marker) -> Unit = {}
+    var onMarkerDrawn: (Marker) -> Unit = {}
 
     override val viewModel: BaseMapViewModel by viewModels()
 
     override val viewStateObserver: (BaseMapViewState) -> Unit = { viewState ->
         when (viewState) {
-            is BaseMapViewState.Tuna -> {
-                Toast.makeText(context, "view state working", Toast.LENGTH_SHORT).show()
-            }
-            is BaseMapViewState.ShiBa -> {
-                Toast.makeText(context, viewState.text, Toast.LENGTH_SHORT).show()
-            }
             else -> {}
         }
     }
@@ -42,6 +44,9 @@ class BaseMapFragment :
     }
 
     private fun initMap() {
+
+        setCurrentTouchEvent(TouchEvent.OFF)
+
         supportMapFragment = SupportMapFragment.newInstance(
             GoogleMapOptions()
                 .mapType(GoogleMap.MAP_TYPE_NORMAL)
@@ -65,7 +70,29 @@ class BaseMapFragment :
         supportMapFragment?.getMapAsync { map ->
             mMap = map
             setMapStyle()
+            setMapListener()
             drawBorderLine()
+        }
+    }
+
+    private fun setMapListener() {
+        mMap?.run {
+            setOnMarkerClickListener {
+                onMarkerClick(it)
+                return@setOnMarkerClickListener false
+            }
+
+            setOnMapClickListener {
+                TouchEvent.run {
+                    when (viewModel.currentTouchEvent) {
+                        DRAW_MARKER -> {
+                            drawMarker(it)
+                        }
+                        else -> {}
+                    }
+                }
+
+            }
         }
     }
 
@@ -97,4 +124,14 @@ class BaseMapFragment :
         }
     }
 
+    private fun drawMarker(latLng: LatLng) {
+        mMap?.addMarker(
+            MarkerOptions()
+                .position(latLng)
+        )?.let { onMarkerDrawn(it) }
+    }
+
+    fun setCurrentTouchEvent(event: String) {
+        viewModel.currentTouchEvent = event
+    }
 }

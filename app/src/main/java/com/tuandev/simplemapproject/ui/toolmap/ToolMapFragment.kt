@@ -1,9 +1,11 @@
 package com.tuandev.simplemapproject.ui.toolmap
 
+import android.util.Log
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
+import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.replaceFragment
 import com.tuandev.simplemapproject.extension.showIf
@@ -13,7 +15,7 @@ class ToolMapFragment :
 
     companion object {
 
-        const val ADD_POINT_LINE = "add_point_line"
+        const val ADD_POINT = "add_point_line"
         const val SET_BORDER_TOOL = "set_border_tool"
 
         @JvmStatic
@@ -30,7 +32,7 @@ class ToolMapFragment :
                     llTool.showIf(!vs.isToggle)
                     llEdit.showIf(vs.isToggle)
                     when (vs.toolKey) {
-                        ADD_POINT_LINE -> {
+                        ADD_POINT -> {
 
                         }
                     }
@@ -53,7 +55,8 @@ class ToolMapFragment :
     override fun initListener() {
         binding?.run {
             btnToolAddLine.setOnClickListener {
-                viewModel.openTool(ADD_POINT_LINE)
+                mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
+                viewModel.openTool(ADD_POINT)
             }
 
             btnSetBorder.setOnClickListener {
@@ -61,8 +64,17 @@ class ToolMapFragment :
             }
 
             btnQuit.setOnClickListener {
+                mapFragment?.setCurrentTouchEvent(TouchEvent.OFF)
                 viewModel.quitTool()
             }
+
+            btnUndo.setOnClickListener {
+                viewModel.undo()
+            }
+        }
+
+        mapFragment?.onMarkerDrawn = {
+            viewModel.addMarker(it)
         }
     }
 
