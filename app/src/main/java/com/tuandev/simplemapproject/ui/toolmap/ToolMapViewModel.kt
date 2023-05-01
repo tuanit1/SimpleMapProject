@@ -1,20 +1,28 @@
 package com.tuandev.simplemapproject.ui.toolmap
 
 import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Polyline
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 
 sealed class ToolMapViewState : ViewState() {
-    class ToggleTool(val isToggle: Boolean, val toolKey: String = "") : ToolMapViewState()
-
+    class ToggleTool(val isToggle: Boolean) : ToolMapViewState()
 }
 
 class ToolMapViewModel : BaseViewModel<ToolMapViewState>() {
 
-    var listUndo: MutableList<Any> = mutableListOf()
+    companion object {
+        const val ADD_POINT = "add_point"
+        const val ADD_LINE = "add_line"
+    }
+
+    var currentTool: String = ""
+    private var listTempNode: MutableList<Marker> = mutableListOf()
+    private var listTempLine: MutableList<Polyline> = mutableListOf()
 
     fun openTool(toolKey: String) {
-        updateViewState(ToolMapViewState.ToggleTool(true, toolKey))
+        currentTool = toolKey
+        updateViewState(ToolMapViewState.ToggleTool(true))
     }
 
     fun quitTool() {
@@ -22,17 +30,28 @@ class ToolMapViewModel : BaseViewModel<ToolMapViewState>() {
     }
 
     fun addMarker(marker: Marker) {
-        listUndo.add(marker)
+        listTempNode.add(marker)
+    }
+
+    fun addLine(polyline: Polyline){
+        listTempLine.add(polyline)
     }
 
     fun undo() {
-        if(listUndo.isNotEmpty()){
-            when (val item = listUndo.last()){
-                is Marker -> {
-                    item.remove()
+        when (currentTool) {
+            ADD_POINT -> {
+                if(listTempNode.isNotEmpty()){
+                    listTempNode.last().remove()
+                    listTempNode.removeLast()
                 }
             }
-            listUndo.removeLast()
+
+            ADD_LINE -> {
+                if(listTempLine.isNotEmpty()){
+                    listTempLine.last().remove()
+                    listTempLine.removeLast()
+                }
+            }
         }
     }
 }

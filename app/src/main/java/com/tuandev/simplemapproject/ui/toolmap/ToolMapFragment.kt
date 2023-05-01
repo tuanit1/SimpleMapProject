@@ -1,6 +1,5 @@
 package com.tuandev.simplemapproject.ui.toolmap
 
-import android.util.Log
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
@@ -14,10 +13,6 @@ class ToolMapFragment :
     BaseFragment<FragmentToolMapBinding, ToolMapViewModel, ToolMapViewState>(FragmentToolMapBinding::inflate) {
 
     companion object {
-
-        const val ADD_POINT = "add_point_line"
-        const val SET_BORDER_TOOL = "set_border_tool"
-
         @JvmStatic
         fun newInstance() = ToolMapFragment()
     }
@@ -27,13 +22,18 @@ class ToolMapFragment :
     override val viewModel: ToolMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ToolMapViewState) -> Unit = { vs ->
         binding?.run {
-            when (vs) {
-                is ToolMapViewState.ToggleTool -> {
-                    llTool.showIf(!vs.isToggle)
-                    llEdit.showIf(vs.isToggle)
-                    when (vs.toolKey) {
-                        ADD_POINT -> {
-
+            viewModel.run {
+                when (vs) {
+                    is ToolMapViewState.ToggleTool -> {
+                        llTool.showIf(!vs.isToggle)
+                        llEdit.showIf(vs.isToggle)
+                        when (viewModel.currentTool) {
+                            ToolMapViewModel.ADD_POINT -> {
+                                mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
+                            }
+                            ToolMapViewModel.ADD_LINE -> {
+                                mapFragment?.startDrawLine()
+                            }
                         }
                     }
                 }
@@ -54,13 +54,12 @@ class ToolMapFragment :
 
     override fun initListener() {
         binding?.run {
-            btnToolAddLine.setOnClickListener {
-                mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
-                viewModel.openTool(ADD_POINT)
+            btnToolAddNode.setOnClickListener {
+                viewModel.openTool(ToolMapViewModel.ADD_POINT)
             }
 
-            btnSetBorder.setOnClickListener {
-                viewModel.openTool(SET_BORDER_TOOL)
+            btnToolAddLine.setOnClickListener {
+                viewModel.openTool(ToolMapViewModel.ADD_LINE)
             }
 
             btnQuit.setOnClickListener {
@@ -73,8 +72,14 @@ class ToolMapFragment :
             }
         }
 
-        mapFragment?.onMarkerDrawn = {
-            viewModel.addMarker(it)
+        mapFragment?.run {
+            onMarkerDrawn = {
+                viewModel.addMarker(it)
+            }
+
+            onLineDrawn = {
+                viewModel.addLine(it)
+            }
         }
     }
 

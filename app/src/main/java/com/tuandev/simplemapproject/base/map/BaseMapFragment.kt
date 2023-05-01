@@ -20,8 +20,11 @@ class BaseMapFragment :
     companion object {
         object TouchEvent {
             const val DRAW_MARKER = "draw_marker"
+            const val DRAW_LINE_STEP_1 = "draw_line_step_1"
+            const val DRAW_LINE_STEP_2 = "draw_line_step_2"
             const val OFF = "off"
         }
+
         fun newInstance() = BaseMapFragment()
     }
 
@@ -29,6 +32,8 @@ class BaseMapFragment :
     private var mMap: GoogleMap? = null
     var onMarkerClick: (Marker) -> Unit = {}
     var onMarkerDrawn: (Marker) -> Unit = {}
+    var onLineDrawn: (Polyline) -> Unit = {}
+    private var saveNodeOne: LatLng? = null
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -79,7 +84,21 @@ class BaseMapFragment :
         mMap?.run {
             setOnMarkerClickListener {
                 onMarkerClick(it)
-                return@setOnMarkerClickListener false
+
+                when (viewModel.currentTouchEvent) {
+                    TouchEvent.DRAW_LINE_STEP_1 -> {
+                        saveNodeOne = it.position
+                        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
+                    }
+                    TouchEvent.DRAW_LINE_STEP_2 -> {
+                        saveNodeOne?.let { node1 ->
+                            drawLine(node1, it.position)
+                            setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+                        }
+                    }
+                }
+
+                return@setOnMarkerClickListener true
             }
 
             setOnMapClickListener {
@@ -88,7 +107,6 @@ class BaseMapFragment :
                         DRAW_MARKER -> {
                             drawMarker(it)
                         }
-                        else -> {}
                     }
                 }
 
@@ -131,7 +149,21 @@ class BaseMapFragment :
         )?.let { onMarkerDrawn(it) }
     }
 
+    private fun drawLine(node1: LatLng, node2: LatLng) {
+        val polylineOptions = PolylineOptions()
+            .add(node1)
+            .add(node2)
+
+        mMap?.addPolyline(polylineOptions)?.let { onLineDrawn(it) }
+    }
+
+    fun startDrawLine() {
+        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+    }
+
     fun setCurrentTouchEvent(event: String) {
         viewModel.currentTouchEvent = event
     }
+
+
 }
