@@ -180,7 +180,7 @@ class BaseMapFragment :
         val polylineOptions = PolylineOptions()
             .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
             .add(node1, node2)
-            .width(20f)
+            .width(12f)
 
         mMap?.addPolyline(polylineOptions)?.let { onLineDrawn(it) }
     }

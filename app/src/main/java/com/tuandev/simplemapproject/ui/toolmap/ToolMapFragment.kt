@@ -86,19 +86,31 @@ class ToolMapFragment :
                 viewModel.addLine(it)
             }
 
-            onMarkerClick = {
+            onMarkerClick = { marker ->
                 MarkerSelectedDialog(
-                    listOf(
-                        OptionItem("1", "1"),
-                        OptionItem("1", "2"),
-                        OptionItem("1", "3"),
-                        OptionItem("1", "4"),
-                        OptionItem("1", "5")
-                        )
-                ).show(childFragmentManager, null)
+                    listOf(OptionItem(OptionItem.KEY_REMOVE_MAP_ITEM, "Remove marker"))
+                ).apply {
+                    onItemClick = mapItemClickListener
+                }.show(childFragmentManager, null)
             }
         }
     }
 
     private val containerID = R.id.container_tool_map
+
+    private val markerItemClickListener: (String) -> Unit = { key ->
+        when (key) {
+            OptionItem.KEY_REMOVE_MAP_ITEM -> {
+                marker.remove()
+            }
+        }
+    }
+
+    private val lineItemClickListener: (String) -> Unit = { key ->
+        when (key) {
+            OptionItem.KEY_REMOVE_MAP_ITEM -> {
+                marker.remove()
+            }
+        }
+    }
 }

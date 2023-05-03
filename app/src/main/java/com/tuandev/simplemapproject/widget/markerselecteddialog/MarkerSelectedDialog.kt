@@ -11,6 +11,7 @@ class MarkerSelectedDialog(private val optionList: List<OptionItem>):
     BaseDialogFragment<DialogMarkerSelectedBinding>(DialogMarkerSelectedBinding::inflate) {
 
     private var optionAdapter: DialogChoiceAdapter? = null
+    var onItemClick: (String) -> Unit = {}
 
     override fun initView() {
         optionAdapter = DialogChoiceAdapter()
@@ -31,7 +32,7 @@ class MarkerSelectedDialog(private val optionList: List<OptionItem>):
             }
 
             optionAdapter?.onItemClick = {
-                Log.e("123", "$it")
+                onItemClick(it.key)
                 dismiss()
             }
         }
