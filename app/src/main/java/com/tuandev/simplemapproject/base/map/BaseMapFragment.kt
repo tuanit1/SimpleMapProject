@@ -1,11 +1,23 @@
 package com.tuandev.simplemapproject.base.map
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.Dot
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolygonOptions
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
@@ -33,7 +45,7 @@ class BaseMapFragment :
     var onMarkerClick: (Marker) -> Unit = {}
     var onMarkerDrawn: (Marker) -> Unit = {}
     var onLineDrawn: (Polyline) -> Unit = {}
-    private var saveNodeOne: LatLng? = null
+    private var lastSelectedMarker: Marker? = null
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -83,23 +95,33 @@ class BaseMapFragment :
     private fun setMapListener() {
         mMap?.run {
             setOnMarkerClickListener {
-                onMarkerClick(it)
 
                 when (viewModel.currentTouchEvent) {
                     TouchEvent.DRAW_LINE_STEP_1 -> {
-                        saveNodeOne = it.position
+                        it.setIcon(getSelectedNodeImage())
                         setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
                     }
+
                     TouchEvent.DRAW_LINE_STEP_2 -> {
-                        saveNodeOne?.let { node1 ->
-                            drawLine(node1, it.position)
+                        lastSelectedMarker?.let { lastMarker ->
+                            if (lastSelectedMarker != it) {
+                                drawLine(lastMarker.position, it.position)
+                            }
+                            lastMarker.setIcon((getNodeImage()))
                             setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
                         }
                     }
+
+                    TouchEvent.OFF -> {
+                        onMarkerClick(it)
+                    }
                 }
+
+                lastSelectedMarker = it
 
                 return@setOnMarkerClickListener true
             }
+
 
             setOnMapClickListener {
                 TouchEvent.run {
@@ -127,7 +149,9 @@ class BaseMapFragment :
         mMap?.run {
             Constants.AsiaParkMap.run {
                 setLatLngBoundsForCameraTarget(bound)
-                val rectOptions = PolygonOptions().add(nwLatLng, neLatLng, seLatLng, swLatLng)
+                val rectOptions = PolygonOptions()
+                    .add(nwLatLng, neLatLng, seLatLng, swLatLng)
+                    .strokePattern(listOf(Dot()))
                 addPolygon(rectOptions)
 
                 moveCamera(
@@ -146,13 +170,17 @@ class BaseMapFragment :
         mMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
+                .title("")
+                .anchor(0.5f, 0.5f)
+                .icon(getNodeImage())
         )?.let { onMarkerDrawn(it) }
     }
 
     private fun drawLine(node1: LatLng, node2: LatLng) {
         val polylineOptions = PolylineOptions()
-            .add(node1)
-            .add(node2)
+            .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
+            .add(node1, node2)
+            .width(20f)
 
         mMap?.addPolyline(polylineOptions)?.let { onLineDrawn(it) }
     }
@@ -165,5 +193,30 @@ class BaseMapFragment :
         viewModel.currentTouchEvent = event
     }
 
+    private fun resizeMapIcons(
+        resId: Int,
+        height: Int,
+        width: Int,
+    ): Bitmap = BitmapFactory.decodeResource(resources, resId).let {
+        Bitmap.createScaledBitmap(it, height, width, false)
+    }
+
+    private fun getNodeImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_node,
+                height = 70,
+                width = 70
+            )
+        )
+
+    private fun getSelectedNodeImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_node_selected,
+                height = 90,
+                width = 90
+            )
+        )
 
 }

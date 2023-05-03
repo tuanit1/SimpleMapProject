@@ -5,9 +5,11 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
+import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.replaceFragment
 import com.tuandev.simplemapproject.extension.showIf
+import com.tuandev.simplemapproject.widget.markerselecteddialog.MarkerSelectedDialog
 
 class ToolMapFragment :
     BaseFragment<FragmentToolMapBinding, ToolMapViewModel, ToolMapViewState>(FragmentToolMapBinding::inflate) {
@@ -27,12 +29,15 @@ class ToolMapFragment :
                     is ToolMapViewState.ToggleTool -> {
                         llTool.showIf(!vs.isToggle)
                         llEdit.showIf(vs.isToggle)
-                        when (viewModel.currentTool) {
-                            ToolMapViewModel.ADD_POINT -> {
-                                mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
-                            }
-                            ToolMapViewModel.ADD_LINE -> {
-                                mapFragment?.startDrawLine()
+
+                        if(vs.isToggle){
+                            when (viewModel.currentTool) {
+                                ToolMapViewModel.ADD_POINT -> {
+                                    mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
+                                }
+                                ToolMapViewModel.ADD_LINE -> {
+                                    mapFragment?.startDrawLine()
+                                }
                             }
                         }
                     }
@@ -79,6 +84,18 @@ class ToolMapFragment :
 
             onLineDrawn = {
                 viewModel.addLine(it)
+            }
+
+            onMarkerClick = {
+                MarkerSelectedDialog(
+                    listOf(
+                        OptionItem("1", "1"),
+                        OptionItem("1", "2"),
+                        OptionItem("1", "3"),
+                        OptionItem("1", "4"),
+                        OptionItem("1", "5")
+                        )
+                ).show(childFragmentManager, null)
             }
         }
     }
