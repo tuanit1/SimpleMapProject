@@ -11,4 +11,10 @@ object Constants {
         val neLatLng = LatLng(16.04449,108.22909)
         val bound = LatLngBounds(swLatLng, neLatLng)
     }
+
+    const val LOG_TAG = "123123"
+
+    object ErrorMessage {
+        const val CONFLICT_LINE = "Conflict in draw line"
+    }
 }

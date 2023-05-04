@@ -1,14 +1,12 @@
 package com.tuandev.simplemapproject.widget.markerselecteddialog
 
-import android.util.Log
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tuandev.simplemapproject.base.BaseDialogFragment
 import com.tuandev.simplemapproject.data.models.OptionItem
-import com.tuandev.simplemapproject.databinding.DialogMarkerSelectedBinding
-
-class MarkerSelectedDialog(private val optionList: List<OptionItem>):
-    BaseDialogFragment<DialogMarkerSelectedBinding>(DialogMarkerSelectedBinding::inflate) {
+import com.tuandev.simplemapproject.databinding.DialogMapItemSelectedBinding
+class MapItemSelectedDialog(private val optionList: List<OptionItem>):
+    BaseDialogFragment<DialogMapItemSelectedBinding>(DialogMapItemSelectedBinding::inflate) {
 
     private var optionAdapter: DialogChoiceAdapter? = null
     var onItemClick: (String) -> Unit = {}
@@ -27,10 +25,6 @@ class MarkerSelectedDialog(private val optionList: List<OptionItem>):
 
     override fun initListener() {
         binding?.run {
-            ivCancel.setOnClickListener {
-                dismiss()
-            }
-
             optionAdapter?.onItemClick = {
                 onItemClick(it.key)
                 dismiss()

@@ -1,12 +1,14 @@
 package com.tuandev.simplemapproject.ui.toolmap
 
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
+import com.tuandev.simplemapproject.data.models.Line
+import com.tuandev.simplemapproject.data.models.Node
 
 sealed class ToolMapViewState : ViewState() {
     class ToggleTool(val isToggle: Boolean) : ToolMapViewState()
+    object Undo: ToolMapViewState()
 }
 
 class ToolMapViewModel : BaseViewModel<ToolMapViewState>() {
@@ -17,41 +19,28 @@ class ToolMapViewModel : BaseViewModel<ToolMapViewState>() {
     }
 
     var currentTool: String = ""
-    private var listTempNode: MutableList<Marker> = mutableListOf()
-    private var listTempLine: MutableList<Polyline> = mutableListOf()
-
+    val listTempNode: MutableList<Node> = mutableListOf()
+    val listTempLine: MutableList<Line> = mutableListOf()
     fun openTool(toolKey: String) {
         currentTool = toolKey
         updateViewState(ToolMapViewState.ToggleTool(true))
     }
 
     fun quitTool() {
+        listTempLine.clear()
+        listTempNode.clear()
         updateViewState(ToolMapViewState.ToggleTool(false))
     }
 
-    fun addMarker(marker: Marker) {
-        listTempNode.add(marker)
+    fun addTempNode(node: Node) {
+        listTempNode.add(node)
     }
 
-    fun addLine(polyline: Polyline){
-        listTempLine.add(polyline)
+    fun addTempLine(line: Line) {
+        listTempLine.add(line)
     }
 
     fun undo() {
-        when (currentTool) {
-            ADD_POINT -> {
-                if(listTempNode.isNotEmpty()){
-                    listTempNode.last().remove()
-                    listTempNode.removeLast()
-                }
-            }
-
-            ADD_LINE -> {
-                if(listTempLine.isNotEmpty()){
-                    listTempLine.last().remove()
-                    listTempLine.removeLast()
-                }
-            }
-        }
+        updateViewState(ToolMapViewState.Undo)
     }
 }

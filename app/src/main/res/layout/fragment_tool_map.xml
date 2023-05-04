@@ -35,7 +35,15 @@
                 android:id="@+id/ll_tool"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
                 android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btnMapType"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="5dp"
+                    android:layout_weight="1"
+                    android:text="Satellite"/>
 
                 <Button
                     android:id="@+id/btnToolAddLine"
@@ -68,12 +76,12 @@
                     android:text="undo"/>
 
                 <Button
-                    android:id="@+id/btnQuit"
+                    android:id="@+id/btnSave"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_margin="5dp"
                     android:layout_weight="1"
-                    android:text="quit"/>
+                    android:text="Save"/>
             </LinearLayout>
         </RelativeLayout>
     </LinearLayout>

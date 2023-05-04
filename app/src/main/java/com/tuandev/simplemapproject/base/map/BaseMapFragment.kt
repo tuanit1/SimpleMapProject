@@ -20,8 +20,13 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
+import com.tuandev.simplemapproject.data.models.Line
+import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
 import com.tuandev.simplemapproject.extension.addFragment
+import com.tuandev.simplemapproject.extension.log
+import com.tuandev.simplemapproject.extension.showToast
+import com.tuandev.simplemapproject.extension.toIntOrNull
 import com.tuandev.simplemapproject.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -43,16 +48,14 @@ class BaseMapFragment :
     private var supportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
     var onMarkerClick: (Marker) -> Unit = {}
-    var onMarkerDrawn: (Marker) -> Unit = {}
-    var onLineDrawn: (Polyline) -> Unit = {}
+    var onPolylineClick: (Polyline) -> Unit = {}
+    var onNodeAdded: (Node) -> Unit = {}
+    var onLineAdded: (Line) -> Unit = {}
     private var lastSelectedMarker: Marker? = null
 
     override val viewModel: BaseMapViewModel by viewModels()
 
-    override val viewStateObserver: (BaseMapViewState) -> Unit = { viewState ->
-        when (viewState) {
-            else -> {}
-        }
+    override val viewStateObserver: (BaseMapViewState) -> Unit = {
     }
 
     override fun initView() {
@@ -94,25 +97,25 @@ class BaseMapFragment :
 
     private fun setMapListener() {
         mMap?.run {
-            setOnMarkerClickListener {
 
+            setOnPolylineClickListener {
+                if(viewModel.currentTouchEvent == TouchEvent.OFF){
+                    onPolylineClick(it)
+                }
+            }
+
+            setOnMarkerClickListener {
                 when (viewModel.currentTouchEvent) {
                     TouchEvent.DRAW_LINE_STEP_1 -> {
-                        it.setIcon(getSelectedNodeImage())
-                        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
+                        handleDrawLineStep1(it)
                     }
 
                     TouchEvent.DRAW_LINE_STEP_2 -> {
-                        lastSelectedMarker?.let { lastMarker ->
-                            if (lastSelectedMarker != it) {
-                                drawLine(lastMarker.position, it.position)
-                            }
-                            lastMarker.setIcon((getNodeImage()))
-                            setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
-                        }
+                        handleDrawLineStep2(it)
                     }
 
                     TouchEvent.OFF -> {
+                        lastSelectedMarker?.setIcon((getNodeImage()))
                         onMarkerClick(it)
                     }
                 }
@@ -173,16 +176,27 @@ class BaseMapFragment :
                 .title("")
                 .anchor(0.5f, 0.5f)
                 .icon(getNodeImage())
-        )?.let { onMarkerDrawn(it) }
+        )?.let {
+            onNodeAdded(viewModel.addNode(it))
+        }
     }
 
-    private fun drawLine(node1: LatLng, node2: LatLng) {
-        val polylineOptions = PolylineOptions()
-            .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
-            .add(node1, node2)
-            .width(12f)
-
-        mMap?.addPolyline(polylineOptions)?.let { onLineDrawn(it) }
+    private fun drawLine(node1: Marker, node2: Marker) {
+        mMap?.addPolyline(
+            PolylineOptions()
+                .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
+                .add(node1.position, node2.position)
+                .clickable(true)
+                .width(12f)
+        )?.let {
+            onLineAdded(
+                viewModel.addLine(
+                    firstNodeId = node1.tag?.toIntOrNull() ?: -1,
+                    secondNodeId = node2.tag?.toIntOrNull() ?: -1,
+                    polyline = it
+                )
+            )
+        }
     }
 
     fun startDrawLine() {
@@ -218,5 +232,45 @@ class BaseMapFragment :
                 width = 90
             )
         )
+
+    fun toggleSatellite() {
+        mMap?.run {
+            mapType = if (mapType == GoogleMap.MAP_TYPE_NORMAL) {
+                GoogleMap.MAP_TYPE_HYBRID
+            } else {
+                GoogleMap.MAP_TYPE_NORMAL
+            }
+        }
+    }
+
+    private fun handleDrawLineStep1(marker: Marker) {
+        marker.setIcon(getSelectedNodeImage())
+        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
+    }
+
+    private fun handleDrawLineStep2(marker: Marker) {
+        lastSelectedMarker?.let { lastMarker ->
+
+            val firstNodeId = lastMarker.tag?.toIntOrNull() ?: -1
+            val secondNodeId = marker.tag?.toIntOrNull() ?: -1
+
+            if (lastSelectedMarker != marker) {
+                if (viewModel.checkIfLineNotExist(firstNodeId, secondNodeId)) {
+                    drawLine(lastMarker, marker)
+                    lastMarker.setIcon((getNodeImage()))
+                    setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+                } else {
+                    context?.showToast(Constants.ErrorMessage.CONFLICT_LINE)
+                }
+            } else {
+                lastMarker.setIcon((getNodeImage()))
+                setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+            }
+
+        }
+    }
+
+    fun removeNode(nodeId: Int) = viewModel.removeNode(nodeId)
+    fun removeLine(lineId: Int) = viewModel.removeLine(lineId)
 
 }
