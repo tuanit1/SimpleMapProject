@@ -1,12 +1,17 @@
 package com.tuandev.simplemapproject.data.models
 
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 
 data class Node(
-    val id: Int,
-    val title: String,
+    var id: String? = null,
+    val title: String? = null,
     val latitude: Double,
     val longitude: Double,
-    val marker: Marker? = null
-)
+    var marker: Marker? = null
+) {
+    fun convertToHashMap() = hashMapOf(
+        "latitude" to latitude,
+        "longitude" to longitude,
+        "title" to title,
+    )
+}

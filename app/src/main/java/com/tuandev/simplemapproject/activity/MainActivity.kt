@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.ui.toolmap.ToolMapFragment
+import com.tuandev.simplemapproject.ui.HomeFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         addFragment(
             containerId = getContainerId(),
-            fragment = ToolMapFragment.newInstance(),
+            fragment = HomeFragment.newInstance(),
             addToBackStack = true
         )
     }

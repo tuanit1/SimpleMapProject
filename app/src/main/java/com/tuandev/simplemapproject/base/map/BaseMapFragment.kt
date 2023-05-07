@@ -24,9 +24,7 @@ import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
 import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.showToast
-import com.tuandev.simplemapproject.extension.toIntOrNull
 import com.tuandev.simplemapproject.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,7 +53,43 @@ class BaseMapFragment :
 
     override val viewModel: BaseMapViewModel by viewModels()
 
-    override val viewStateObserver: (BaseMapViewState) -> Unit = {
+    override val viewStateObserver: (BaseMapViewState) -> Unit = { viewState ->
+        when (viewState) {
+            is BaseMapViewState.AddNodeSuccess -> {
+                onNodeAdded(viewState.newNode)
+            }
+
+            is BaseMapViewState.AddLineSuccess -> {
+                onLineAdded(viewState.newLine)
+            }
+
+            is BaseMapViewState.RemoveNodeSuccess -> {
+                lastSelectedMarker = null
+            }
+
+            is BaseMapViewState.GetNodesSuccess -> {
+                viewModel.listNode.forEach { node ->
+                    node.run {
+                        marker = drawMarker(
+                            latLng = LatLng(latitude, longitude),
+                            nodeId = id
+                        )
+                    }
+                }
+            }
+
+            is BaseMapViewState.GetLinesSuccess -> {
+                viewModel.listLine.forEach { line ->
+                    line.run {
+                        viewModel.getNodeById(line.firstNodeId)?.marker?.let { firstMarker ->
+                            viewModel.getNodeById(line.secondNodeId)?.marker?.let { secondMarker ->
+                                polyline = drawLine(firstMarker, secondMarker, id)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun initView() {
@@ -84,6 +118,10 @@ class BaseMapFragment :
         }
     }
 
+    private fun fetchData() {
+        viewModel.getAllNodesAndLines()
+    }
+
     private fun getContainerId() = R.id.fragment_map_container
 
     private fun handleMap() {
@@ -92,45 +130,47 @@ class BaseMapFragment :
             setMapStyle()
             setMapListener()
             drawBorderLine()
+            fetchData()
         }
     }
 
     private fun setMapListener() {
         mMap?.run {
 
-            setOnPolylineClickListener {
-                if(viewModel.currentTouchEvent == TouchEvent.OFF){
-                    onPolylineClick(it)
+            setOnPolylineClickListener { polyline ->
+                if (viewModel.currentTouchEvent == TouchEvent.OFF) {
+                    onPolylineClick(polyline)
                 }
             }
 
-            setOnMarkerClickListener {
+            setOnMarkerClickListener { marker ->
                 when (viewModel.currentTouchEvent) {
                     TouchEvent.DRAW_LINE_STEP_1 -> {
-                        handleDrawLineStep1(it)
+                        handleDrawLineStep1(marker)
                     }
 
                     TouchEvent.DRAW_LINE_STEP_2 -> {
-                        handleDrawLineStep2(it)
+                        handleDrawLineStep2(marker)
                     }
 
                     TouchEvent.OFF -> {
                         lastSelectedMarker?.setIcon((getNodeImage()))
-                        onMarkerClick(it)
+                        onMarkerClick(marker)
                     }
                 }
 
-                lastSelectedMarker = it
+                lastSelectedMarker = marker
 
                 return@setOnMarkerClickListener true
             }
 
-
-            setOnMapClickListener {
+            setOnMapClickListener { latLng ->
                 TouchEvent.run {
                     when (viewModel.currentTouchEvent) {
                         DRAW_MARKER -> {
-                            drawMarker(it)
+                            drawMarker(latLng)?.let { marker ->
+                                viewModel.addNode(marker)
+                            }
                         }
                     }
                 }
@@ -169,35 +209,28 @@ class BaseMapFragment :
         }
     }
 
-    private fun drawMarker(latLng: LatLng) {
+    private fun drawMarker(latLng: LatLng, nodeId: String? = null) =
         mMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title("")
                 .anchor(0.5f, 0.5f)
                 .icon(getNodeImage())
-        )?.let {
-            onNodeAdded(viewModel.addNode(it))
+        )?.apply {
+            tag = nodeId
         }
-    }
 
-    private fun drawLine(node1: Marker, node2: Marker) {
+
+    private fun drawLine(node1: Marker, node2: Marker, id: String? = null): Polyline? =
         mMap?.addPolyline(
             PolylineOptions()
                 .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
                 .add(node1.position, node2.position)
                 .clickable(true)
                 .width(12f)
-        )?.let {
-            onLineAdded(
-                viewModel.addLine(
-                    firstNodeId = node1.tag?.toIntOrNull() ?: -1,
-                    secondNodeId = node2.tag?.toIntOrNull() ?: -1,
-                    polyline = it
-                )
-            )
+        )?.apply {
+            tag = id
         }
-    }
 
     fun startDrawLine() {
         setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
@@ -251,11 +284,21 @@ class BaseMapFragment :
     private fun handleDrawLineStep2(marker: Marker) {
         lastSelectedMarker?.let { lastMarker ->
 
-            val firstNodeId = lastMarker.tag?.toIntOrNull() ?: -1
-            val secondNodeId = marker.tag?.toIntOrNull() ?: -1
+            val firstNodeId = lastMarker.tag?.toString()
+            val secondNodeId = marker.tag?.toString()
 
             if (lastSelectedMarker != marker) {
                 if (viewModel.checkIfLineNotExist(firstNodeId, secondNodeId)) {
+                    if (firstNodeId != null && secondNodeId != null) {
+                        drawLine(lastMarker, marker)?.let { polyline ->
+                            viewModel.addLine(
+                                firstNodeId = firstNodeId,
+                                secondNodeId = secondNodeId,
+                                polyline = polyline
+                            )
+                        }
+                    }
+
                     drawLine(lastMarker, marker)
                     lastMarker.setIcon((getNodeImage()))
                     setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
@@ -270,7 +313,7 @@ class BaseMapFragment :
         }
     }
 
-    fun removeNode(nodeId: Int) = viewModel.removeNode(nodeId)
-    fun removeLine(lineId: Int) = viewModel.removeLine(lineId)
+    fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
+    fun removeLine(lineId: String) = viewModel.removeLine(lineId)
 
 }

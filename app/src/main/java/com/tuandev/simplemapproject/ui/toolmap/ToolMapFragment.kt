@@ -11,7 +11,6 @@ import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.replaceFragment
 import com.tuandev.simplemapproject.extension.showIf
-import com.tuandev.simplemapproject.extension.toIntOrNull
 import com.tuandev.simplemapproject.widget.markerselecteddialog.MapItemSelectedDialog
 
 class ToolMapFragment :
@@ -51,15 +50,21 @@ class ToolMapFragment :
                             when (currentTool) {
                                 ToolMapViewModel.ADD_POINT -> {
                                     listTempNode.run {
-                                        if (isNotEmpty())
-                                            mapFragment?.removeNode(removeLast().id)
+                                        if (isNotEmpty()) {
+                                            removeLast().id?.let {
+                                                mapFragment?.removeNode(it)
+                                            }
+                                        }
                                     }
                                 }
 
                                 ToolMapViewModel.ADD_LINE -> {
                                     listTempLine.run {
-                                        if (isNotEmpty())
-                                            mapFragment?.removeLine(removeLast().id)
+                                        if (isNotEmpty()) {
+                                            removeLast().id?.let {
+                                                mapFragment?.removeLine(it)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -143,7 +148,7 @@ class ToolMapFragment :
     private val markerItemClickListener: (String, Marker) -> Unit = { key, marker ->
         when (key) {
             OptionItem.KEY_REMOVE_MAP_ITEM -> {
-                marker.tag.toString().toIntOrNull()?.let { nodeId ->
+                marker.tag.toString().let { nodeId ->
                     mapFragment?.removeNode(nodeId)
                 }
             }
@@ -153,7 +158,7 @@ class ToolMapFragment :
     private val lineItemClickListener: (String, Polyline) -> Unit = { key, polyline ->
         when (key) {
             OptionItem.KEY_REMOVE_MAP_ITEM -> {
-                polyline.tag.toString().toIntOrNull()?.let { lineId ->
+                polyline.tag.toString().let { lineId ->
                     mapFragment?.removeLine(lineId)
                 }
             }

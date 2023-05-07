@@ -1,15 +1,19 @@
 package com.tuandev.simplemapproject.extension
 
-import android.util.Log
-import com.tuandev.simplemapproject.util.Constants
-import java.util.Objects
 
-
-fun Any.toIntOrNull(): Int?{
+fun Any.toFloatOrNull(): Float? {
     return try {
-        this.toString().toInt()
-    } catch (e: Exception){
-        log(e.message)
+        this.toString().toFloat()
+    } catch (e: Exception) {
         null
     }
 }
+
+fun Any.toDoubleOrNull(): Double? {
+    return try {
+        this.toString().toDouble()
+    } catch (e: Exception) {
+        null
+    }
+}
+

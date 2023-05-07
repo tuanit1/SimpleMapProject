@@ -20,7 +20,6 @@ abstract class BaseViewHolder<T>(
     abstract fun bind(item: T)
 }
 
-
 class ItemDiffCallback<T : Any> : DiffUtil.ItemCallback<T>() {
     override fun areItemsTheSame(oldItem: T, newItem: T): Boolean {
         return when (oldItem) {
