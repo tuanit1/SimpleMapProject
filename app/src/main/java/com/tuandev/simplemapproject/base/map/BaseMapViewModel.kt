@@ -1,5 +1,6 @@
 package com.tuandev.simplemapproject.base.map
 
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
 import com.google.firebase.firestore.QueryDocumentSnapshot
@@ -30,7 +31,8 @@ class BaseMapViewModel @Inject constructor(
     private val fireStoreRepository: FireStoreRepository
 ) : BaseViewModel<BaseMapViewState>() {
 
-    var currentTouchEvent: String = ""
+
+    var currentTouchEvent: MutableLiveData<String> = MutableLiveData()
     var listNode: MutableList<Node> = mutableListOf()
     var listLine: MutableList<Line> = mutableListOf()
 
@@ -90,9 +92,9 @@ class BaseMapViewModel @Inject constructor(
                             onSuccess = {
                                 deleteLines.forEach {
                                     listLine.remove(it)
-                                    it.polyline?.remove()
+                                    it.removePolyline()
                                 }
-                                node.marker?.remove()
+                                node.removeMarker()
                                 listNode.remove(node)
                             }
                         )
@@ -111,7 +113,7 @@ class BaseMapViewModel @Inject constructor(
             task = fireStoreRepository.deleteLine(lineId),
             onSuccess = {
                 listLine.find { it.id == lineId }?.let { line ->
-                    line.polyline?.remove()
+                    line.removePolyline()
                     listLine.remove(line)
                 }
             }

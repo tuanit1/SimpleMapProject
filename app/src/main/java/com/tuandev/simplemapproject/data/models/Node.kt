@@ -14,4 +14,9 @@ data class Node(
         "longitude" to longitude,
         "title" to title,
     )
+
+    fun removeMarker(){
+        marker?.remove()
+        marker = null
+    }
 }

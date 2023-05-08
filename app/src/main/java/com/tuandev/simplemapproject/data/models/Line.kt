@@ -14,4 +14,9 @@ data class Line(
         "secondNodeId" to secondNodeId,
         "distance" to distance
     )
+
+    fun removePolyline(){
+        polyline?.remove()
+        polyline = null
+    }
 }

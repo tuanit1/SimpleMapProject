@@ -8,6 +8,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.Dot
@@ -24,6 +25,7 @@ import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
 import com.tuandev.simplemapproject.extension.addFragment
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
@@ -63,38 +65,31 @@ class BaseMapFragment :
                 onLineAdded(viewState.newLine)
             }
 
-            is BaseMapViewState.RemoveNodeSuccess -> {
-                lastSelectedMarker = null
-            }
-
             is BaseMapViewState.GetNodesSuccess -> {
-                viewModel.listNode.forEach { node ->
-                    node.run {
-                        marker = drawMarker(
-                            latLng = LatLng(latitude, longitude),
-                            nodeId = id
-                        )
-                    }
-                }
+                loadAllNodeToMap()
             }
 
             is BaseMapViewState.GetLinesSuccess -> {
-                viewModel.listLine.forEach { line ->
-                    line.run {
-                        viewModel.getNodeById(line.firstNodeId)?.marker?.let { firstMarker ->
-                            viewModel.getNodeById(line.secondNodeId)?.marker?.let { secondMarker ->
-                                polyline = drawLine(firstMarker, secondMarker, id)
-                            }
-                        }
-                    }
-                }
+                loadAllLineToMap()
             }
+
+            is BaseMapViewState.RemoveNodeSuccess -> {}
         }
     }
 
     override fun initView() {
         initMap()
         handleMap()
+    }
+
+    override fun initListener() {
+        viewModel.currentTouchEvent.observe(viewLifecycleOwner) { event ->
+            when (event) {
+                TouchEvent.OFF -> {
+                    lastSelectedMarker?.setIcon((getNodeImage()))
+                }
+            }
+        }
     }
 
     private fun initMap() {
@@ -138,13 +133,14 @@ class BaseMapFragment :
         mMap?.run {
 
             setOnPolylineClickListener { polyline ->
-                if (viewModel.currentTouchEvent == TouchEvent.OFF) {
+                if (viewModel.currentTouchEvent.value == TouchEvent.OFF) {
                     onPolylineClick(polyline)
                 }
             }
 
             setOnMarkerClickListener { marker ->
-                when (viewModel.currentTouchEvent) {
+                log("${marker.position}")
+                when (viewModel.currentTouchEvent.value) {
                     TouchEvent.DRAW_LINE_STEP_1 -> {
                         handleDrawLineStep1(marker)
                     }
@@ -154,27 +150,23 @@ class BaseMapFragment :
                     }
 
                     TouchEvent.OFF -> {
-                        lastSelectedMarker?.setIcon((getNodeImage()))
                         onMarkerClick(marker)
                     }
                 }
-
-                lastSelectedMarker = marker
 
                 return@setOnMarkerClickListener true
             }
 
             setOnMapClickListener { latLng ->
                 TouchEvent.run {
-                    when (viewModel.currentTouchEvent) {
+                    when (viewModel.currentTouchEvent.value) {
                         DRAW_MARKER -> {
-                            drawMarker(latLng)?.let { marker ->
+                            drawNodeMarker(latLng)?.let { marker ->
                                 viewModel.addNode(marker)
                             }
                         }
                     }
                 }
-
             }
         }
     }
@@ -192,15 +184,17 @@ class BaseMapFragment :
         mMap?.run {
             Constants.AsiaParkMap.run {
                 setLatLngBoundsForCameraTarget(bound)
-                val rectOptions = PolygonOptions()
-                    .add(nwLatLng, neLatLng, seLatLng, swLatLng)
-                    .strokePattern(listOf(Dot()))
-                addPolygon(rectOptions)
+                mMap?.addPolygon(
+                    PolygonOptions()
+                        .addAll(borderList)
+                        .strokePattern(listOf(Dot()))
+                        .strokeColor(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
+                )
 
                 moveCamera(
                     CameraUpdateFactory.newCameraPosition(
                         CameraPosition.builder()
-                            .target(swLatLng)
+                            .target(bound.center)
                             .bearing(-7f)
                             .build()
                     )
@@ -209,16 +203,26 @@ class BaseMapFragment :
         }
     }
 
-    private fun drawMarker(latLng: LatLng, nodeId: String? = null) =
+    private fun drawMarker(
+        latLng: LatLng,
+        nodeId: String? = null,
+        bitmapDescriptor: BitmapDescriptor
+    ) =
         mMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title("")
                 .anchor(0.5f, 0.5f)
-                .icon(getNodeImage())
+                .icon(bitmapDescriptor)
         )?.apply {
             tag = nodeId
         }
+
+    private fun drawNodeMarker(latLng: LatLng, nodeId: String? = null) =
+        drawMarker(latLng, nodeId, getNodeImage())
+
+    private fun drawBorderMarker(latLng: LatLng, nodeId: String? = null) =
+        drawMarker(latLng, nodeId, getBorderImage())
 
 
     private fun drawLine(node1: Marker, node2: Marker, id: String? = null): Polyline? =
@@ -237,7 +241,7 @@ class BaseMapFragment :
     }
 
     fun setCurrentTouchEvent(event: String) {
-        viewModel.currentTouchEvent = event
+        viewModel.currentTouchEvent.value = event
     }
 
     private fun resizeMapIcons(
@@ -256,6 +260,16 @@ class BaseMapFragment :
                 width = 70
             )
         )
+
+    private fun getBorderImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_cross_cancel,
+                height = 70,
+                width = 70
+            )
+        )
+
 
     private fun getSelectedNodeImage() =
         BitmapDescriptorFactory.fromBitmap(
@@ -277,6 +291,7 @@ class BaseMapFragment :
     }
 
     private fun handleDrawLineStep1(marker: Marker) {
+        lastSelectedMarker = marker
         marker.setIcon(getSelectedNodeImage())
         setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
     }
@@ -299,7 +314,6 @@ class BaseMapFragment :
                         }
                     }
 
-                    drawLine(lastMarker, marker)
                     lastMarker.setIcon((getNodeImage()))
                     setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
                 } else {
@@ -310,6 +324,26 @@ class BaseMapFragment :
                 setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
             }
 
+        }
+    }
+
+    private fun loadAllNodeToMap() {
+        viewModel.listNode.forEach { node ->
+            node.run {
+                marker = drawNodeMarker(latLng = LatLng(latitude, longitude), nodeId = id)
+            }
+        }
+    }
+
+    private fun loadAllLineToMap() {
+        viewModel.listLine.forEach { line ->
+            line.run {
+                viewModel.getNodeById(line.firstNodeId)?.marker?.let { firstMarker ->
+                    viewModel.getNodeById(line.secondNodeId)?.marker?.let { secondMarker ->
+                        polyline = drawLine(firstMarker, secondMarker, id)
+                    }
+                }
+            }
         }
     }
 
