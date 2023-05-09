@@ -36,12 +36,13 @@ class BaseMapViewModel @Inject constructor(
     var listNode: MutableList<Node> = mutableListOf()
     var listLine: MutableList<Line> = mutableListOf()
 
-    fun addLine(firstNodeId: String, secondNodeId: String, polyline: Polyline) {
+    fun addLine(firstNodeId: String, secondNodeId: String, distance: Float?, polyline: Polyline) {
         val newLine = polyline.run {
             Line(
                 firstNodeId = firstNodeId,
                 secondNodeId = secondNodeId,
-                polyline = polyline
+                polyline = polyline,
+                distance = distance
             )
         }
 

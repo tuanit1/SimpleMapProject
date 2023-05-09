@@ -2,6 +2,7 @@ package com.tuandev.simplemapproject.base.map
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,9 +25,7 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
-import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.extension.log
-import com.tuandev.simplemapproject.extension.showToast
+import com.tuandev.simplemapproject.extension.*
 import com.tuandev.simplemapproject.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -105,10 +104,9 @@ class BaseMapFragment :
         )
 
         supportMapFragment?.let { fragment ->
-            addFragment(
+            openFragment(
                 containerId = getContainerId(),
-                fragment = fragment,
-                addToBackStack = true
+                fragment = fragment
             )
         }
     }
@@ -188,7 +186,12 @@ class BaseMapFragment :
                     PolygonOptions()
                         .addAll(borderList)
                         .strokePattern(listOf(Dot()))
-                        .strokeColor(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
+                        .strokeColor(
+                            ContextCompat.getColor(
+                                requireContext(),
+                                R.color.guidePathColor
+                            )
+                        )
                 )
 
                 moveCamera(
@@ -309,7 +312,8 @@ class BaseMapFragment :
                             viewModel.addLine(
                                 firstNodeId = firstNodeId,
                                 secondNodeId = secondNodeId,
-                                polyline = polyline
+                                polyline = polyline,
+                                distance = getDistance(lastMarker.position, marker.position)
                             )
                         }
                     }
@@ -344,6 +348,18 @@ class BaseMapFragment :
                     }
                 }
             }
+        }
+    }
+
+    private fun getDistance(p1: LatLng, p2: LatLng): Float? {
+        return try {
+            val results = FloatArray(1)
+            Location.distanceBetween(
+                p1.latitude, p1.longitude, p2.latitude, p2.longitude, results
+            )
+            results.first().toRoundedFloat(2)
+        } catch (e: Exception) {
+            null
         }
     }
 

@@ -2,41 +2,43 @@ package com.tuandev.simplemapproject.extension
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import com.tuandev.simplemapproject.data.models.PopBackStackOption
 
-fun Fragment.addFragment(
+fun Fragment.openFragment(
     containerId: Int,
     fragment: Fragment,
-    addToBackStack: Boolean = false,
+    isReplace: Boolean = false,
+    popBackStackOption: PopBackStackOption? = null,
     enterAnim: Int = 0,
     exitAnim: Int = 0,
     popEnter: Int = 0,
     popExit: Int = 0,
 ) {
-    if (parentFragmentManager.findFragmentByTag(fragment.tag) == null) {
-        parentFragmentManager.commit {
-            setCustomAnimations(enterAnim, exitAnim, popEnter, popExit)
-            add(containerId, fragment, fragment.tag)
-            if (addToBackStack) {
-                addToBackStack(fragment.tag)
+    childFragmentManager.run {
+        if (findFragmentByTag(fragment.tag) == null) {
+            popBackStackOption?.let {
+                var count = backStackEntryCount
+                when (it) {
+                    is PopBackStackOption.PopOne -> {
+                        if (count > 0) popBackStack()
+                    }
+                    is PopBackStackOption.PopAll -> {
+                        while (count-- > 0) {
+                            popBackStack()
+                        }
+                    }
+                    is PopBackStackOption.PopCount -> {
+                        for (i in it.count downTo 1) popBackStack()
+                    }
+                }
             }
-        }
-    }
-}
-
-fun Fragment.replaceFragment(
-    containerId: Int,
-    fragment: Fragment,
-    addToBackStack: Boolean = false,
-    enterAnim: Int = 0,
-    exitAnim: Int = 0,
-    popEnter: Int = 0,
-    popExit: Int = 0,
-) {
-    if (parentFragmentManager.findFragmentByTag(fragment.tag) == null) {
-        parentFragmentManager.commit {
-            setCustomAnimations(enterAnim, exitAnim, popEnter, popExit)
-            replace(containerId, fragment, fragment.tag)
-            if (addToBackStack) {
+            commit {
+                setCustomAnimations(enterAnim, exitAnim, popEnter, popExit)
+                if(isReplace){
+                    replace(containerId, fragment, fragment.tag)
+                }else{
+                    add(containerId, fragment, fragment.tag)
+                }
                 addToBackStack(fragment.tag)
             }
         }

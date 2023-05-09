@@ -1,6 +1,5 @@
-package com.tuandev.simplemapproject.ui.toolmap
+package com.tuandev.simplemapproject.ui.splash.toolmap
 
-import com.google.android.gms.maps.model.Polyline
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.Line

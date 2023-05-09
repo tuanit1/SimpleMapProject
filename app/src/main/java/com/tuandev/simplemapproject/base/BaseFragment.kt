@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
+import com.tuandev.simplemapproject.activity.MainActivity
 import com.tuandev.simplemapproject.widget.CommonProgressDialog
 
 typealias Inflate<T> = (LayoutInflater, ViewGroup?, Boolean) -> T
@@ -15,7 +16,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
 ) : Fragment() {
     private var _binding: VB? = null
     protected val binding get() = _binding
-
+    protected var parentActivity: MainActivity? = null
     private val commonProgressBar by lazy { CommonProgressDialog(requireContext()) }
 
     override fun onCreateView(
@@ -33,6 +34,8 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
         viewModel.viewState.observe(viewLifecycleOwner) {
             viewStateObserver(it)
         }
+
+        parentActivity = activity as MainActivity
 
         listenLiveData()
         initView()
@@ -62,4 +65,6 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
     protected abstract val viewModel: VM
 
     protected abstract val viewStateObserver: (viewState: VS) -> Unit
+
+
 }

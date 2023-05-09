@@ -5,8 +5,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.tuandev.simplemapproject.R
-import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.ui.HomeFragment
+import com.tuandev.simplemapproject.data.models.PopBackStackOption
+import com.tuandev.simplemapproject.extension.openFragment
+import com.tuandev.simplemapproject.ui.splash.SplashFragment
+import com.tuandev.simplemapproject.ui.splash.home.HomeFragment
+import com.tuandev.simplemapproject.ui.splash.login.LoginFragment
+import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,11 +24,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        addFragment(
-            containerId = getContainerId(),
-            fragment = HomeFragment.newInstance(),
-            addToBackStack = true
-        )
+        openSplashFragment()
     }
 
     private fun initListener() {
@@ -59,5 +59,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun getContainerId() = R.id.main_activity_container
 
+    fun openLoginFragment() {
+        openFragment(
+            containerId = getContainerId(),
+            fragment = LoginFragment.newInstance(),
+            popBackStackOption = PopBackStackOption.PopAll
+        )
+    }
 
+    fun openHomeFragment(){
+        openFragment(
+            containerId = getContainerId(),
+            fragment = HomeFragment.newInstance(),
+            popBackStackOption = PopBackStackOption.PopAll
+        )
+    }
+
+    fun openSplashFragment(){
+        openFragment(
+            containerId = getContainerId(),
+            fragment = SplashFragment.newInstance()
+        )
+    }
+
+    fun openToolMapFragment(){
+        openFragment(
+            containerId = getContainerId(),
+            fragment = ToolMapFragment.newInstance(),
+            popBackStackOption = PopBackStackOption.PopAll
+        )
+    }
 }

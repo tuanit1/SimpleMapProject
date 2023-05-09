@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.ui.toolmap
+package com.tuandev.simplemapproject.ui.splash.toolmap
 
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.model.Marker
@@ -9,7 +9,7 @@ import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
 import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
-import com.tuandev.simplemapproject.extension.replaceFragment
+import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.widget.markerselecteddialog.MapItemSelectedDialog
 
@@ -79,10 +79,9 @@ class ToolMapFragment :
     override fun initView() {
         mapFragment = BaseMapFragment.newInstance()
         mapFragment?.let {
-            replaceFragment(
+            openFragment(
                 containerId = containerID,
-                fragment = it,
-                addToBackStack = false
+                fragment = it
             )
         }
     }

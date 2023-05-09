@@ -31,10 +31,11 @@ abstract class BaseDialogFragment<VB : ViewBinding>(
 
     override fun onStart() {
         super.onStart()
-        val screenWidth = requireContext().getWidthScreen()
-        dialog?.window?.run {
-            attributes = attributes.apply {
-                width = (screenWidth * 0.8).toInt()
+        context?.getWidthScreen()?.let { screenWidth ->
+            dialog?.window?.run {
+                attributes = attributes.apply {
+                    width = (screenWidth * 0.8).toInt()
+                }
             }
         }
     }

@@ -17,3 +17,11 @@ fun Any.toDoubleOrNull(): Double? {
     }
 }
 
+fun Float.toRoundedFloat(roundNumber: Int): Float {
+    return try {
+        String.format("%.${roundNumber}f", this).toFloat()
+    } catch (e: Exception){
+        this
+    }
+}
+

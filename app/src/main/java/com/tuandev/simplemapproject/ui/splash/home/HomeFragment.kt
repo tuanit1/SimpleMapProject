@@ -1,17 +1,16 @@
-package com.tuandev.simplemapproject.ui
+package com.tuandev.simplemapproject.ui.splash.home
 
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.databinding.FragmentHomeBinding
-import com.tuandev.simplemapproject.extension.addFragment
-import com.tuandev.simplemapproject.ui.toolmap.ToolMapFragment
+import com.tuandev.simplemapproject.extension.openFragment
+import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 
 
 class HomeFragment :
     BaseFragment<FragmentHomeBinding, HomeViewModel, ViewState>(FragmentHomeBinding::inflate) {
-
 
     companion object {
         fun newInstance() = HomeFragment()
@@ -21,10 +20,9 @@ class HomeFragment :
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
     override fun initView() {
-        addFragment(
+        openFragment(
             containerId = getContainerId(),
-            fragment = ToolMapFragment.newInstance(),
-            addToBackStack = true
+            fragment = ToolMapFragment.newInstance()
         )
     }
 

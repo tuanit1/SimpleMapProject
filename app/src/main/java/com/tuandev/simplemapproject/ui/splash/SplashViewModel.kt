@@ -1,6 +1,7 @@
-package com.tuandev.simplemapproject.ui
+package com.tuandev.simplemapproject.ui.splash
 
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 
-class HomeViewModel: BaseViewModel<ViewState>() {}
+class SplashViewModel: BaseViewModel<ViewState>() {
+}
