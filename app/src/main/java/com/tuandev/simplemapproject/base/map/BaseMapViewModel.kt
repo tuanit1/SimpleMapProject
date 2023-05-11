@@ -141,11 +141,24 @@ class BaseMapViewModel @Inject constructor(
                     onSuccess = { lineResult ->
                         listLine.clear()
                         listLine.addAll(lineResult.map { it.mapToLine() })
+                        listNode.mapNeighbors()
                         updateViewState(BaseMapViewState.GetLinesSuccess)
                     }
                 )
             }
         )
+    }
+
+    private fun MutableList<Node>.mapNeighbors() {
+        forEach { node ->
+            node.neighbors = listLine.mapNotNull { line ->
+                when {
+                    line.firstNodeId == node.id -> line.secondNodeId
+                    line.secondNodeId == node.id -> line.firstNodeId
+                    else -> null
+                }
+            }
+        }
     }
 
     fun getNodeById(id: String?) = listNode.find { it.id == id }
