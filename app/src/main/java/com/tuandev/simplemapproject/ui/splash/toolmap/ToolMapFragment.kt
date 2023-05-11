@@ -11,6 +11,7 @@ import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
+import com.tuandev.simplemapproject.util.AStarSearch
 import com.tuandev.simplemapproject.widget.markerselecteddialog.MapItemSelectedDialog
 
 class ToolMapFragment :
@@ -40,6 +41,10 @@ class ToolMapFragment :
 
                                 ToolMapViewModel.ADD_LINE -> {
                                     mapFragment?.startDrawLine()
+                                }
+
+                                ToolMapViewModel.FIND_ROUTE -> {
+                                    mapFragment?.startFindRoute()
                                 }
                             }
                         }
@@ -99,6 +104,10 @@ class ToolMapFragment :
 
             btnToolAddLine.setOnClickListener {
                 viewModel.openTool(ToolMapViewModel.ADD_LINE)
+            }
+
+            btnFindRoute.setOnClickListener {
+                viewModel.openTool(ToolMapViewModel.FIND_ROUTE)
             }
 
             btnSave.setOnClickListener {

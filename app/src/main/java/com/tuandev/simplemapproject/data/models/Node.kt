@@ -8,7 +8,7 @@ data class Node(
     val latitude: Double,
     val longitude: Double,
     var marker: Marker? = null,
-    var neighbors: List<String> = listOf()
+    var neighbors: List<NeighborWithDistance> = listOf()
 ) {
     fun convertToHashMap() = hashMapOf(
         "latitude" to latitude,

@@ -15,6 +15,7 @@ class ToolMapViewModel : BaseViewModel<ToolMapViewState>() {
     companion object {
         const val ADD_POINT = "add_point"
         const val ADD_LINE = "add_line"
+        const val FIND_ROUTE = "find_route"
     }
 
     var currentTool: String = ""

@@ -8,6 +8,7 @@ import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
+import com.tuandev.simplemapproject.data.models.NeighborWithDistance
 import com.tuandev.simplemapproject.data.repositories.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
@@ -23,7 +24,8 @@ sealed class BaseMapViewState : ViewState() {
 
     object GetLinesSuccess : BaseMapViewState()
 
-    object RemoveNodeSuccess : BaseMapViewState()
+    class ToggleLine(val isVisible: Boolean) : BaseMapViewState()
+
 }
 
 @HiltViewModel
@@ -53,6 +55,7 @@ class BaseMapViewModel @Inject constructor(
                 newLine.polyline?.tag = lineId
                 newLine.id = lineId
                 listLine.add(newLine)
+                listNode.updateNeighbors()
                 updateViewState(BaseMapViewState.AddLineSuccess(newLine))
             }
         )
@@ -97,6 +100,7 @@ class BaseMapViewModel @Inject constructor(
                                 }
                                 node.removeMarker()
                                 listNode.remove(node)
+                                listNode.updateNeighbors()
                             }
                         )
                     } else {
@@ -104,7 +108,6 @@ class BaseMapViewModel @Inject constructor(
                         listNode.remove(node)
                     }
                 }
-                updateViewState(BaseMapViewState.RemoveNodeSuccess)
             }
         )
     }
@@ -117,6 +120,7 @@ class BaseMapViewModel @Inject constructor(
                     line.removePolyline()
                     listLine.remove(line)
                 }
+                listNode.updateNeighbors()
             }
         )
     }
@@ -141,7 +145,7 @@ class BaseMapViewModel @Inject constructor(
                     onSuccess = { lineResult ->
                         listLine.clear()
                         listLine.addAll(lineResult.map { it.mapToLine() })
-                        listNode.mapNeighbors()
+                        listNode.updateNeighbors()
                         updateViewState(BaseMapViewState.GetLinesSuccess)
                     }
                 )
@@ -149,12 +153,12 @@ class BaseMapViewModel @Inject constructor(
         )
     }
 
-    private fun MutableList<Node>.mapNeighbors() {
+    private fun MutableList<Node>.updateNeighbors() {
         forEach { node ->
             node.neighbors = listLine.mapNotNull { line ->
                 when {
-                    line.firstNodeId == node.id -> line.secondNodeId
-                    line.secondNodeId == node.id -> line.firstNodeId
+                    line.firstNodeId == node.id -> NeighborWithDistance(line.secondNodeId, line.distance)
+                    line.secondNodeId == node.id -> NeighborWithDistance(line.firstNodeId, line.distance)
                     else -> null
                 }
             }
@@ -179,5 +183,9 @@ class BaseMapViewModel @Inject constructor(
             secondNodeId = data["secondNodeId"].toString(),
             distance = data["distance"]?.toFloatOrNull()
         )
+    }
+
+    fun updateLineViewState(isVisible: Boolean) {
+        updateViewState(BaseMapViewState.ToggleLine(isVisible))
     }
 }

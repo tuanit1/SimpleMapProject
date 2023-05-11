@@ -26,6 +26,7 @@ import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
 import com.tuandev.simplemapproject.extension.*
+import com.tuandev.simplemapproject.util.AStarSearch
 import com.tuandev.simplemapproject.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,6 +39,8 @@ class BaseMapFragment :
             const val DRAW_MARKER = "draw_marker"
             const val DRAW_LINE_STEP_1 = "draw_line_step_1"
             const val DRAW_LINE_STEP_2 = "draw_line_step_2"
+            const val FIND_ROUTE_STEP_1 = "find_route_step_1"
+            const val FIND_ROUTE_STEP_2 = "find_route_step_2"
             const val OFF = "off"
         }
 
@@ -51,6 +54,8 @@ class BaseMapFragment :
     var onNodeAdded: (Node) -> Unit = {}
     var onLineAdded: (Line) -> Unit = {}
     private var lastSelectedMarker: Marker? = null
+    private var aStarSearch: AStarSearch? = null
+    private var currentGuildPath: Polyline? = null
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -70,9 +75,26 @@ class BaseMapFragment :
 
             is BaseMapViewState.GetLinesSuccess -> {
                 loadAllLineToMap()
+                initAStarSearch()
             }
 
-            is BaseMapViewState.RemoveNodeSuccess -> {}
+            is BaseMapViewState.ToggleLine -> {
+                if (viewState.isVisible) {
+                    loadAllLineToMap()
+                } else {
+                    removeLinesFromMap()
+                }
+            }
+        }
+    }
+
+    private fun initAStarSearch() {
+        aStarSearch = AStarSearch(viewModel.listNode)
+        aStarSearch?.run {
+            onFindPathSuccess = { nodes ->
+                handleDrawGuildPath(nodes)
+                viewModel.updateLineViewState(isVisible = false)
+            }
         }
     }
 
@@ -86,6 +108,8 @@ class BaseMapFragment :
             when (event) {
                 TouchEvent.OFF -> {
                     lastSelectedMarker?.setIcon((getNodeImage()))
+                    currentGuildPath?.remove()
+                    viewModel.updateLineViewState(isVisible = true)
                 }
             }
         }
@@ -145,6 +169,14 @@ class BaseMapFragment :
 
                     TouchEvent.DRAW_LINE_STEP_2 -> {
                         handleDrawLineStep2(marker)
+                    }
+
+                    TouchEvent.FIND_ROUTE_STEP_1 -> {
+                        handleFindRouteStep1(marker)
+                    }
+
+                    TouchEvent.FIND_ROUTE_STEP_2 -> {
+                        handleFindRouteStep2(marker)
                     }
 
                     TouchEvent.OFF -> {
@@ -239,8 +271,22 @@ class BaseMapFragment :
             tag = id
         }
 
+    private fun handleDrawGuildPath(nodes: List<Node>) {
+        currentGuildPath?.remove()
+        currentGuildPath = mMap?.addPolyline(
+            PolylineOptions()
+                .color(ContextCompat.getColor(requireContext(), R.color.redPastel))
+                .addAll(nodes.map { LatLng(it.latitude, it.longitude) })
+                .width(30f)
+        )
+    }
+
     fun startDrawLine() {
         setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+    }
+
+    fun startFindRoute() {
+        setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
     }
 
     fun setCurrentTouchEvent(event: String) {
@@ -278,8 +324,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node_selected,
-                height = 90,
-                width = 90
+                height = 120,
+                width = 120
             )
         )
 
@@ -331,6 +377,32 @@ class BaseMapFragment :
         }
     }
 
+    private fun handleFindRouteStep1(marker: Marker) {
+        lastSelectedMarker = marker
+        currentGuildPath?.remove()
+        marker.setIcon(getSelectedNodeImage())
+        viewModel.updateLineViewState(isVisible = true)
+        setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_2)
+    }
+
+    private fun handleFindRouteStep2(marker: Marker) {
+        lastSelectedMarker?.let { lastMarker ->
+            val start = viewModel.getNodeById(lastMarker.tag?.toString())
+            val goal = viewModel.getNodeById(marker.tag?.toString())
+
+            if (lastSelectedMarker != marker && start != null && goal != null) {
+                aStarSearch?.findBestPath(start, goal)
+
+                lastMarker.setIcon((getNodeImage()))
+                setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
+            } else {
+                lastMarker.setIcon((getNodeImage()))
+                setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
+            }
+
+        }
+    }
+
     private fun loadAllNodeToMap() {
         viewModel.listNode.forEach { node ->
             node.run {
@@ -344,9 +416,19 @@ class BaseMapFragment :
             line.run {
                 viewModel.getNodeById(line.firstNodeId)?.marker?.let { firstMarker ->
                     viewModel.getNodeById(line.secondNodeId)?.marker?.let { secondMarker ->
-                        polyline = drawLine(firstMarker, secondMarker, id)
+                        if (polyline == null) {
+                            polyline = drawLine(firstMarker, secondMarker, id)
+                        }
                     }
                 }
+            }
+        }
+    }
+
+    private fun removeLinesFromMap() {
+        viewModel.listLine.forEach { line ->
+            line.run {
+                line.removePolyline()
             }
         }
     }
