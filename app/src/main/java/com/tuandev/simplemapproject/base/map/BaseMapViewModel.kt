@@ -1,6 +1,7 @@
 package com.tuandev.simplemapproject.base.map
 
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
 import com.google.firebase.firestore.QueryDocumentSnapshot
@@ -9,10 +10,12 @@ import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.models.NeighborWithDistance
-import com.tuandev.simplemapproject.data.repositories.FireStoreRepository
+import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed class BaseMapViewState : ViewState() {
@@ -137,16 +140,17 @@ class BaseMapViewModel @Inject constructor(
             onSuccess = { nodeResult ->
                 listNode.clear()
                 listNode.addAll(nodeResult.map { it.mapToNode() })
-
                 updateViewState(BaseMapViewState.GetNodesSuccess)
 
                 fetchFromFireStore(
                     task = fireStoreRepository.getAllLines(),
                     onSuccess = { lineResult ->
-                        listLine.clear()
-                        listLine.addAll(lineResult.map { it.mapToLine() })
-                        listNode.updateNeighbors()
-                        updateViewState(BaseMapViewState.GetLinesSuccess)
+                        viewModelScope.launch(Dispatchers.IO) {
+                            listLine.clear()
+                            listLine.addAll(lineResult.map { it.mapToLine() })
+                            listNode.updateNeighbors()
+                            updateViewState(BaseMapViewState.GetLinesSuccess)
+                        }
                     }
                 )
             }

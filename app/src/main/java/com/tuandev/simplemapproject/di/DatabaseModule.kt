@@ -5,7 +5,7 @@ import androidx.room.Room
 import com.tuandev.simplemapproject.data.database.AppDatabase
 import com.tuandev.simplemapproject.data.database.daos.LineDao
 import com.tuandev.simplemapproject.data.database.daos.NodeDao
-import com.tuandev.simplemapproject.data.repositories.FireStoreRepository
+import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,11 +32,5 @@ object DatabaseModule {
     @Singleton
     fun provideNodeDao(appDatabase: AppDatabase): NodeDao {
         return appDatabase.nodeDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideFSRepository(): FireStoreRepository {
-        return FireStoreRepository()
     }
 }

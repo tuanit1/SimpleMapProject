@@ -22,7 +22,6 @@ object Constants {
 
     const val LOG_TAG = "123123"
 
-    object ErrorMessage {
-        const val CONFLICT_LINE = "Conflict in draw line"
-    }
+    const val LANGUAGE_EN = "lang_en"
+    const val LANGUAGE_VI = "lang_vi"
 }

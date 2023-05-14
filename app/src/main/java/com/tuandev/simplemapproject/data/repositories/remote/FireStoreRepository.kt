@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.data.repositories
+package com.tuandev.simplemapproject.data.repositories.remote
 
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase

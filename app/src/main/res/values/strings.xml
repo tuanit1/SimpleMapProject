@@ -3,4 +3,94 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="dialog_marker_title">Choose an action</string>
+    <string name="err_conflict_line">Conflict in draw line</string>
+
+    <!-- ThrillLevel-->
+    <string name="en_thrill_level_0">Family</string>
+    <string name="en_thrill_level_1">Moderately thrilling</string>
+    <string name="en_thrill_level_2">Highly thrilling</string>
+    <string name="en_thrill_level_3">Extremely thrilling</string>
+
+    <string name="vi_thrill_level_0">Gia đình</string>
+    <string name="vi_thrill_level_1">Cảm giác trung bình</string>
+    <string name="vi_thrill_level_2">Cảm giác mạnh</string>
+    <string name="vi_thrill_level_3">Cảm giác cực mạnh</string>
+    
+    <!-- PlaceService-->
+    <string name="en_place_service_medical">Medical help</string>
+    <string name="en_place_service_food">Food &amp; drink</string>
+    <string name="en_place_service_wc">WC</string>
+    <string name="en_place_service_ticket">Ticket counter</string>
+    <string name="en_place_service_souvenir">Souvenir shop</string>
+    <string name="en_place_service_guest">Guest services</string>
+    <string name="en_place_checking_point">Checking point</string>
+
+
+    <string name="vi_place_service_medical">Trợ giúp y tế</string>
+    <string name="vi_place_service_food">Điểm bán đồ ăn &amp; nước</string>
+    <string name="vi_place_service_wc">Nhà vệ sinh</string>
+    <string name="vi_place_service_ticket">Điểm bán vé</string>
+    <string name="vi_place_service_souvenir">Cửa hàng lưu niệm</string>
+    <string name="vi_place_service_guest">Chăm sóc khách hàng</string>
+    <string name="vi_place_checking_point">Điểm checking</string>
+
+    <!-- Zone-->
+    <string name="en_zone_vn">Vietnam zone</string>
+    <string name="en_zone_jp">Japan zone</string>
+    <string name="en_zone_kr">Korea zone</string>
+    <string name="en_zone_cn">China zone</string>
+    <string name="en_zone_india">India zone</string>
+    <string name="en_zone_com">Cambodia zone</string>
+    <string name="en_zone_thai">Thailand zone</string>
+    <string name="en_zone_nepal">Nepal zone</string>
+    <string name="en_zone_sin">Singapore zone</string>
+    <string name="en_zone_indo">Indonesia zone</string>
+
+    <string name="vi_zone_vn">Khu Việt Nam</string>
+    <string name="vi_zone_jp">Khu Nhật Bản</string>
+    <string name="vi_zone_kr">Khu Hàn Quốc</string>
+    <string name="vi_zone_cn">Khu Trung Quốc</string>
+    <string name="vi_zone_india">Khu Ấn Độ</string>
+    <string name="vi_zone_com">Khu Campuchia</string>
+    <string name="vi_zone_thai">Khu Thái Lan</string>
+    <string name="vi_zone_nepal">Khu Nepal</string>
+    <string name="vi_zone_sin">Khu Singapore</string>
+    <string name="vi_zone_indo">Khu Indonesia</string>
+
+    <!-- Place-->
+    <string name="en_place_fountain">Fountain</string>
+    <string name="en_place_entry_gate">Entry gate</string>
+    <string name="en_place_sightseeing_cabin">Sightseeing cabin</string>
+    <string name="en_place_night_market">Night marker</string>
+    <string name="en_place_sun_wheel_stage">Sun Wheel stage</string>
+    <string name="en_place_dragon_boat">Dragon boat</string>
+    <string name="en_place_buddha_statue">Buddha statue</string>
+    <string name="en_place_dragon_statue">Dragon statue</string>
+    <string name="en_place_bamboo_garden">Bamboo garden</string>
+    <string name="en_place_panda_restaurant">Panda restaurant</string>
+    <string name="en_place_india_stage">India stage</string>
+    <string name="en_place_the_dark">The dark</string>
+    <string name="en_place_water_playground">Water playground</string>
+    <string name="en_place_nepal_gate">Nepal gate</string>
+    <string name="en_place_marina_stage">Marina stage</string>
+    <string name="en_place_merlion_lake">Merlion stage</string>
+    <string name="en_place_indo_restaurant">Indo restaurant</string>
+
+    <string name="vi_place_fountain">Đài phun nước</string>
+    <string name="vi_place_entry_gate">Cổng thành</string>
+    <string name="vi_place_sightseeing_cabin">Chòi vọng cảnh</string>
+    <string name="vi_place_night_market">Chợ đêm</string>
+    <string name="vi_place_sun_wheel_stage">Sân khấu Sun Wheel</string>
+    <string name="vi_place_dragon_boat">Thuyền rồng</string>
+    <string name="vi_place_buddha_statue">Tượng Phật</string>
+    <string name="vi_place_dragon_statue">Tượng rồng</string>
+    <string name="vi_place_bamboo_garden">Vườn trúc</string>
+    <string name="vi_place_panda_restaurant">Nhà hàng Panda</string>
+    <string name="vi_place_india_stage">Sân khấu ấn độ</string>
+    <string name="vi_place_the_dark">Ngôi nhà bí ẩn</string>
+    <string name="vi_place_water_playground">Sân chơi nước</string>
+    <string name="vi_place_nepal_gate">Cổng Nepal</string>
+    <string name="vi_place_marina_stage">Sân khấu Marina</string>
+    <string name="vi_place_merlion_lake">Hồ Merlion</string>
+    <string name="vi_place_indo_restaurant">Nhà hàng Indo</string>
 </resources>

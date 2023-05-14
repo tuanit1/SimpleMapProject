@@ -367,7 +367,9 @@ class BaseMapFragment :
                     lastMarker.setIcon((getNodeImage()))
                     setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
                 } else {
-                    context?.showToast(Constants.ErrorMessage.CONFLICT_LINE)
+                    context?.run {
+                        showToast(getString(R.string.err_conflict_line))
+                    }
                 }
             } else {
                 lastMarker.setIcon((getNodeImage()))
