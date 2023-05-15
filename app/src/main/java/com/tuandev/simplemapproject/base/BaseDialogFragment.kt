@@ -9,9 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import androidx.core.view.ContentInfoCompat.Flags
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
+import com.tuandev.simplemapproject.extension.getHeightScreen
 import com.tuandev.simplemapproject.extension.getWidthScreen
+import com.tuandev.simplemapproject.extension.log
 
 abstract class BaseDialogFragment<VB : ViewBinding>(
     private val inflate: Inflate<VB>
@@ -19,6 +23,12 @@ abstract class BaseDialogFragment<VB : ViewBinding>(
 
     private var _binding: VB? = null
     protected val binding get() = _binding
+    private var isReachedMaxSize = false
+
+    companion object {
+        const val WIDTH_RATIO = 0.9f
+        const val HEIGHT_RATIO = 0.8f
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,10 +41,34 @@ abstract class BaseDialogFragment<VB : ViewBinding>(
 
     override fun onStart() {
         super.onStart()
+
         context?.getWidthScreen()?.let { screenWidth ->
             dialog?.window?.run {
                 attributes = attributes.apply {
-                    width = (screenWidth * 0.8).toInt()
+                    width = (screenWidth * WIDTH_RATIO).toInt()
+                }
+            }
+        }
+    }
+
+    fun checkReachedMaxSize(measuredHeight: Int) {
+        val heightScreen = context?.getHeightScreen() ?: 0
+        if (measuredHeight > heightScreen * HEIGHT_RATIO){
+            if(!isReachedMaxSize){
+                dialog?.window?.run {
+                    attributes = attributes.apply {
+                        isReachedMaxSize = true
+                        height = (heightScreen * HEIGHT_RATIO).toInt()
+                    }
+                }
+            }
+        }else {
+            dialog?.window?.run {
+                if(isReachedMaxSize){
+                    attributes = attributes.apply {
+                        isReachedMaxSize = false
+                        height = measuredHeight
+                    }
                 }
             }
         }

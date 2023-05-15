@@ -7,7 +7,7 @@
 
     <!-- ThrillLevel-->
     <string name="en_thrill_level_0">Family</string>
-    <string name="en_thrill_level_1">Moderately thrilling</string>
+    <string name="en_thrill_level_1">Medium thrilling</string>
     <string name="en_thrill_level_2">Highly thrilling</string>
     <string name="en_thrill_level_3">Extremely thrilling</string>
 
@@ -93,4 +93,37 @@
     <string name="vi_place_marina_stage">Sân khấu Marina</string>
     <string name="vi_place_merlion_lake">Hồ Merlion</string>
     <string name="vi_place_indo_restaurant">Nhà hàng Indo</string>
+    
+    <!-- Game -->
+    <string name="game_golden_sky_tower">Golden Sky Tower</string>
+    <string name="game_fairy_tea_house">Fairy Tea House</string>
+    <string name="game_singapore_sling">Singapore Sling</string>
+    <string name="game_highway_boat">Highway Boat</string>
+    <string name="game_queen_cobra">Queen Cobra</string>
+    <string name="game_port_of_sky_treasure">Port of Sky Treasure</string>
+    <string name="game_paradise_fall">Paradise Fall</string>
+    <string name="game_love_locks">Love Locks</string>
+    <string name="game_flying_kirins">The Flying Kirins</string>
+    <string name="game_journey_to_the_west">Journey to the West</string>
+    <string name="game_kabuki_trucks">Kabuki Trucks</string>
+    <string name="game_fireflies_forest">Fireflies Forest</string>
+    <string name="game_ninja_flyer">Ninja Flyer</string>
+    <string name="game_shanghai_1920">Shanghai 1920</string>
+    <string name="game_garuda_valley">Garuda Valley</string>
+    <string name="game_angry_motors">Angry Motors</string>
+    <string name="game_festival_carousel">Festival Carousel</string>
+    <string name="game_happy_choo_choo">Happy Choo Choo</string>
+    <string name="game_dino_island">Dino Island</string>
+    <string name="game_sun_wheel">Sun Wheel</string>
+
+
+    <!-- String -->
+    <string name="latitude">Latitude:</string>
+    <string name="longitude">Longitude:</string>
+    <string name="game">Game:</string>
+    <string name="services">Services</string>
+    <string name="no_game_selected">No game selected</string>
+    <string name="no_service_selected">No service selected</string>
+    <string name="place">Place:</string>
+    <string name="no_place_selected">No place selected</string>
 </resources>

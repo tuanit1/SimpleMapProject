@@ -26,17 +26,14 @@ class ItemDiffCallback<T : Any> : DiffUtil.ItemCallback<T>() {
             is OptionItem -> {
                 oldItem.areItemsTheSame(newItem as OptionItem)
             }
-
             else -> false
         }
     }
-
     override fun areContentsTheSame(oldItem: T, newItem: T): Boolean {
         return when (oldItem) {
             is OptionItem -> {
                 oldItem.areContentsTheSame(newItem as OptionItem)
             }
-
             else -> false
         }
     }

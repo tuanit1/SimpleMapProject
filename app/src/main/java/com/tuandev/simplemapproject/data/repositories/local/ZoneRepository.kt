@@ -7,31 +7,31 @@ import com.tuandev.simplemapproject.util.Constants
 
 class ZoneRepository(context: Context) {
 
-    private val language = Constants.LANGUAGE_VI
+    private val language = Constants.LANGUAGE_EN
     private val isEnglish = language == Constants.LANGUAGE_EN
 
     val zoneVietnam = Zone(
         id = 1,
         name = if (isEnglish) context.getString(R.string.en_zone_vn) else context.getString(
-            R.string.en_zone_vn
+            R.string.vi_zone_vn
         )
     )
     val zoneJapan = Zone(
         id = 2,
         name = if (isEnglish) context.getString(R.string.en_zone_jp) else context.getString(
-            R.string.en_zone_jp
+            R.string.vi_zone_jp
         )
     )
     val zoneKorea = Zone(
         id = 3,
         name = if (isEnglish) context.getString(R.string.en_zone_kr) else context.getString(
-            R.string.en_zone_kr
+            R.string.vi_zone_kr
         )
     )
     val zoneChina = Zone(
         id = 4,
         name = if (isEnglish) context.getString(R.string.en_zone_cn) else context.getString(
-            R.string.en_zone_cn
+            R.string.vi_zone_cn
         )
     )
     val zoneIndia = Zone(

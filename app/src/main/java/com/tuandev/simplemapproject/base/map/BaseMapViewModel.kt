@@ -10,6 +10,7 @@ import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.models.NeighborWithDistance
+import com.tuandev.simplemapproject.data.repositories.local.PlaceRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
@@ -33,7 +34,8 @@ sealed class BaseMapViewState : ViewState() {
 
 @HiltViewModel
 class BaseMapViewModel @Inject constructor(
-    private val fireStoreRepository: FireStoreRepository
+    private val fireStoreRepository: FireStoreRepository,
+    private val placeRepository: PlaceRepository
 ) : BaseViewModel<BaseMapViewState>() {
 
 
@@ -174,7 +176,6 @@ class BaseMapViewModel @Inject constructor(
     private fun QueryDocumentSnapshot.mapToNode(): Node {
         return Node(
             id = id,
-            title = data["title"].toString(),
             latitude = data["latitude"]?.toDoubleOrNull() ?: 0.0,
             longitude = data["longitude"]?.toDoubleOrNull() ?: 0.0
         )

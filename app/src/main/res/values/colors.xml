@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="guidePathColor">#05BFDB</color>
     <color name="redPastel">#ff6961</color>
+    <color name="normalTextColor">#6a6a6a</color>
+    <color name="blackTextColor">#2c2c2c</color>
 </resources>

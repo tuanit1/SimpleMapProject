@@ -53,7 +53,3 @@ fun FragmentActivity.openFragment(
 fun log(message: String?){
     Log.e(Constants.LOG_TAG, "$message")
 }
-
-fun Context.showToast(message: String?){
-    Toast.makeText(this, "$message", Toast.LENGTH_SHORT).show()
-}

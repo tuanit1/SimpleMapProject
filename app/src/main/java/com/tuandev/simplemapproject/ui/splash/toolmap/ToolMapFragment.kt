@@ -8,11 +8,13 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
 import com.tuandev.simplemapproject.data.models.OptionItem
+import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
-import com.tuandev.simplemapproject.util.AStarSearch
-import com.tuandev.simplemapproject.widget.markerselecteddialog.MapItemSelectedDialog
+import com.tuandev.simplemapproject.widget.EditNodeDialog
+import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
+import javax.inject.Inject
 
 class ToolMapFragment :
     BaseFragment<FragmentToolMapBinding, ToolMapViewModel, ToolMapViewState>(FragmentToolMapBinding::inflate) {
@@ -23,7 +25,6 @@ class ToolMapFragment :
     }
 
     private var mapFragment: BaseMapFragment? = null
-
     override val viewModel: ToolMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ToolMapViewState) -> Unit = { vs ->
         binding?.run {
@@ -130,18 +131,23 @@ class ToolMapFragment :
             }
 
             onMarkerClick = { marker ->
-                MapItemSelectedDialog(
-                    listOf(OptionItem(OptionItem.KEY_REMOVE_MAP_ITEM, "Remove NODE"))
+                OptionItemDialog(
+                    optionList = listOf(
+                        OptionItem(OptionItem.KEY_EDIT_MAP_ITEM, "Edit NODE"),
+                        OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove NODE")
+                    ),
+                    title = "Node #${marker.tag}"
                 ).apply {
                     onItemClick = {
                         markerItemClickListener(it, marker)
                     }
-                }.show(childFragmentManager, null)
+                }.show(this@ToolMapFragment.childFragmentManager, null)
             }
 
             onPolylineClick = { polyline ->
-                MapItemSelectedDialog(
-                    listOf(OptionItem(OptionItem.KEY_REMOVE_MAP_ITEM, "Remove LINE"))
+                OptionItemDialog(
+                    optionList = listOf(OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove LINE")),
+                    title = "Line #${polyline.tag}"
                 ).apply {
                     onItemClick = {
                         lineItemClickListener(it, polyline)
@@ -155,9 +161,16 @@ class ToolMapFragment :
 
     private val markerItemClickListener: (String, Marker) -> Unit = { key, marker ->
         when (key) {
-            OptionItem.KEY_REMOVE_MAP_ITEM -> {
+            OptionItem.KEY_DELETE_MAP_ITEM -> {
                 marker.tag.toString().let { nodeId ->
                     mapFragment?.removeNode(nodeId)
+                }
+            }
+            OptionItem.KEY_EDIT_MAP_ITEM -> {
+                marker.tag.toString().let { nodeId ->
+                    mapFragment?.getNodeById(nodeId)?.let { node ->
+                        EditNodeDialog(node).show(this@ToolMapFragment.childFragmentManager, null)
+                    }
                 }
             }
         }
@@ -165,7 +178,7 @@ class ToolMapFragment :
 
     private val lineItemClickListener: (String, Polyline) -> Unit = { key, polyline ->
         when (key) {
-            OptionItem.KEY_REMOVE_MAP_ITEM -> {
+            OptionItem.KEY_DELETE_MAP_ITEM -> {
                 polyline.tag.toString().let { lineId ->
                     mapFragment?.removeLine(lineId)
                 }

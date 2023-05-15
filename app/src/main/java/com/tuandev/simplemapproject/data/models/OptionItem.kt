@@ -5,7 +5,8 @@ data class OptionItem(
     val title: String
 ) {
     companion object {
-        const val KEY_REMOVE_MAP_ITEM = "key_remove_map_item"
+        const val KEY_DELETE_MAP_ITEM = "key_delete_map_item"
+        const val KEY_EDIT_MAP_ITEM = "key_edit_map_item"
     }
 
     fun areContentsTheSame(item: OptionItem) = this == item

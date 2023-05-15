@@ -14,13 +14,47 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="contentTextStyle16">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@color/black</item>
+
+    <style name="contentTextStyleSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/normalTextColor</item>
     </style>
-    <style name="titleTextStyle">
+    <style name="contentTextStyleMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/normalTextColor</item>
+    </style>
+    <style name="contentTextStyleLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/normalTextColor</item>
+    </style>
+
+    <style name="contentBlackTextStyleSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/blackTextColor</item>
+    </style>
+    <style name="contentBlackTextStyleMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/blackTextColor</item>
+    </style>
+    <style name="contentBlackTextStyleLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/blackTextColor</item>
+    </style>
+
+
+    <style name="titleTextStyleSmall">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/blackTextColor</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="titleTextStyleMedium">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/blackTextColor</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="titleTextStyleLarge">
         <item name="android:textSize">18sp</item>
-        <item name="android:textColor">@color/black</item>
+        <item name="android:textColor">@color/blackTextColor</item>
         <item name="android:textStyle">bold</item>
     </style>
 </resources>

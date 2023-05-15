@@ -3,6 +3,7 @@ package com.tuandev.simplemapproject.base.map
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -266,7 +267,7 @@ class BaseMapFragment :
                 .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
                 .add(node1.position, node2.position)
                 .clickable(true)
-                .width(12f)
+                .width(10f)
         )?.apply {
             tag = id
         }
@@ -305,8 +306,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node,
-                height = 70,
-                width = 70
+                height = 50,
+                width = 50
             )
         )
 
@@ -324,8 +325,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node_selected,
-                height = 120,
-                width = 120
+                height = 80,
+                width = 80
             )
         )
 
@@ -447,6 +448,7 @@ class BaseMapFragment :
         }
     }
 
+    fun getNodeById(nodeId: String) = viewModel.getNodeById(nodeId)
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
 
