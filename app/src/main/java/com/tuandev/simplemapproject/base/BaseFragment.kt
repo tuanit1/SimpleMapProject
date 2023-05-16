@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.tuandev.simplemapproject.activity.MainActivity
 import com.tuandev.simplemapproject.widget.CommonProgressDialog
+import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
 
 typealias Inflate<T> = (LayoutInflater, ViewGroup?, Boolean) -> T
 
@@ -43,13 +44,19 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
     }
 
     private fun listenLiveData() {
-        viewModel.loadingProgress.observe(viewLifecycleOwner) { isShow ->
-            if (isShow) {
-                if (!commonProgressBar.isShowing) {
-                    commonProgressBar.show()
+        viewModel.run {
+            loadingProgress.observe(viewLifecycleOwner) { isShow ->
+                if (isShow) {
+                    if (!commonProgressBar.isShowing) {
+                        commonProgressBar.show()
+                    }
+                } else {
+                    commonProgressBar.dismiss()
                 }
-            } else {
-                commonProgressBar.dismiss()
+            }
+
+            showPopup = {
+                OptionItemDialog(listOf(), "Loi chet con di me may!").show(childFragmentManager, null)
             }
         }
     }

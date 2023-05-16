@@ -8,13 +8,11 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
 import com.tuandev.simplemapproject.data.models.OptionItem
-import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.widget.EditNodeDialog
 import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
-import javax.inject.Inject
 
 class ToolMapFragment :
     BaseFragment<FragmentToolMapBinding, ToolMapViewModel, ToolMapViewState>(FragmentToolMapBinding::inflate) {
@@ -169,7 +167,14 @@ class ToolMapFragment :
             OptionItem.KEY_EDIT_MAP_ITEM -> {
                 marker.tag.toString().let { nodeId ->
                     mapFragment?.getNodeById(nodeId)?.let { node ->
-                        EditNodeDialog(node).show(this@ToolMapFragment.childFragmentManager, null)
+                        EditNodeDialog(node).apply {
+                            onNodeUpdate = { updatedNode ->
+                                mapFragment?.updateNodePlace(
+                                    nodeId = updatedNode.id ?: "",
+                                    placeId = updatedNode.placeId
+                                )
+                            }
+                        }.show(this@ToolMapFragment.childFragmentManager, null)
                     }
                 }
             }

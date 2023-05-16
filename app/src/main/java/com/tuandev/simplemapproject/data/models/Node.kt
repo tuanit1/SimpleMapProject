@@ -13,6 +13,7 @@ data class Node(
     fun convertToHashMap() = hashMapOf(
         "latitude" to latitude,
         "longitude" to longitude,
+        "placeId" to placeId
     )
 
     fun removeMarker() {

@@ -3,7 +3,6 @@ package com.tuandev.simplemapproject.base.map
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -260,7 +259,6 @@ class BaseMapFragment :
     private fun drawBorderMarker(latLng: LatLng, nodeId: String? = null) =
         drawMarker(latLng, nodeId, getBorderImage())
 
-
     private fun drawLine(node1: Marker, node2: Marker, id: String? = null): Polyline? =
         mMap?.addPolyline(
             PolylineOptions()
@@ -451,5 +449,6 @@ class BaseMapFragment :
     fun getNodeById(nodeId: String) = viewModel.getNodeById(nodeId)
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
+    fun updateNodePlace(nodeId: String, placeId: Int?) = viewModel.updateNodePlace(nodeId, placeId)
 
 }

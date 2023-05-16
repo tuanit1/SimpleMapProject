@@ -17,10 +17,18 @@ fun Any.toDoubleOrNull(): Double? {
     }
 }
 
+fun Any.toIntToNull(): Int? {
+    return try {
+        this.toString().toInt()
+    } catch (e: Exception) {
+        null
+    }
+}
+
 fun Float.toRoundedFloat(roundNumber: Int): Float {
     return try {
         String.format("%.${roundNumber}f", this).toFloat()
-    } catch (e: Exception){
+    } catch (e: Exception) {
         this
     }
 }

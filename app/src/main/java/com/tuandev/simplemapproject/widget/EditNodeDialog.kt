@@ -49,8 +49,6 @@ data class EditNodeDialog(
                         onItemClick = {
                             node.placeId = if (it.toInt() != -1) it.toInt() else null
                             onNodeUpdate(node)
-                            // if node.placeId == null -> delete placeId to firebase
-                            // else ->  update new id to firebase
                             updatePlaceViewState()
                         }
                     }.show(childFragmentManager, null)

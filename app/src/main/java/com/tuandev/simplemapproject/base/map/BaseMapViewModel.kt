@@ -14,6 +14,7 @@ import com.tuandev.simplemapproject.data.repositories.local.PlaceRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
+import com.tuandev.simplemapproject.extension.toIntToNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -130,6 +131,15 @@ class BaseMapViewModel @Inject constructor(
         )
     }
 
+    fun updateNodePlace(nodeId: String, placeId: Int?) {
+        fetchFromFireStore(
+            task = fireStoreRepository.updateNodePlace(nodeId, placeId),
+            onSuccess = {
+
+            }
+        )
+    }
+
     fun checkIfLineNotExist(firstNodeId: String?, secondNodeId: String?): Boolean =
         listLine.none {
             (it.firstNodeId == firstNodeId && it.secondNodeId == secondNodeId) ||
@@ -177,7 +187,8 @@ class BaseMapViewModel @Inject constructor(
         return Node(
             id = id,
             latitude = data["latitude"]?.toDoubleOrNull() ?: 0.0,
-            longitude = data["longitude"]?.toDoubleOrNull() ?: 0.0
+            longitude = data["longitude"]?.toDoubleOrNull() ?: 0.0,
+            placeId = data["placeId"]?.toIntToNull()
         )
     }
 

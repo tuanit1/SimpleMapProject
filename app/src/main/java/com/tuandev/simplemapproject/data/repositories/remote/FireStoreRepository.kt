@@ -31,4 +31,8 @@ class FireStoreRepository {
     fun getAllNodes() = db.collection(nodeCollection).get()
 
     fun getAllLines() = db.collection(lineCollection).get()
+
+    fun updateNodePlace(nodeId: String, placeId: Int?) =
+        db.collection(nodeCollection).document(nodeId)
+            .update("placeId", placeId)
 }
