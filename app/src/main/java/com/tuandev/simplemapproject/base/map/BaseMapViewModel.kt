@@ -8,9 +8,9 @@ import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.Line
-import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.models.NeighborWithDistance
-import com.tuandev.simplemapproject.data.repositories.local.PlaceRepository
+import com.tuandev.simplemapproject.data.models.Node
+import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
@@ -31,12 +31,14 @@ sealed class BaseMapViewState : ViewState() {
 
     class ToggleLine(val isVisible: Boolean) : BaseMapViewState()
 
+    class NodePlaceUpdateSuccess(val marker: Marker?, val nodeId: String) : BaseMapViewState()
+
 }
 
 @HiltViewModel
 class BaseMapViewModel @Inject constructor(
     private val fireStoreRepository: FireStoreRepository,
-    private val placeRepository: PlaceRepository
+    private val localRepository: LocalRepository,
 ) : BaseViewModel<BaseMapViewState>() {
 
 
@@ -131,13 +133,27 @@ class BaseMapViewModel @Inject constructor(
         )
     }
 
-    fun updateNodePlace(nodeId: String, placeId: Int?) {
-        fetchFromFireStore(
-            task = fireStoreRepository.updateNodePlace(nodeId, placeId),
-            onSuccess = {
+    fun updateNodePlace(nodeId: String, placeId: Int?, onUpdateSuccess: () -> Unit) {
+        val placeExisted = listNode.mapNotNull { node -> node.placeId }
+            .any { pId -> pId == placeId }
 
-            }
-        )
+        if (!placeExisted) {
+            fetchFromFireStore(
+                task = fireStoreRepository.updateNodePlace(nodeId, placeId),
+                onSuccess = {
+                    getNodeById(nodeId)?.placeId = placeId
+                    updateViewState(
+                        BaseMapViewState.NodePlaceUpdateSuccess(
+                            marker = getNodeById(nodeId)?.marker,
+                            nodeId = nodeId
+                        )
+                    )
+                    onUpdateSuccess()
+                }
+            )
+        } else {
+            showErrorPopup("This place has been assigned to a node")
+        }
     }
 
     fun checkIfLineNotExist(firstNodeId: String?, secondNodeId: String?): Boolean =
@@ -173,8 +189,14 @@ class BaseMapViewModel @Inject constructor(
         forEach { node ->
             node.neighbors = listLine.mapNotNull { line ->
                 when {
-                    line.firstNodeId == node.id -> NeighborWithDistance(line.secondNodeId, line.distance)
-                    line.secondNodeId == node.id -> NeighborWithDistance(line.firstNodeId, line.distance)
+                    line.firstNodeId == node.id -> NeighborWithDistance(
+                        line.secondNodeId,
+                        line.distance
+                    )
+                    line.secondNodeId == node.id -> NeighborWithDistance(
+                        line.firstNodeId,
+                        line.distance
+                    )
                     else -> null
                 }
             }
@@ -200,6 +222,8 @@ class BaseMapViewModel @Inject constructor(
             distance = data["distance"]?.toFloatOrNull()
         )
     }
+
+    fun getPlaceById(id: Int?) = localRepository.listPlace.find { it.id == id }
 
     fun updateLineViewState(isVisible: Boolean) {
         updateViewState(BaseMapViewState.ToggleLine(isVisible))

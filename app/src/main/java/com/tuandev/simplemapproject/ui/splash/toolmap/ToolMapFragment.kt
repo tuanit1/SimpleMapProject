@@ -11,7 +11,6 @@ import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
-import com.tuandev.simplemapproject.widget.EditNodeDialog
 import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
 
 class ToolMapFragment :
@@ -131,8 +130,8 @@ class ToolMapFragment :
             onMarkerClick = { marker ->
                 OptionItemDialog(
                     optionList = listOf(
-                        OptionItem(OptionItem.KEY_EDIT_MAP_ITEM, "Edit NODE"),
-                        OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove NODE")
+                        OptionItem(OptionItem.KEY_EDIT_MAP_ITEM, "Edit"),
+                        OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove")
                     ),
                     title = "Node #${marker.tag}"
                 ).apply {
@@ -144,7 +143,7 @@ class ToolMapFragment :
 
             onPolylineClick = { polyline ->
                 OptionItemDialog(
-                    optionList = listOf(OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove LINE")),
+                    optionList = listOf(OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove")),
                     title = "Line #${polyline.tag}"
                 ).apply {
                     onItemClick = {
@@ -166,16 +165,7 @@ class ToolMapFragment :
             }
             OptionItem.KEY_EDIT_MAP_ITEM -> {
                 marker.tag.toString().let { nodeId ->
-                    mapFragment?.getNodeById(nodeId)?.let { node ->
-                        EditNodeDialog(node).apply {
-                            onNodeUpdate = { updatedNode ->
-                                mapFragment?.updateNodePlace(
-                                    nodeId = updatedNode.id ?: "",
-                                    placeId = updatedNode.placeId
-                                )
-                            }
-                        }.show(this@ToolMapFragment.childFragmentManager, null)
-                    }
+                    mapFragment?.handleUpdateNode(nodeId)
                 }
             }
         }

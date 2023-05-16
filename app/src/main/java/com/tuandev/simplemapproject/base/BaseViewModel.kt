@@ -7,7 +7,7 @@ import com.google.android.gms.tasks.Task
 abstract class BaseViewModel<VS : ViewState> : ViewModel() {
     val viewState: MutableLiveData<VS> by lazy { MutableLiveData<VS>() }
     var loadingProgress: MutableLiveData<Boolean> = MutableLiveData()
-    var showPopup: (errorMessage: String) -> Unit = {}
+    var showErrorPopup: (errorMessage: String) -> Unit = {}
     protected fun updateViewState(vs: VS) = viewState.postValue(vs)
 
     protected fun <T> fetchFromFireStore(
@@ -24,10 +24,10 @@ abstract class BaseViewModel<VS : ViewState> : ViewModel() {
             addOnSuccessListener { result ->
                 onSuccess(result)
                 loadingProgress.value = false
-                showPopup("Su")
             }
             addOnFailureListener {
                 onError()
+                showErrorPopup(it.message.toString())
                 loadingProgress.value = false
             }
         }

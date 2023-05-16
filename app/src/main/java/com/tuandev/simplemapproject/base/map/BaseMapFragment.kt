@@ -9,25 +9,19 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.Dot
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolygonOptions
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
-import com.tuandev.simplemapproject.extension.*
+import com.tuandev.simplemapproject.extension.log
+import com.tuandev.simplemapproject.extension.openFragment
+import com.tuandev.simplemapproject.extension.showToast
+import com.tuandev.simplemapproject.extension.toRoundedFloat
 import com.tuandev.simplemapproject.util.AStarSearch
 import com.tuandev.simplemapproject.util.Constants
+import com.tuandev.simplemapproject.widget.EditNodeDialog
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -85,6 +79,27 @@ class BaseMapFragment :
                     removeLinesFromMap()
                 }
             }
+
+            is BaseMapViewState.NodePlaceUpdateSuccess -> {
+                updateMarkerIcon(viewState.marker, viewState.nodeId)
+            }
+        }
+    }
+
+    private fun updateMarkerIcon(marker: Marker?, nodeId: String) {
+        viewModel.run {
+            getPlaceById(getNodeById(nodeId)?.placeId).let { place ->
+                val image = if (place != null) {
+                    if (place.game != null) {
+                        getGameImage()
+                    } else {
+                        getPlaceImage()
+                    }
+                } else {
+                    getNodeImage()
+                }
+                marker?.setIcon(image)
+            }
         }
     }
 
@@ -107,7 +122,9 @@ class BaseMapFragment :
         viewModel.currentTouchEvent.observe(viewLifecycleOwner) { event ->
             when (event) {
                 TouchEvent.OFF -> {
-                    lastSelectedMarker?.setIcon((getNodeImage()))
+                    lastSelectedMarker?.let {
+                        updateMarkerIcon(it, it.tag.toString())
+                    }
                     currentGuildPath?.remove()
                     viewModel.updateLineViewState(isVisible = true)
                 }
@@ -124,7 +141,7 @@ class BaseMapFragment :
                 .mapType(GoogleMap.MAP_TYPE_NORMAL)
                 .rotateGesturesEnabled(false)
                 .compassEnabled(false)
-                .minZoomPreference(16f)
+                .minZoomPreference(17f)
         )
 
         supportMapFragment?.let { fragment ->
@@ -253,11 +270,21 @@ class BaseMapFragment :
             tag = nodeId
         }
 
-    private fun drawNodeMarker(latLng: LatLng, nodeId: String? = null) =
-        drawMarker(latLng, nodeId, getNodeImage())
+    private fun drawNodeMarker(latLng: LatLng, nodeId: String? = null): Marker? {
+        val node = viewModel.getNodeById(nodeId)
+        val place = viewModel.getPlaceById(node?.placeId)
+        val nodeImage = if (place != null) {
+            if (place.game != null) {
+                getGameImage()
+            } else {
+                getPlaceImage()
+            }
+        } else {
+            getNodeImage()
+        }
+        return drawMarker(latLng, nodeId, nodeImage)
+    }
 
-    private fun drawBorderMarker(latLng: LatLng, nodeId: String? = null) =
-        drawMarker(latLng, nodeId, getBorderImage())
 
     private fun drawLine(node1: Marker, node2: Marker, id: String? = null): Polyline? =
         mMap?.addPolyline(
@@ -304,27 +331,35 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node,
-                height = 50,
-                width = 50
+                height = 80,
+                width = 80
             )
         )
 
-    private fun getBorderImage() =
+    private fun getPlaceImage() =
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
-                resId = R.drawable.ic_cross_cancel,
-                height = 70,
-                width = 70
+                resId = R.drawable.ic_place_node,
+                height = 90,
+                width = 90
             )
         )
 
+    private fun getGameImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_game_node,
+                height = 90,
+                width = 90
+            )
+        )
 
     private fun getSelectedNodeImage() =
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node_selected,
-                height = 80,
-                width = 80
+                height = 100,
+                width = 100
             )
         )
 
@@ -374,7 +409,6 @@ class BaseMapFragment :
                 lastMarker.setIcon((getNodeImage()))
                 setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
             }
-
         }
     }
 
@@ -393,14 +427,10 @@ class BaseMapFragment :
 
             if (lastSelectedMarker != marker && start != null && goal != null) {
                 aStarSearch?.findBestPath(start, goal)
-
-                lastMarker.setIcon((getNodeImage()))
-                setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
-            } else {
-                lastMarker.setIcon((getNodeImage()))
-                setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
             }
 
+            updateMarkerIcon(lastMarker, lastMarker.tag.toString())
+            setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
         }
     }
 
@@ -446,9 +476,21 @@ class BaseMapFragment :
         }
     }
 
-    fun getNodeById(nodeId: String) = viewModel.getNodeById(nodeId)
+    fun handleUpdateNode(nodeId: String) {
+        getNodeById(nodeId)?.let { node ->
+            EditNodeDialog(node, viewModel.listNode).apply {
+                onNodeUpdate = { placeId, onUpdateSuccess ->
+                    viewModel.updateNodePlace(
+                        nodeId = nodeId,
+                        placeId = placeId,
+                        onUpdateSuccess
+                    )
+                }
+            }.show(childFragmentManager, null)
+        }
+    }
+
+    private fun getNodeById(nodeId: String) = viewModel.getNodeById(nodeId)
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
-    fun updateNodePlace(nodeId: String, placeId: Int?) = viewModel.updateNodePlace(nodeId, placeId)
-
 }
