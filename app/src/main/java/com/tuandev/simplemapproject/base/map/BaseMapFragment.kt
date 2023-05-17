@@ -486,6 +486,16 @@ class BaseMapFragment :
                         onUpdateSuccess
                     )
                 }
+                onTakePhoto = { placeId ->
+                    parentActivity?.handleTakePhoto { image ->
+                        viewModel.uploadPlaceImage(image, placeId)
+                    }
+                }
+                onFromGallery = { placeId ->
+                    parentActivity?.handleGetPhotoFromGallery { image ->
+                        viewModel.uploadPlaceImage(image, placeId)
+                    }
+                }
             }.show(childFragmentManager, null)
         }
     }

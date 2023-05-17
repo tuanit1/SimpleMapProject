@@ -21,6 +21,8 @@ data class EditNodeDialog(
     @Inject
     lateinit var localRepository: LocalRepository
     var onNodeUpdate: (Int?, () -> Unit) -> Unit = { _, _ -> }
+    var onTakePhoto: (Int) -> Unit = {}
+    var onFromGallery: (Int) -> Unit = {}
 
     override fun initView() {
         binding?.run {
@@ -30,16 +32,18 @@ data class EditNodeDialog(
                 }
             }
             updatePlaceViewState()
+
+            node.run {
+                tvTitle.text = "Node #${id}"
+                tvLat.text = latitude.toString()
+                tvLon.text = longitude.toString()
+            }
         }
     }
 
     override fun initListener() {
         binding?.run {
             node.run {
-                tvTitle.text = "Node #${id}"
-                tvLat.text = latitude.toString()
-                tvLon.text = longitude.toString()
-
                 tvPlace.setOnClickListener {
                     OptionItemDialog(
                         title = "Select a place",
@@ -55,6 +59,18 @@ data class EditNodeDialog(
                     }.show(childFragmentManager, null)
                 }
             }
+
+            tvTakePhoto.setOnClickListener {
+                node.placeId?.let {
+                    onTakePhoto(it)
+                }
+
+            }
+            tvFromGallery.setOnClickListener {
+                node.placeId?.let {
+                    onFromGallery(it)
+                }
+            }
         }
     }
 
@@ -68,13 +84,13 @@ data class EditNodeDialog(
         }
     }.toMutableList().apply { add(0, OptionItem("-1", "No item")) }
 
-//    private fun getNodeById(id: String) = listNode.find { it.id == id }
-
     private fun findPlaceById(id: Int?) = localRepository.listPlace.find { it.id == id }
 
     private fun updatePlaceViewState() {
         binding?.run {
             tvZone.showIf(node.placeId != null)
+            tvImage.showIf(node.placeId != null)
+            llImage.showIf(node.placeId != null)
             if (node.placeId != null) {
                 val place = findPlaceById(node.placeId)
                 tvPlace.text = if (place?.game != null) "${place.game.name} (Game)" else place?.name

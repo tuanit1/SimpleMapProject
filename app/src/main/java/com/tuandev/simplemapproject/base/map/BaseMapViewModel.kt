@@ -56,7 +56,7 @@ class BaseMapViewModel @Inject constructor(
             )
         }
 
-        fetchFromFireStore(
+        callApiFromFireStore(
             task = fireStoreRepository.addLine(newLine),
             onSuccess = {
                 val lineId = it.id
@@ -78,7 +78,7 @@ class BaseMapViewModel @Inject constructor(
             )
         }
 
-        fetchFromFireStore(
+        callApiFromFireStore(
             task = fireStoreRepository.addNode(newNode),
             onSuccess = {
                 val nodeId = it.id
@@ -91,7 +91,7 @@ class BaseMapViewModel @Inject constructor(
     }
 
     fun removeNode(nodeId: String) {
-        fetchFromFireStore(
+        callApiFromFireStore(
             task = fireStoreRepository.deleteNode(nodeId),
             onSuccess = {
                 listNode.find { it.id == nodeId }?.let { node ->
@@ -99,7 +99,7 @@ class BaseMapViewModel @Inject constructor(
                         listLine.filter { line -> line.firstNodeId == node.id || line.secondNodeId == node.id }
 
                     if (deleteLines.isNotEmpty()) {
-                        fetchFromFireStore(
+                        callApiFromFireStore(
                             task = fireStoreRepository.deleteLines(deleteLines.map { it.id ?: "" }),
                             onSuccess = {
                                 deleteLines.forEach {
@@ -121,7 +121,7 @@ class BaseMapViewModel @Inject constructor(
     }
 
     fun removeLine(lineId: String) {
-        fetchFromFireStore(
+        callApiFromFireStore(
             task = fireStoreRepository.deleteLine(lineId),
             onSuccess = {
                 listLine.find { it.id == lineId }?.let { line ->
@@ -138,7 +138,7 @@ class BaseMapViewModel @Inject constructor(
             .any { pId -> pId == placeId }
 
         if (!placeExisted) {
-            fetchFromFireStore(
+            callApiFromFireStore(
                 task = fireStoreRepository.updateNodePlace(nodeId, placeId),
                 onSuccess = {
                     getNodeById(nodeId)?.placeId = placeId
@@ -163,14 +163,14 @@ class BaseMapViewModel @Inject constructor(
         }
 
     fun getAllNodesAndLines() {
-        fetchFromFireStore(
+        callApiFromFireStore(
             task = fireStoreRepository.getAllNodes(),
             onSuccess = { nodeResult ->
                 listNode.clear()
                 listNode.addAll(nodeResult.map { it.mapToNode() })
                 updateViewState(BaseMapViewState.GetNodesSuccess)
 
-                fetchFromFireStore(
+                callApiFromFireStore(
                     task = fireStoreRepository.getAllLines(),
                     onSuccess = { lineResult ->
                         viewModelScope.launch(Dispatchers.IO) {
@@ -227,5 +227,14 @@ class BaseMapViewModel @Inject constructor(
 
     fun updateLineViewState(isVisible: Boolean) {
         updateViewState(BaseMapViewState.ToggleLine(isVisible))
+    }
+
+    fun uploadPlaceImage(image: ByteArray, placeId: Int) {
+        uploadImage(image) { imageUrl ->
+            callApiFromFireStore(
+                task = fireStoreRepository.updatePlaceImage(imageUrl, placeId),
+                onSuccess = {}
+            )
+        }
     }
 }

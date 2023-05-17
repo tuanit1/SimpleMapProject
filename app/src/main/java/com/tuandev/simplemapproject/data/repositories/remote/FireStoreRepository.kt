@@ -10,6 +10,7 @@ class FireStoreRepository {
     companion object {
         const val nodeCollection = "Nodes"
         const val lineCollection = "Lines"
+        const val placeImageCollection = "PlaceImage"
     }
 
     private val db = Firebase.firestore
@@ -35,4 +36,11 @@ class FireStoreRepository {
     fun updateNodePlace(nodeId: String, placeId: Int?) =
         db.collection(nodeCollection).document(nodeId)
             .update("placeId", placeId)
+
+    fun updatePlaceImage(imageUrl: String, placeId: Int) = db.collection(placeImageCollection).add(
+        hashMapOf<String, Any>(
+            "placeId" to placeId,
+            "imageUrl" to imageUrl
+        )
+    )
 }
