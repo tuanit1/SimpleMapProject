@@ -1,5 +1,6 @@
 package com.tuandev.simplemapproject.data.repositories.remote
 
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tuandev.simplemapproject.data.models.Line
@@ -37,10 +38,27 @@ class FireStoreRepository {
         db.collection(nodeCollection).document(nodeId)
             .update("placeId", placeId)
 
-    fun updatePlaceImage(imageUrl: String, placeId: Int) = db.collection(placeImageCollection).add(
-        hashMapOf<String, Any>(
-            "placeId" to placeId,
-            "imageUrl" to imageUrl
+    fun updatePlaceImage(imageName: String, imageUrl: String, placeId: Int) =
+        db.collection(placeImageCollection).add(
+            hashMapOf<String, Any>(
+                "placeId" to placeId,
+                "imageName" to imageName,
+                "imageUrl" to imageUrl
+            )
         )
-    )
+
+    fun getPlaceImageByFilter(imageName: String, placeId: Int) = db.collection(placeImageCollection)
+        .whereEqualTo("imageName", imageName)
+        .whereEqualTo("placeId", placeId)
+        .get()
+
+    fun getPlaceImageList(placeId: Int) = db.collection(placeImageCollection)
+        .whereEqualTo("placeId", placeId)
+        .get()
+
+    fun deleteRefs(refs: List<DocumentReference>) = db.runTransaction { transition ->
+        refs.forEach {
+            transition.delete(it)
+        }
+    }
 }

@@ -22,7 +22,9 @@ data class EditNodeDialog(
     lateinit var localRepository: LocalRepository
     var onNodeUpdate: (Int?, () -> Unit) -> Unit = { _, _ -> }
     var onTakePhoto: (Int) -> Unit = {}
+    var onOpenImageList: () -> Unit = {}
     var onFromGallery: (Int) -> Unit = {}
+//    var onDeleteImageListener: (String, Int, () -> Unit) -> Unit = { _, _, _ -> }
 
     override fun initView() {
         binding?.run {
@@ -60,12 +62,16 @@ data class EditNodeDialog(
                 }
             }
 
+            tvViewImages.setOnClickListener {
+                onOpenImageList()
+            }
+
             tvTakePhoto.setOnClickListener {
                 node.placeId?.let {
                     onTakePhoto(it)
                 }
-
             }
+
             tvFromGallery.setOnClickListener {
                 node.placeId?.let {
                     onFromGallery(it)

@@ -15,7 +15,7 @@
     <string name="vi_thrill_level_1">Cảm giác trung bình</string>
     <string name="vi_thrill_level_2">Cảm giác mạnh</string>
     <string name="vi_thrill_level_3">Cảm giác cực mạnh</string>
-    
+
     <!-- PlaceService-->
     <string name="en_place_service_medical">Medical help</string>
     <string name="en_place_service_food">Food &amp; drink</string>
@@ -93,7 +93,7 @@
     <string name="vi_place_marina_stage">Sân khấu Marina</string>
     <string name="vi_place_merlion_lake">Hồ Merlion</string>
     <string name="vi_place_indo_restaurant">Nhà hàng Indo</string>
-    
+
     <!-- Game -->
     <string name="game_golden_sky_tower">Golden Sky Tower</string>
     <string name="game_fairy_tea_house">Fairy Tea House</string>

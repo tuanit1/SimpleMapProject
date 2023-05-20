@@ -212,7 +212,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="View 16 images" />
+                android:text="View images" />
 
             <View
                 android:layout_width="0.5dp"

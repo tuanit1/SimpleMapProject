@@ -21,7 +21,9 @@ import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.extension.toRoundedFloat
 import com.tuandev.simplemapproject.util.AStarSearch
 import com.tuandev.simplemapproject.util.Constants
+import com.tuandev.simplemapproject.util.Event
 import com.tuandev.simplemapproject.widget.EditNodeDialog
+import com.tuandev.simplemapproject.widget.imagelistdialog.ImageListDialog
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -331,8 +333,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node,
-                height = 80,
-                width = 80
+                height = 60,
+                width = 60
             )
         )
 
@@ -340,8 +342,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_place_node,
-                height = 90,
-                width = 90
+                height = 70,
+                width = 70
             )
         )
 
@@ -349,8 +351,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_game_node,
-                height = 90,
-                width = 90
+                height = 70,
+                width = 70
             )
         )
 
@@ -358,8 +360,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_node_selected,
-                height = 100,
-                width = 100
+                height = 70,
+                width = 70
             )
         )
 
@@ -494,6 +496,21 @@ class BaseMapFragment :
                 onFromGallery = { placeId ->
                     parentActivity?.handleGetPhotoFromGallery { image ->
                         viewModel.uploadPlaceImage(image, placeId)
+                    }
+                }
+                onOpenImageList = {
+                    node.placeId?.let { placeId ->
+                        viewModel.getPlaceImages(placeId) { imageList ->
+                            if (imageList.isNotEmpty()) {
+                                ImageListDialog(imageList.toMutableList()).apply {
+                                    Event.onDeleteImageListener = { imagePath, onSuccess ->
+                                        viewModel.deletePlaceImage(imagePath, placeId, onSuccess)
+                                    }
+                                }.show(childFragmentManager, null)
+                            } else {
+                                context?.showToast("No image found")
+                            }
+                        }
                     }
                 }
             }.show(childFragmentManager, null)

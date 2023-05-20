@@ -17,7 +17,7 @@ fun Any.toDoubleOrNull(): Double? {
     }
 }
 
-fun Any.toIntToNull(): Int? {
+fun Any.toIntOrNull(): Int? {
     return try {
         this.toString().toInt()
     } catch (e: Exception) {

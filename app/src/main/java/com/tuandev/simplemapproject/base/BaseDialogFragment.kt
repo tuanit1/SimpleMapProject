@@ -4,21 +4,14 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
-import androidx.core.view.ContentInfoCompat.Flags
+import android.view.*
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.tuandev.simplemapproject.extension.getHeightScreen
 import com.tuandev.simplemapproject.extension.getWidthScreen
-import com.tuandev.simplemapproject.extension.log
 
 abstract class BaseDialogFragment<VB : ViewBinding>(
-    private val inflate: Inflate<VB>
+    private val inflate: Inflate<VB>,
 ): DialogFragment() {
 
     private var _binding: VB? = null
@@ -42,10 +35,10 @@ abstract class BaseDialogFragment<VB : ViewBinding>(
     override fun onStart() {
         super.onStart()
 
-        context?.getWidthScreen()?.let { screenWidth ->
+        context?.run {
             dialog?.window?.run {
                 attributes = attributes.apply {
-                    width = (screenWidth * WIDTH_RATIO).toInt()
+                    width = (getWidthScreen() * WIDTH_RATIO).toInt()
                 }
             }
         }

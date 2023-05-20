@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
+import com.tuandev.simplemapproject.data.models.ImageData
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.NeighborWithDistance
 import com.tuandev.simplemapproject.data.models.Node
@@ -14,7 +15,7 @@ import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import com.tuandev.simplemapproject.extension.toDoubleOrNull
 import com.tuandev.simplemapproject.extension.toFloatOrNull
-import com.tuandev.simplemapproject.extension.toIntToNull
+import com.tuandev.simplemapproject.extension.toIntOrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -179,9 +180,10 @@ class BaseMapViewModel @Inject constructor(
                             listNode.updateNeighbors()
                             updateViewState(BaseMapViewState.GetLinesSuccess)
                         }
-                    }
+                    },
+                    isShowLoading = true
                 )
-            }
+            }, isShowLoading = true
         )
     }
 
@@ -210,7 +212,7 @@ class BaseMapViewModel @Inject constructor(
             id = id,
             latitude = data["latitude"]?.toDoubleOrNull() ?: 0.0,
             longitude = data["longitude"]?.toDoubleOrNull() ?: 0.0,
-            placeId = data["placeId"]?.toIntToNull()
+            placeId = data["placeId"]?.toIntOrNull()
         )
     }
 
@@ -223,6 +225,14 @@ class BaseMapViewModel @Inject constructor(
         )
     }
 
+    private fun QueryDocumentSnapshot.mapToImageData(): ImageData {
+        return ImageData(
+            name = data["imageName"].toString(),
+            url = data["imageUrl"].toString(),
+            placeId = data["placeId"]?.toIntOrNull()
+        )
+    }
+
     fun getPlaceById(id: Int?) = localRepository.listPlace.find { it.id == id }
 
     fun updateLineViewState(isVisible: Boolean) {
@@ -230,11 +240,39 @@ class BaseMapViewModel @Inject constructor(
     }
 
     fun uploadPlaceImage(image: ByteArray, placeId: Int) {
-        uploadImage(image) { imageUrl ->
+        uploadImage(image) { imageName, imageUrl ->
             callApiFromFireStore(
-                task = fireStoreRepository.updatePlaceImage(imageUrl, placeId),
+                task = fireStoreRepository.updatePlaceImage(imageName, imageUrl, placeId),
                 onSuccess = {}
             )
         }
+    }
+
+    fun deletePlaceImage(imagePath: String, placeId: Int, onSuccess: () -> Unit) {
+        callApiFromFireStore(
+            task = fireStoreRepository.getPlaceImageByFilter(imagePath, placeId),
+            onSuccess = { querySnapshot ->
+                val refs = querySnapshot.map { doc -> doc.reference }
+                callApiFromFireStore(
+                    task = fireStoreRepository.deleteRefs(refs),
+                    onSuccess = {
+                        removeImage(imagePath) {
+                            onSuccess()
+                        }
+                    }, isShowLoading = true
+                )
+            }, isShowLoading = true
+        )
+    }
+
+    fun getPlaceImages(placeId: Int, onSuccess: (List<ImageData>) -> Unit) {
+        callApiFromFireStore(
+            task = fireStoreRepository.getPlaceImageList(placeId),
+            onSuccess = { querySnapshot ->
+                val imageList = querySnapshot.map { it.mapToImageData() }
+                onSuccess(imageList)
+            },
+            isShowLoading = true
+        )
     }
 }

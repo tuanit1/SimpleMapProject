@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.tuandev.simplemapproject.activity.MainActivity
-import com.tuandev.simplemapproject.widget.CommonProgressDialog
-import com.tuandev.simplemapproject.widget.ErrorMessageDialog
+import com.tuandev.simplemapproject.widget.LoadingProgressDialog
+import com.tuandev.simplemapproject.widget.MessageDialog
 
 typealias Inflate<T> = (LayoutInflater, ViewGroup?, Boolean) -> T
 
@@ -18,7 +18,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
     private var _binding: VB? = null
     protected val binding get() = _binding
     protected var parentActivity: MainActivity? = null
-    private val commonProgressBar by lazy { CommonProgressDialog(requireContext()) }
+    private var loadingProgressDialog: LoadingProgressDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,18 +45,30 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseViewModel<VS>, VS : ViewS
 
     private fun listenLiveData() {
         viewModel.run {
-            loadingProgress.observe(viewLifecycleOwner) { isShow ->
+            loadingProgressLiveData.observe(viewLifecycleOwner) { isShow ->
                 if (isShow) {
-                    if (!commonProgressBar.isShowing) {
-                        commonProgressBar.show()
+                    if (loadingProgressDialog == null) {
+                        loadingProgressDialog = LoadingProgressDialog()
+                        loadingProgressDialog?.show(childFragmentManager, null)
                     }
                 } else {
-                    commonProgressBar.dismiss()
+                    loadingProgressDialog?.dismiss()
+                    loadingProgressDialog = null
                 }
             }
 
             showErrorPopup = {
-                ErrorMessageDialog(message = it).show(childFragmentManager, null)
+                MessageDialog(
+                    title = "Something wrong happened",
+                    message = it
+                ).show(childFragmentManager, null)
+            }
+
+            showMessagePopup = {
+                MessageDialog(
+                    title = "Message",
+                    message = it
+                ).show(childFragmentManager, null)
             }
         }
     }
