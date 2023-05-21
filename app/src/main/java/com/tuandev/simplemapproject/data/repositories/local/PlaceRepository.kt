@@ -171,7 +171,7 @@ class PlaceRepository(
     val gamePlaceParadiseFall = Place(
         id = 24,
         zone = zoneRepository.zoneJapan,
-        game = gameRepository.gameFirefliesForest
+        game = gameRepository.gameParadiseFall
     )
     val gamePlaceFairyTeaHouse = Place(
         id = 25,

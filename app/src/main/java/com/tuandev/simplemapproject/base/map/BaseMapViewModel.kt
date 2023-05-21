@@ -135,26 +135,19 @@ class BaseMapViewModel @Inject constructor(
     }
 
     fun updateNodePlace(nodeId: String, placeId: Int?, onUpdateSuccess: () -> Unit) {
-        val placeExisted = listNode.mapNotNull { node -> node.placeId }
-            .any { pId -> pId == placeId }
-
-        if (!placeExisted) {
-            callApiFromFireStore(
-                task = fireStoreRepository.updateNodePlace(nodeId, placeId),
-                onSuccess = {
-                    getNodeById(nodeId)?.placeId = placeId
-                    updateViewState(
-                        BaseMapViewState.NodePlaceUpdateSuccess(
-                            marker = getNodeById(nodeId)?.marker,
-                            nodeId = nodeId
-                        )
+        callApiFromFireStore(
+            task = fireStoreRepository.updateNodePlace(nodeId, placeId),
+            onSuccess = {
+                getNodeById(nodeId)?.placeId = placeId
+                updateViewState(
+                    BaseMapViewState.NodePlaceUpdateSuccess(
+                        marker = getNodeById(nodeId)?.marker,
+                        nodeId = nodeId
                     )
-                    onUpdateSuccess()
-                }
-            )
-        } else {
-            showErrorPopup("This place has been assigned to a node")
-        }
+                )
+                onUpdateSuccess()
+            }
+        )
     }
 
     fun checkIfLineNotExist(firstNodeId: String?, secondNodeId: String?): Boolean =

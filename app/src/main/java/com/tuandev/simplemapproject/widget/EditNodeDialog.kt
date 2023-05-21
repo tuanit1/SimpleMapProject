@@ -81,7 +81,7 @@ data class EditNodeDialog(
     }
 
     private fun getPlaceList() = localRepository.listPlace.filterNot { place ->
-        listNode.mapNotNull { it.placeId }.contains(place.id)
+        listNode.mapNotNull { findPlaceById(it.placeId)?.game?.id }.contains(place.game?.id)
     }.map { place ->
         if (place.game != null) {
             OptionItem(place.id.toString(), "Game: ${place.game.name}")
