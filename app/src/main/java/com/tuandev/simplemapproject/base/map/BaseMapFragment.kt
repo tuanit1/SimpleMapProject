@@ -40,11 +40,22 @@ class BaseMapFragment :
             const val OFF = "off"
         }
 
-        fun newInstance() = BaseMapFragment()
+        object MapMode {
+            const val TOOL = "tool"
+            const val SUGGEST_ROUTE = "suggest_route"
+            const val EXPLORE = "explore"
+        }
+
+        fun newInstance(mapMode: String) = BaseMapFragment().apply {
+            arguments?.run {
+                putString("mapMode", mapMode)
+            }
+        }
     }
 
     private var supportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
+    private var mapMode = ""
     var onMarkerClick: (Marker) -> Unit = {}
     var onPolylineClick: (Polyline) -> Unit = {}
     var onNodeAdded: (Node) -> Unit = {}
@@ -138,6 +149,8 @@ class BaseMapFragment :
 
         setCurrentTouchEvent(TouchEvent.OFF)
 
+        mapMode = arguments?.getString("mapMode") ?: ""
+
         supportMapFragment = SupportMapFragment.newInstance(
             GoogleMapOptions()
                 .mapType(GoogleMap.MAP_TYPE_NORMAL)
@@ -155,7 +168,11 @@ class BaseMapFragment :
     }
 
     private fun fetchData() {
-        viewModel.getAllNodesAndLines()
+        when (mapMode) {
+            MapMode.TOOL -> viewModel.getAllNodesAndLines()
+            MapMode.EXPLORE -> {}
+            MapMode.SUGGEST_ROUTE -> {}
+        }
     }
 
     private fun getContainerId() = R.id.fragment_map_container

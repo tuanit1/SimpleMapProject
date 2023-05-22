@@ -1,8 +1,6 @@
 package com.tuandev.simplemapproject.extension
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
@@ -13,7 +11,7 @@ fun FragmentActivity.openFragment(
     containerId: Int,
     fragment: Fragment,
     popBackStackOption: PopBackStackOption? = null,
-    isReplace: Boolean = true,
+    isReplace: Boolean = false,
     enterAnim: Int = 0,
     exitAnim: Int = 0,
     popEnter: Int = 0,

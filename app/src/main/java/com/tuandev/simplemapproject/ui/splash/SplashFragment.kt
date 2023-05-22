@@ -22,11 +22,11 @@ class SplashFragment : BaseFragment<FragmentSplashBinding, SplashViewModel, View
             }
 
             btnExploreMode.setOnClickListener {
-                parentActivity?.openHomeFragment()
+                parentActivity?.openSuggestRouteFragment()
             }
 
             btnGuildingMode.setOnClickListener {
-                parentActivity?.openHomeFragment()
+                parentActivity?.openSuggestRouteFragment()
             }
         }
     }

@@ -72,7 +72,6 @@ class ToolMapFragment :
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -80,7 +79,7 @@ class ToolMapFragment :
     }
 
     override fun initView() {
-        mapFragment = BaseMapFragment.newInstance()
+        mapFragment = BaseMapFragment.newInstance(mapMode = BaseMapFragment.Companion.MapMode.TOOL)
         mapFragment?.let {
             openFragment(
                 containerId = containerID,

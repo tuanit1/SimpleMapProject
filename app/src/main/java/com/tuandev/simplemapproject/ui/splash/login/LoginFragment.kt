@@ -19,7 +19,7 @@ class LoginFragment : BaseFragment<FragmentLoginBinding, LoginViewModel, ViewSta
     override fun initListener() {
         binding?.run {
             tvHome.setOnClickListener {
-                parentActivity?.openHomeFragment()
+                parentActivity?.openSuggestRouteFragment()
             }
 
             tvTool.setOnClickListener {

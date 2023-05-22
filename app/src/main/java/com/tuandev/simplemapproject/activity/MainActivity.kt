@@ -25,7 +25,8 @@ import com.tuandev.simplemapproject.extension.compressBitmap
 import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
-import com.tuandev.simplemapproject.ui.splash.home.HomeFragment
+import com.tuandev.simplemapproject.ui.splash.suggestroute.SuggestRouteFragment
+import com.tuandev.simplemapproject.ui.splash.suggestroute.routedetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
@@ -88,10 +89,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun getContainerId() = R.id.main_activity_container
 
-    fun openHomeFragment() {
+    fun openSuggestRouteFragment() {
         openFragment(
             containerId = getContainerId(),
-            fragment = HomeFragment.newInstance()
+            fragment = SuggestRouteFragment.newInstance()
         )
     }
 
@@ -107,6 +108,13 @@ class MainActivity : AppCompatActivity() {
             containerId = getContainerId(),
             fragment = ToolMapFragment.newInstance(),
             popBackStackOption = PopBackStackOption.PopAll
+        )
+    }
+
+    fun openRouteDetailFragment() {
+        openFragment(
+            containerId = getContainerId(),
+            fragment = RouteDetailFragment.newInstance()
         )
     }
 
