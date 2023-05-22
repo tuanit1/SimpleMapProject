@@ -11,4 +11,7 @@
     <color name="redPastel">#ff6961</color>
     <color name="normalTextColor">#6a6a6a</color>
     <color name="blackTextColor">#2c2c2c</color>
+    <color name="maximumRed">#d32724</color>
+    <color name="stPatrickBlue">#1f1f7b</color>
+    <color name="chineseGold">#d3a100</color>
 </resources>

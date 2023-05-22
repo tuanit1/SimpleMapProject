@@ -26,7 +26,6 @@ import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
 import com.tuandev.simplemapproject.ui.splash.home.HomeFragment
-import com.tuandev.simplemapproject.ui.splash.login.LoginFragment
 import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
@@ -89,19 +88,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun getContainerId() = R.id.main_activity_container
 
-    fun openLoginFragment() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = LoginFragment.newInstance(),
-            popBackStackOption = PopBackStackOption.PopAll
-        )
-    }
-
     fun openHomeFragment() {
         openFragment(
             containerId = getContainerId(),
-            fragment = HomeFragment.newInstance(),
-            popBackStackOption = PopBackStackOption.PopAll
+            fragment = HomeFragment.newInstance()
         )
     }
 

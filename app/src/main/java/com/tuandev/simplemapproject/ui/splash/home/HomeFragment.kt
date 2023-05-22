@@ -5,8 +5,6 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.databinding.FragmentHomeBinding
-import com.tuandev.simplemapproject.extension.openFragment
-import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 
 
 class HomeFragment :
@@ -20,10 +18,7 @@ class HomeFragment :
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
     override fun initView() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = ToolMapFragment.newInstance()
-        )
+
     }
 
     private fun getContainerId() = R.id.container_home_fragment

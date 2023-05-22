@@ -17,12 +17,17 @@ class SplashFragment : BaseFragment<FragmentSplashBinding, SplashViewModel, View
 
     override fun initListener() {
         binding?.run {
-            tv.setOnClickListener {
-                parentActivity?.openLoginFragment()
+            ivTool.setOnClickListener {
+                parentActivity?.openToolMapFragment()
+            }
+
+            btnExploreMode.setOnClickListener {
+                parentActivity?.openHomeFragment()
+            }
+
+            btnGuildingMode.setOnClickListener {
+                parentActivity?.openHomeFragment()
             }
         }
     }
-
-
-
 }
