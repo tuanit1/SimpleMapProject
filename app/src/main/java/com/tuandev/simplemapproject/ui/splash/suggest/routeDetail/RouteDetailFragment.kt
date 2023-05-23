@@ -1,9 +1,10 @@
-package com.tuandev.simplemapproject.ui.splash.suggest.routedetail
+package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail
 
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
+import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 
 class RouteDetailFragment :
     BaseFragment<FragmentRouteDetailBinding, RouteDetailViewModel, ViewState>(
@@ -22,8 +23,10 @@ class RouteDetailFragment :
             ivBack.setOnClickListener {
                 parentActivity?.invokeBackPress()
             }
+
+            btnRegenerateRoute.setOnClickListener {
+                (parentFragment as? SuggestFragment)?.showFeatureQuestionFragment()
+            }
         }
     }
-
-
 }

@@ -27,7 +27,7 @@ import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
-import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
+import com.tuandev.simplemapproject.ui.splash.toolMap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
 import java.io.File

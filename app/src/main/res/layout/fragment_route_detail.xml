@@ -7,7 +7,7 @@
     android:clickable="true"
     android:fillViewport="true"
     android:focusable="true"
-    tools:context=".ui.splash.suggest.routedetail.RouteDetailFragment">
+    tools:context=".ui.splash.suggest.routeDetail.RouteDetailFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -57,6 +57,7 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/btnRegenerateRoute"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginEnd="10dp"
@@ -66,6 +67,7 @@
                 android:textAllCaps="false" />
 
             <Button
+                android:id="@+id/btnAddPlace"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"

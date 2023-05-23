@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.ui.splash.suggest.suggestmap
+package com.tuandev.simplemapproject.ui.splash.suggest.suggestMap
 
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.R

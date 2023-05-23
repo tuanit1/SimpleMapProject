@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.ui.splash.toolmap
+package com.tuandev.simplemapproject.ui.splash.toolMap
 
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState

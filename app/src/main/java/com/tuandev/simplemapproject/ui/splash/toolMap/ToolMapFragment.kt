@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.ui.splash.toolmap
+package com.tuandev.simplemapproject.ui.splash.toolMap
 
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.model.Marker

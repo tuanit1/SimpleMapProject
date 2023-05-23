@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:focusable="true"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:paddingHorizontal="30dp"
+    tools:context=".ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment">
+
+    <TextView
+        style="@style/titleTextStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:gravity="center"
+        android:text="What kind of games do you want to play?" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/bg_button_question"
+        android:paddingVertical="15dp">
+
+        <TextView
+            style="@style/contentBlackTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Thrilling games"
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_button_question"
+        android:paddingVertical="15dp">
+
+        <TextView
+            style="@style/contentBlackTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Family games"
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_button_question"
+        android:paddingVertical="15dp">
+
+        <TextView
+            style="@style/contentBlackTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Both of them"
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+</LinearLayout>
