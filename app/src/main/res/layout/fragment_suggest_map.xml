@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.splash.suggestroute.SuggestRouteFragment"
+    tools:context=".ui.splash.suggest.suggestmap.SuggestMapFragment"
     android:background="@color/white"
     android:clickable="true"
     android:focusable="true">
@@ -16,6 +16,7 @@
         android:layout_weight="1" />
 
     <LinearLayout
+        android:id="@+id/llDest"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -40,6 +41,7 @@
                 android:src="@drawable/ic_arrow_prev" />
 
             <TextView
+                android:id="@+id/tvDestName"
                 style="@style/titleTextStyleExtraLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

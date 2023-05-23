@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.ui.splash.suggestroute.routedetail
+package com.tuandev.simplemapproject.ui.splash.suggest.routedetail
 
 import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.base.BaseFragment
@@ -16,6 +16,14 @@ class RouteDetailFragment :
 
     override val viewModel: RouteDetailViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
+
+    override fun initListener() {
+        binding?.run {
+            ivBack.setOnClickListener {
+                parentActivity?.invokeBackPress()
+            }
+        }
+    }
 
 
 }

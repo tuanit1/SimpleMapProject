@@ -20,13 +20,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.tuandev.simplemapproject.R
+import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.data.models.PopBackStackOption
 import com.tuandev.simplemapproject.extension.compressBitmap
 import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
-import com.tuandev.simplemapproject.ui.splash.suggestroute.SuggestRouteFragment
-import com.tuandev.simplemapproject.ui.splash.suggestroute.routedetail.RouteDetailFragment
+import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.ui.splash.toolmap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         const val TAKE_PHOTO_REQUEST = "TAKE_PHOTO_REQUEST"
     }
 
+    var onActivityBackPressListener = {}
     private var onPermissionGranted: () -> Unit = {}
     var onImageFromResultReady: (ByteArray) -> Unit = {}
     private var imagePath: String? = null
@@ -67,6 +68,13 @@ class MainActivity : AppCompatActivity() {
                 val count = supportFragmentManager.backStackEntryCount
                 if (count > 1) {
                     when (val currentFragment = supportFragmentManager.fragments.last()) {
+                        is SuggestFragment -> {
+                            if (currentFragment.childFragmentManager.fragments.last() is BaseMapFragment){
+                                supportFragmentManager.popBackStack()
+                            }else{
+                                currentFragment.handleChildFragmentBackPress()
+                            }
+                        }
                         else -> {
                             supportFragmentManager.popBackStack()
                         }
@@ -92,7 +100,7 @@ class MainActivity : AppCompatActivity() {
     fun openSuggestRouteFragment() {
         openFragment(
             containerId = getContainerId(),
-            fragment = SuggestRouteFragment.newInstance()
+            fragment = SuggestFragment.newInstance()
         )
     }
 
@@ -108,13 +116,6 @@ class MainActivity : AppCompatActivity() {
             containerId = getContainerId(),
             fragment = ToolMapFragment.newInstance(),
             popBackStackOption = PopBackStackOption.PopAll
-        )
-    }
-
-    fun openRouteDetailFragment() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = RouteDetailFragment.newInstance()
         )
     }
 
@@ -202,6 +203,10 @@ class MainActivity : AppCompatActivity() {
                 onImageFromResultReady(os.toByteArray())
             }
         }
+    }
+
+    fun invokeBackPress(){
+        onBackPressedDispatcher.onBackPressed()
     }
 
     private fun handleOnTakePhotoResult() {
