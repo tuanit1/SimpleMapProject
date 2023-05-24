@@ -4,13 +4,15 @@ import androidx.fragment.app.viewModels
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
+import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentSuggestBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.suggestMap.SuggestMapFragment
 
-class SuggestFragment : BaseFragment<FragmentSuggestBinding, SuggestViewModel, ViewState>(FragmentSuggestBinding::inflate) {
+class SuggestFragment :
+    BaseFragment<FragmentSuggestBinding, SuggestViewModel, ViewState>(FragmentSuggestBinding::inflate) {
 
     companion object {
         fun newInstance() = SuggestFragment()
@@ -18,14 +20,15 @@ class SuggestFragment : BaseFragment<FragmentSuggestBinding, SuggestViewModel, V
 
     override val viewModel: SuggestViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
-
+    var userFeature: UserFeature? = null
+    var onUserFeatureUpdatedListener = {}
     override fun initView() {
         openSuggestMapFragment()
     }
 
     private fun getContainerId() = R.id.container_suggest
 
-    private fun openSuggestMapFragment(){
+    private fun openSuggestMapFragment() {
         openFragment(
             containerId = getContainerId(),
             fragment = SuggestMapFragment.newInstance()
@@ -44,5 +47,10 @@ class SuggestFragment : BaseFragment<FragmentSuggestBinding, SuggestViewModel, V
             containerId = getContainerId(),
             fragment = FeatureQuestionFragment.newInstance()
         )
+    }
+
+    fun updateUserFeature(userFeature: UserFeature) {
+        this.userFeature = userFeature
+        onUserFeatureUpdatedListener()
     }
 }

@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal"
-    android:focusable="true"
     android:background="@color/white"
+    android:focusable="true"
+    android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingHorizontal="30dp"
-    tools:context=".ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment">
+    android:paddingHorizontal="30dp">
 
     <TextView
         style="@style/titleTextStyleLarge"
@@ -16,9 +14,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
         android:gravity="center"
-        android:text="What kind of games do you want to play?" />
+        android:text="@string/question_game_type" />
 
     <RelativeLayout
+        android:id="@+id/btnThrillGame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
@@ -35,6 +34,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/btnFamilyGame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -51,6 +51,7 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:id="@+id/btnBoth"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"

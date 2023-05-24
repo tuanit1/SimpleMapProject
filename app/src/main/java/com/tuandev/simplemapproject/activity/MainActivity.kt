@@ -27,6 +27,7 @@ import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.toolMap.ToolMapFragment
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
@@ -69,10 +70,16 @@ class MainActivity : AppCompatActivity() {
                 if (count > 1) {
                     when (val currentFragment = supportFragmentManager.fragments.last()) {
                         is SuggestFragment -> {
-                            if (currentFragment.childFragmentManager.fragments.last() is BaseMapFragment){
-                                supportFragmentManager.popBackStack()
-                            }else{
-                                currentFragment.handleChildFragmentBackPress()
+                            when (val childSuggestFragment = currentFragment.childFragmentManager.fragments.last()){
+                                is BaseMapFragment -> {
+                                    supportFragmentManager.popBackStack()
+                                }
+                                is FeatureQuestionFragment -> {
+                                    childSuggestFragment.handleChildFragmentBackPress()
+                                }
+                                else -> {
+                                    currentFragment.handleChildFragmentBackPress()
+                                }
                             }
                         }
                         else -> {
@@ -91,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         if (count > 1) {
             childFragmentManager.popBackStack()
         } else {
-            supportFragmentManager.popBackStack()
+            parentFragmentManager.popBackStack()
         }
     }
 

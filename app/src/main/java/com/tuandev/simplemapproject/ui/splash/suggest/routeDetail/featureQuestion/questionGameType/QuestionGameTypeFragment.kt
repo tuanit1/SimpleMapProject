@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.tuandev.simplemapproject.databinding.FragmentGameTypeQuestionBinding
+import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 
 class QuestionGameTypeFragment : Fragment() {
 
@@ -25,5 +26,26 @@ class QuestionGameTypeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        val mainQuestionFragment = parentFragment as FeatureQuestionFragment
+
+        binding?.run {
+            mainQuestionFragment.run {
+                btnThrillGame.setOnClickListener {
+                    mUserFeature.isThrillOnly = true
+                    mUserFeature.isFamilyOnly = false
+                    openQuestionThrillLevelFragment()
+                }
+                btnFamilyGame.setOnClickListener {
+                    mUserFeature.isThrillOnly = false
+                    mUserFeature.isFamilyOnly = true
+                    openQuestionTimeTypeFragment()
+                }
+                btnBoth.setOnClickListener {
+                    mUserFeature.isThrillOnly = true
+                    mUserFeature.isFamilyOnly = true
+                    openQuestionThrillLevelFragment()
+                }
+            }
+        }
     }
 }

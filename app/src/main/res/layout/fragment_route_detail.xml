@@ -37,11 +37,20 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/tvMaximumThrill"
             style="@style/contentBlackTextStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Desired thrill level: " />
+            android:text="@string/maximum_thrill_level" />
+
+        <TextView
+            android:id="@+id/tvAvailableTime"
+            style="@style/contentBlackTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:text="@string/available_time" />
 
         <TextView
             style="@style/contentBlackTextStyleLarge"

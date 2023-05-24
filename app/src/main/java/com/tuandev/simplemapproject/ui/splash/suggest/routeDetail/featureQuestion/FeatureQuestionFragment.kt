@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.activity.MainActivity
+import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentFeatureQuestionBinding
 import com.tuandev.simplemapproject.extension.openFragment
+import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionGameType.QuestionGameTypeFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionThrillLevel.QuestionThrillLevelFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionTimeLimit.QuestionTimeLimitFragment
@@ -17,6 +19,7 @@ import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestio
 class FeatureQuestionFragment : Fragment() {
 
     private var binding: FragmentFeatureQuestionBinding? = null
+    val mUserFeature = UserFeature()
 
     companion object {
         fun newInstance() = FeatureQuestionFragment()
@@ -71,6 +74,13 @@ class FeatureQuestionFragment : Fragment() {
             containerId = getContainerId(),
             fragment = QuestionTimeLimitFragment.newInstance()
         )
+    }
+
+    fun submitUserFeature() {
+        (parentFragment as SuggestFragment).run {
+            updateUserFeature(mUserFeature)
+            childFragmentManager.popBackStack()
+        }
     }
 
     private fun getContainerId() = R.id.container_feature_question

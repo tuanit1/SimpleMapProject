@@ -126,4 +126,10 @@
     <string name="no_service_selected">No service selected</string>
     <string name="place">Place:</string>
     <string name="no_place_selected">No place selected</string>
+    <string name="question_thrilling_level">What is the maximum thrilling level you can play?</string>
+    <string name="question_game_type">What kind of games do you want to play?</string>
+    <string name="question_time_type">How long can you play at Asia Park?</string>
+    <string name="question_limit_time">What time do you want to leave? \n (Asia Park opens from 2:00PM to 10:00PM)</string>
+    <string name="maximum_thrill_level">Maximum thrill level: %s</string>
+    <string name="available_time">Available time: %d hour(s) and %d minute(s)</string>
 </resources>

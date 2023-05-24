@@ -3,6 +3,7 @@ package com.tuandev.simplemapproject.base.map
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -46,8 +47,9 @@ class BaseMapFragment :
             const val EXPLORE = "explore"
         }
 
+        @JvmStatic
         fun newInstance(mapMode: String) = BaseMapFragment().apply {
-            arguments?.run {
+            arguments = Bundle().apply {
                 putString("mapMode", mapMode)
             }
         }
