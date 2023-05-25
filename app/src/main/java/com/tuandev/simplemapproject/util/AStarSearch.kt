@@ -13,10 +13,9 @@ data class AStarSearch(
     private val cameFrom: MutableMap<Node, Node> = mutableMapOf()
     private val gScore: MutableMap<Node, Float> = mutableMapOf()
     private val fScore: MutableMap<Node, Float> = mutableMapOf()
-    var onFindPathSuccess: (List<Node>) -> Unit = {}
     var onFindPathFail: () -> Unit = {}
 
-    private fun regeneratePath(current: Node) {
+    private fun regeneratePath(current: Node, action: (List<Node>, Float) -> Unit) {
         val path = mutableListOf(current)
         var currentNode = current
         while (cameFrom.containsKey(currentNode)) {
@@ -25,16 +24,20 @@ data class AStarSearch(
                 path.add(0, node)
             }
         }
-        onFindPathSuccess(path)
+        action(path, gScore[current] ?: 0f)
     }
 
-    fun findBestPath(start: Node, goal: Node) {
+    fun findBestPath(
+        start: Node,
+        goal: Node,
+        onSuccessSearch: (List<Node>, Float) -> Unit
+    ) {
         initData(start, goal)
 
         while (openList.isNotEmpty()) {
             val current = fScore.filter { openList.contains(it.key) }.minBy { it.value }.key
             if (current == goal) {
-                regeneratePath(current)
+                regeneratePath(current, onSuccessSearch)
                 return
             }
 
@@ -46,8 +49,9 @@ data class AStarSearch(
                 .forEach { neighborWithDistance ->
                     getNode(neighborWithDistance.id)?.let { neighBor ->
                         val g = gScore[current] ?: Float.POSITIVE_INFINITY
-                        val tentativeGScore = g.plus(getDistance(current, neighBor) ?: 0f)
+                        val tentativeGScore = g.plus(neighborWithDistance.distance ?: 0f)
                         val neighBorGScore = gScore[neighBor] ?: Float.POSITIVE_INFINITY
+
 
                         if (tentativeGScore < neighBorGScore) {
                             cameFrom[neighBor] = current

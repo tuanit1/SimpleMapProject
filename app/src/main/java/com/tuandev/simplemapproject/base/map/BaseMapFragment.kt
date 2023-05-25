@@ -16,7 +16,6 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
-import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.extension.toRoundedFloat
@@ -120,12 +119,6 @@ class BaseMapFragment :
 
     private fun initAStarSearch() {
         aStarSearch = AStarSearch(viewModel.listNode)
-        aStarSearch?.run {
-            onFindPathSuccess = { nodes ->
-                handleDrawGuildPath(nodes)
-                viewModel.updateLineViewState(isVisible = false)
-            }
-        }
     }
 
     override fun initView() {
@@ -199,7 +192,6 @@ class BaseMapFragment :
             }
 
             setOnMarkerClickListener { marker ->
-                log("${marker.position}")
                 when (viewModel.currentTouchEvent.value) {
                     TouchEvent.DRAW_LINE_STEP_1 -> {
                         handleDrawLineStep1(marker)
@@ -447,7 +439,10 @@ class BaseMapFragment :
             val goal = viewModel.getNodeById(marker.tag?.toString())
 
             if (lastSelectedMarker != marker && start != null && goal != null) {
-                aStarSearch?.findBestPath(start, goal)
+                aStarSearch?.findBestPath(start, goal) { nodes, _ ->
+                    handleDrawGuildPath(nodes)
+                    viewModel.updateLineViewState(isVisible = false)
+                }
             }
 
             updateMarkerIcon(lastMarker, lastMarker.tag.toString())
