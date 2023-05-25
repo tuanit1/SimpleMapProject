@@ -20,10 +20,23 @@ class SuggestFragment :
 
     override val viewModel: SuggestViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
-    var userFeature: UserFeature? = null
-    var onUserFeatureUpdatedListener = {}
+
+
+    var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
     override fun initView() {
         openSuggestMapFragment()
+    }
+
+    override fun initListener() {
+        listenOnLiveData()
+    }
+
+    private fun listenOnLiveData() {
+        viewModel.run {
+            mUserFeature.observe(viewLifecycleOwner) { userFeature ->
+                onUserFeatureUpdatedListener(userFeature)
+            }
+        }
     }
 
     private fun getContainerId() = R.id.container_suggest
@@ -50,7 +63,6 @@ class SuggestFragment :
     }
 
     fun updateUserFeature(userFeature: UserFeature) {
-        this.userFeature = userFeature
-        onUserFeatureUpdatedListener()
+        viewModel.updateUserFeature(userFeature)
     }
 }

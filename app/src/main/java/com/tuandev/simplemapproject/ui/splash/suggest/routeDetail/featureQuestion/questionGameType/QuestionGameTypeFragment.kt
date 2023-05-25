@@ -41,8 +41,8 @@ class QuestionGameTypeFragment : Fragment() {
                     openQuestionTimeTypeFragment()
                 }
                 btnBoth.setOnClickListener {
-                    mUserFeature.isThrillOnly = true
-                    mUserFeature.isFamilyOnly = true
+                    mUserFeature.isThrillOnly = false
+                    mUserFeature.isFamilyOnly = false
                     openQuestionThrillLevelFragment()
                 }
             }

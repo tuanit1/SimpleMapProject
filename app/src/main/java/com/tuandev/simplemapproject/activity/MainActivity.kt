@@ -29,6 +29,7 @@ import com.tuandev.simplemapproject.ui.splash.SplashFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.toolMap.ToolMapFragment
+import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -248,5 +249,20 @@ class MainActivity : AppCompatActivity() {
             source, 0, 0, source.width, source.height,
             matrix, true
         )
+    }
+
+    fun showConfirmDialog(
+        title: String,
+        content: String,
+        action: () -> Unit
+    ){
+        ConfirmMessageDialog(
+            title = title,
+            message = content
+        ).apply {
+            successAction = {
+                action()
+            }
+        }.show(supportFragmentManager, null)
     }
 }

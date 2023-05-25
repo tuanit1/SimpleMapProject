@@ -4,8 +4,8 @@ import com.tuandev.simplemapproject.base.BaseDialogFragment
 import com.tuandev.simplemapproject.databinding.DialogErrorMessageBinding
 
 class MessageDialog(
-    val title: String,
-    val message: String
+    private val title: String,
+    private val message: String
 ) : BaseDialogFragment<DialogErrorMessageBinding>(DialogErrorMessageBinding::inflate) {
     override fun initView() {
         binding?.run {

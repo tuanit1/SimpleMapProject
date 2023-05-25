@@ -15,6 +15,7 @@ import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestio
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionThrillLevel.QuestionThrillLevelFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionTimeLimit.QuestionTimeLimitFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionTimeType.QuestionTimeTypeFragment
+import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 
 class FeatureQuestionFragment : Fragment() {
 
@@ -77,9 +78,14 @@ class FeatureQuestionFragment : Fragment() {
     }
 
     fun submitUserFeature() {
-        (parentFragment as SuggestFragment).run {
-            updateUserFeature(mUserFeature)
-            childFragmentManager.popBackStack()
+        (activity as MainActivity).showConfirmDialog(
+            title = "Warning",
+            content = "Submit your answer?"
+        ) {
+            (parentFragment as SuggestFragment).run {
+                updateUserFeature(mUserFeature)
+                childFragmentManager.popBackStack()
+            }
         }
     }
 

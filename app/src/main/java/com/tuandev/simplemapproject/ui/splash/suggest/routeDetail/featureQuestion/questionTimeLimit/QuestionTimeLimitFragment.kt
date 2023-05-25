@@ -30,7 +30,17 @@ class QuestionTimeLimitFragment : Fragment() {
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    private fun initView(){
+        binding?.run {
+            if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) < 14){
+                timePicker.hour = 14
+                timePicker.minute = 0
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun initListener(){
         binding?.run {
             timePicker.setOnTimeChangedListener { timePicker, hour, _ ->
                 if (hour < 14) {
@@ -72,5 +82,11 @@ class QuestionTimeLimitFragment : Fragment() {
                 }
             }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        initView()
+        initListener()
     }
 }
