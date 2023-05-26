@@ -7,13 +7,14 @@ import com.tuandev.simplemapproject.data.models.*
 import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.data.repositories.local.PlaceRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.mapToLine
 import com.tuandev.simplemapproject.extension.mapToNode
 import com.tuandev.simplemapproject.util.AStarSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Stack
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,21 +40,60 @@ class RouteDetailViewModel @Inject constructor(
             suggestPlaceList.addAll(
                 when {
                     isFamilyOnly -> listGamePlaces.filter { it.game?.thrillLevel?.score == 0 }
-                    isThrillOnly -> listGamePlaces.filter { it.game?.thrillLevel?.score!! > 0 }
-                    else -> listGamePlaces
+                    isThrillOnly -> listGamePlaces.filter {
+                        it.game?.thrillLevel?.score!! in 1..(maxThrill?.score ?: 3)
+                    }
+                    else -> listGamePlaces.filter {
+                        it.game?.thrillLevel?.score!! in 0..(maxThrill?.score ?: 3)
+                    }
                 }
             )
         }
-        sortRoute()
+
+        sortRouteByTSP()
+
+        val a = calculateEstimateTime()
+        log("estimate time cost $a hour")
     }
 
-    private fun sortRoute() {
+    private fun calculateEstimateTime(): Float {
+        var totalDistance = 0f
+        var totalDurationInSec = 0
+        val walkVelocity = 1.34
+
+        for (i in 0 until suggestPlaceList.size - 1) {
+            val startNode = listNode.find { it.placeId == suggestPlaceList[i].id }
+            val endNode = listNode.find { it.placeId == suggestPlaceList[i + 1].id }
+
+            if (startNode != null && endNode != null) {
+                aStarSearch?.findBestPath(startNode, endNode) { _, distance ->
+                    log("${suggestPlaceList[i].game?.name} -> ${suggestPlaceList[i + 1].game?.name}: $distance")
+                    totalDistance += distance
+                }
+            }
+        }
+
+        suggestPlaceList.forEach { place ->
+            totalDurationInSec += if (place.game != null) {
+                (place.game.duration + 120)
+            } else {
+                120
+            }
+        }
+
+        totalDurationInSec += (totalDistance / walkVelocity).toInt()
+
+        return totalDurationInSec / 3600f
+    }
+
+    private fun getSuggestPlaceNodesWithNeighbor(): List<Node> {
         val placeNodes = getSuggestedPlaceNodes()
         listNode.find { it.placeId == placeRepository.placeEntryGate.id }?.let { startNode ->
             placeNodes.add(0, startNode)
         }
 
         val placeNodesWithNeighbor = placeNodes.map { it.copy(neighbors = mutableListOf()) }
+
         placeNodes.forEachIndexed { index, currentNode ->
             val exceptList = placeNodes.filter { it.id != currentNode.id }
             exceptList.forEach { neighBor ->
@@ -71,30 +111,47 @@ class RouteDetailViewModel @Inject constructor(
             }
         }
 
-        sortRouteByTSP()
+        return placeNodesWithNeighbor
     }
 
-    private fun sortRouteByTSP(listNode: List<Node>) {
-
-        val visited: MutableList<Node> = mutableListOf()
+    private fun sortRouteByTSP() {
+        val suggestPlaceNodes = getSuggestPlaceNodesWithNeighbor()
+        val startNode = suggestPlaceNodes.first()
         val stack = Stack<Node>()
-        stack.push(listNode.first())
-        var currentMin: Int = Int.MAX_VALUE
+        val visited: MutableList<Node> = mutableListOf(startNode)
+        var currentMin: Float
+        var bestNeighBor: Node? = null
         var minFlag = false
 
-        while (!stack.isEmpty()){
+        stack.push(startNode)
+
+        while (stack.isNotEmpty()) {
             val currentNode = stack.peek()
-            currentMin = Int.MAX_VALUE
+            currentMin = Float.POSITIVE_INFINITY
             currentNode.neighbors.forEach {
-                val neighBor = listNode.getNodeById(it.id)
+                val neighBor = suggestPlaceNodes.getNodeById(it.id)
+                if (!visited.contains(neighBor)) {
+                    if (currentMin > (it.distance ?: 0f)) {
+                        currentMin = it.distance ?: 0f
+                        minFlag = true
+                        bestNeighBor = neighBor
+                    }
+                }
             }
+            if (minFlag) {
+                bestNeighBor?.let {
+                    visited.add(it)
+                    stack.push(it)
+                    minFlag = false
+                }
+                continue
+            }
+            stack.pop()
         }
 
-        listNode.forEach { node ->
-            node.neighbors.forEach { neighBor ->
-
-            }
-        }
+        suggestPlaceList.clear()
+        suggestPlaceList.addAll(visited.mapNotNull { it.placeId }
+            .mapNotNull { localRepository.listPlace.getPlaceById(it) })
     }
 
     private fun getSuggestedPlaceNodes(): MutableList<Node> {
