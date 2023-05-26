@@ -164,7 +164,7 @@ class BaseMapFragment :
 
     private fun fetchData() {
         when (mapMode) {
-            MapMode.TOOL -> viewModel.getAllNodesAndLines()
+            MapMode.TOOL -> viewModel.fetchAllNodesAndLines()
             MapMode.EXPLORE -> {}
             MapMode.SUGGEST_ROUTE -> {}
         }

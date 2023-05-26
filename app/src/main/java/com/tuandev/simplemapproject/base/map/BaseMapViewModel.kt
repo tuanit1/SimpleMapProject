@@ -13,9 +13,7 @@ import com.tuandev.simplemapproject.data.models.NeighborWithDistance
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
-import com.tuandev.simplemapproject.extension.toDoubleOrNull
-import com.tuandev.simplemapproject.extension.toFloatOrNull
-import com.tuandev.simplemapproject.extension.toIntOrNull
+import com.tuandev.simplemapproject.extension.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -156,7 +154,7 @@ class BaseMapViewModel @Inject constructor(
                     (it.firstNodeId == secondNodeId && it.secondNodeId == firstNodeId)
         }
 
-    fun getAllNodesAndLines() {
+    fun fetchAllNodesAndLines() {
         callApiFromFireStore(
             task = fireStoreRepository.getAllNodes(),
             onSuccess = { nodeResult ->
@@ -182,49 +180,26 @@ class BaseMapViewModel @Inject constructor(
 
     private fun MutableList<Node>.updateNeighbors() {
         forEach { node ->
-            node.neighbors = listLine.mapNotNull { line ->
-                when {
-                    line.firstNodeId == node.id -> NeighborWithDistance(
-                        line.secondNodeId,
-                        line.distance
-                    )
-                    line.secondNodeId == node.id -> NeighborWithDistance(
-                        line.firstNodeId,
-                        line.distance
-                    )
-                    else -> null
+            node.neighbors.clear()
+            node.neighbors.addAll(
+                listLine.mapNotNull { line ->
+                    when {
+                        line.firstNodeId == node.id -> NeighborWithDistance(
+                            line.secondNodeId,
+                            line.distance
+                        )
+                        line.secondNodeId == node.id -> NeighborWithDistance(
+                            line.firstNodeId,
+                            line.distance
+                        )
+                        else -> null
+                    }
                 }
-            }
+            )
         }
     }
 
     fun getNodeById(id: String?) = listNode.find { it.id == id }
-
-    private fun QueryDocumentSnapshot.mapToNode(): Node {
-        return Node(
-            id = id,
-            latitude = data["latitude"]?.toDoubleOrNull() ?: 0.0,
-            longitude = data["longitude"]?.toDoubleOrNull() ?: 0.0,
-            placeId = data["placeId"]?.toIntOrNull()
-        )
-    }
-
-    private fun QueryDocumentSnapshot.mapToLine(): Line {
-        return Line(
-            id = id,
-            firstNodeId = data["firstNodeId"].toString(),
-            secondNodeId = data["secondNodeId"].toString(),
-            distance = data["distance"]?.toFloatOrNull()
-        )
-    }
-
-    private fun QueryDocumentSnapshot.mapToImageData(): ImageData {
-        return ImageData(
-            name = data["imageName"].toString(),
-            url = data["imageUrl"].toString(),
-            placeId = data["placeId"]?.toIntOrNull()
-        )
-    }
 
     fun getPlaceById(id: Int?) = localRepository.listPlace.find { it.id == id }
 

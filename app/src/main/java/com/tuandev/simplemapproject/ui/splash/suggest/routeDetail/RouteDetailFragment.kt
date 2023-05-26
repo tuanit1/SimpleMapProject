@@ -7,7 +7,9 @@ import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RouteDetailFragment :
     BaseFragment<FragmentRouteDetailBinding, RouteDetailViewModel, ViewState>(
         FragmentRouteDetailBinding::inflate
@@ -21,7 +23,7 @@ class RouteDetailFragment :
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
     override fun initView() {
-        super.initView()
+        viewModel.fetchAllNodesAndLines()
     }
 
     override fun initListener() {
@@ -47,7 +49,7 @@ class RouteDetailFragment :
     }
 
     private fun suggestRoute(userFeature: UserFeature) {
-
+        viewModel.suggestGame(userFeature)
     }
 
     private fun updateFeatureView(userFeature: UserFeature) {
