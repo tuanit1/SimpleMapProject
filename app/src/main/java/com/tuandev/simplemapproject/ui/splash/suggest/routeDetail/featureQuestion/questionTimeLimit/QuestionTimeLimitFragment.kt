@@ -46,12 +46,12 @@ class QuestionTimeLimitFragment : Fragment() {
                 if (hour < 14) {
                     timePicker.hour = 14
                 }
-                if (hour > 22) {
-                    timePicker.hour = 22
-                }
-                if (hour == 22) {
-                    timePicker.minute = 0
-                }
+//                if (hour > 22) {
+//                    timePicker.hour = 22
+//                }
+//                if (hour == 22) {
+//                    timePicker.minute = 0
+//                }
             }
 
             btnSubmit.setOnClickListener {

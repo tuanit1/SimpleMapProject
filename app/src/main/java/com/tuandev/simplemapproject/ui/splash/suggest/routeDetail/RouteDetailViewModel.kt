@@ -27,9 +27,11 @@ class RouteDetailViewModel @Inject constructor(
     private val suggestPlaceList: MutableList<Place> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
     private var aStarSearch: AStarSearch? = null
-    var listLine: MutableList<Line> = mutableListOf()
+    private var listLine: MutableList<Line> = mutableListOf()
+    private var placeScoreList: MutableList<Pair<Place, Float>> = mutableListOf()
 
     fun suggestGame(userFeature: UserFeature) {
+        var latestEstimateTime = 0f
         val listGamePlaces = listNode
             .mapNotNull { it.placeId }
             .mapNotNull { localRepository.listPlace.getPlaceById(it) }
@@ -48,12 +50,77 @@ class RouteDetailViewModel @Inject constructor(
                     }
                 }
             )
+
+            sortRouteByTSP()
+            calculatePlaceScore()
+
+            log("Desired time: $availableTime")
+            while (calculateEstimateTime() > availableTime) {
+                val worstPlace = placeScoreList.maxBy { it.second }
+                suggestPlaceList.remove(worstPlace.first)
+                placeScoreList.remove(worstPlace)
+            }
+
+            if (availableTime - latestEstimateTime > 0.5){
+                //update to availableTIme
+            }else{
+                //use estimateTime
+            }
+
+            log("\nSuggest list:")
+            suggestPlaceList.forEach { place ->
+                if (place.game != null) {
+                    log(place.game.name)
+                } else {
+                    log(place.name)
+                }
+            }
+        }
+    }
+
+    private fun calculatePlaceScore() {
+        var maxDistance = 0f
+        val entryGate = listNode.find { it.placeId == placeRepository.placeEntryGate.id }
+        val maxThrillScore = localRepository.listThrillLevel.maxOfOrNull { it.score } ?: 0
+
+        val distanceAndThrills = suggestPlaceList.map { place ->
+            val node = listNode.find { it.placeId == place.id }
+            val distance = if (entryGate != null && node != null) {
+                var mDistance = Float.POSITIVE_INFINITY
+                aStarSearch?.findBestPath(entryGate, node) { _, distance ->
+                    if (maxDistance < distance) {
+                        maxDistance = distance
+                    }
+                    mDistance = distance
+                }
+                mDistance
+            } else {
+                Float.POSITIVE_INFINITY
+            }
+
+            val invertNormalizerThrillLevel = if (place.game != null) {
+                (maxThrillScore - place.game.thrillLevel.score) / maxThrillScore.toFloat()
+            } else {
+                0f
+            }
+
+            Triple(place, distance, invertNormalizerThrillLevel)
+        }.toMutableList()
+
+        for (index in distanceAndThrills.indices) {
+            val item = distanceAndThrills[index]
+            distanceAndThrills[index] = item.copy(second = item.second / maxDistance)
         }
 
-        sortRouteByTSP()
-
-        val a = calculateEstimateTime()
-        log("estimate time cost $a hour")
+        placeScoreList.run {
+            clear()
+            addAll(distanceAndThrills.map {
+                Pair(
+                    first = it.first,
+                    second = (it.second + it.third) / 2f
+                )
+            })
+        }
     }
 
     private fun calculateEstimateTime(): Float {
@@ -67,7 +134,7 @@ class RouteDetailViewModel @Inject constructor(
 
             if (startNode != null && endNode != null) {
                 aStarSearch?.findBestPath(startNode, endNode) { _, distance ->
-                    log("${suggestPlaceList[i].game?.name} -> ${suggestPlaceList[i + 1].game?.name}: $distance")
+//                    log("${suggestPlaceList[i].game?.name} -> ${suggestPlaceList[i + 1].game?.name}: $distance")
                     totalDistance += distance
                 }
             }
@@ -82,7 +149,7 @@ class RouteDetailViewModel @Inject constructor(
         }
 
         totalDurationInSec += (totalDistance / walkVelocity).toInt()
-
+        log("Calculated total time: ${totalDurationInSec / 3600f}")
         return totalDurationInSec / 3600f
     }
 
