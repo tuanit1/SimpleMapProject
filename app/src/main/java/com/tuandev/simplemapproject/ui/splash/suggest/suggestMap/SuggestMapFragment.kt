@@ -39,7 +39,7 @@ class SuggestMapFragment :
     override fun initListener() {
 
         binding?.run {
-            tvDestName.setOnClickListener {
+            llDest.setOnClickListener {
                 (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
             }
 

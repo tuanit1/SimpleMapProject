@@ -6,6 +6,8 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
+import com.tuandev.simplemapproject.extension.show
+import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,7 +22,17 @@ class RouteDetailFragment :
     }
 
     override val viewModel: RouteDetailViewModel by viewModels()
-    override val viewStateObserver: (viewState: ViewState) -> Unit = {}
+    override val viewStateObserver: (viewState: ViewState) -> Unit = { viewState ->
+        when (viewState) {
+            is RouteDetailViewState.UpdateEstimatedTime -> {
+                binding?.run {
+                    tvEstimatedTime.show()
+                    tvEstimatedTime.text =
+                        "Estimated time ${getFormattedTimeString(viewState.newEstimatedTime)}"
+                }
+            }
+        }
+    }
 
     override fun initView() {
         viewModel.fetchAllNodesAndLines()
@@ -55,13 +67,25 @@ class RouteDetailFragment :
     private fun updateFeatureView(userFeature: UserFeature) {
         binding?.run {
             userFeature.run {
+                tvGameType.show()
+                tvGameType.text = when {
+                    isFamilyOnly -> context?.getString(R.string.game_type, "Family")
+                    isThrillOnly -> context?.getString(R.string.game_type, "Thrill")
+                    else -> context?.getString(R.string.game_type, "Thrill & Family")
+                }
+                tvMaximumThrill.showIf(maxThrill != null)
                 tvMaximumThrill.text =
                     context?.getString(R.string.maximum_thrill_level, maxThrill?.name)
-                val hour = availableTime.toInt()
-                val min = ((availableTime - hour) * 60).toInt()
-                tvAvailableTime.text = context?.getString(R.string.available_time, hour, min)
+                tvAvailableTime.show()
+                tvAvailableTime.text = "Available time: ${getFormattedTimeString(availableTime)}"
             }
         }
+    }
+
+    private fun getFormattedTimeString(availableTime: Float): String? {
+        val hour = availableTime.toInt()
+        val min = ((availableTime - hour) * 60).toInt()
+        return context?.getString(R.string.available_time, hour, min)
     }
 
 }

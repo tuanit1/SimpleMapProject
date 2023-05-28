@@ -37,32 +37,42 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tvMaximumThrill"
+            android:id="@+id/tvGameType"
             style="@style/contentBlackTextStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="@string/maximum_thrill_level" />
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvMaximumThrill"
+            style="@style/contentBlackTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/maximum_thrill_level"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tvAvailableTime"
             style="@style/contentBlackTextStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="@string/available_time" />
+            android:layout_marginTop="10dp"
+            android:visibility="gone" />
 
         <TextView
+            android:id="@+id/tvEstimatedTime"
             style="@style/contentBlackTextStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="Total estimated time: " />
+            android:layout_marginTop="10dp"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="10dp"
             android:orientation="horizontal">
 
             <Button
@@ -86,6 +96,7 @@
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRecommendPlace"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp" />
