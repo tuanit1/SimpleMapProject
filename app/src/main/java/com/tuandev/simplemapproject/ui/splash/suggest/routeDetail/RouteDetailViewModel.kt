@@ -18,7 +18,8 @@ import java.util.*
 import javax.inject.Inject
 
 sealed class RouteDetailViewState : ViewState() {
-    class UpdateEstimatedTime(val newEstimatedTime: Float) : RouteDetailViewState()
+    class OnSuggestRouteFinish(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
+        RouteDetailViewState()
 }
 
 @HiltViewModel
@@ -28,7 +29,7 @@ class RouteDetailViewModel @Inject constructor(
     private val fireStoreRepository: FireStoreRepository,
 ) : BaseViewModel<ViewState>() {
 
-    private val suggestPlaceList: MutableList<Place> = mutableListOf()
+    private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
     private var aStarSearch: AStarSearch? = null
     private var listLine: MutableList<Line> = mutableListOf()
@@ -49,16 +50,17 @@ class RouteDetailViewModel @Inject constructor(
                 addAll(
                     when {
                         isFamilyOnly -> listGamePlaces.filter { it.game?.thrillLevel?.score == 0 }
+                            .map { RouteItem(place = it) }
                         isThrillOnly -> listGamePlaces.filter {
                             it.game?.thrillLevel?.score!! in 1..(maxThrill?.score ?: 3)
-                        }
+                        }.map { RouteItem(place = it) }
                         else -> listGamePlaces.filter {
                             it.game?.thrillLevel?.score!! in 0..(maxThrill?.score ?: 3)
-                        }
+                        }.map { RouteItem(place = it) }
                     }
                 )
-                add(0, startPLace)
-                add(finishPLace)
+                add(0, RouteItem(place = startPLace))
+                add(RouteItem(place = finishPLace))
             }
 
             sortRouteByTSP()
@@ -67,18 +69,25 @@ class RouteDetailViewModel @Inject constructor(
             log("Desired time: $availableTime")
             while (calculateEstimateTime() > availableTime) {
                 val worstPlace = placeScoreList.maxBy { it.second }
-                suggestPlaceList.remove(worstPlace.first)
+                suggestPlaceList.removeAll { it.place == worstPlace.first }
                 placeScoreList.remove(worstPlace)
             }
 
-            updateViewState(RouteDetailViewState.UpdateEstimatedTime(latestEstimateTime))
+            updateViewState(
+                RouteDetailViewState.OnSuggestRouteFinish(
+                    suggestList = suggestPlaceList,
+                    estimatedTime = latestEstimateTime
+                )
+            )
 
             log("\nSuggest list:")
-            suggestPlaceList.forEach { place ->
-                if (place.game != null) {
-                    log(place.game.name)
-                } else {
-                    log(place.name)
+            suggestPlaceList.forEach { routeItem ->
+                routeItem.place.run {
+                    if (game != null) {
+                        log(game.name)
+                    } else {
+                        log(name)
+                    }
                 }
             }
         }
@@ -89,8 +98,8 @@ class RouteDetailViewModel @Inject constructor(
         val entryGate = getNodeByPlaceId(placeRepository.placeEntryGate.id)
         val maxThrillScore = localRepository.listThrillLevel.maxOfOrNull { it.score } ?: 0
 
-        val distanceAndThrills = suggestPlaceList.map { place ->
-            val node = getNodeByPlaceId(place.id)
+        val distanceAndThrills = suggestPlaceList.map { routeItem ->
+            val node = getNodeByPlaceId(routeItem.place.id)
             val distance = if (entryGate != null && node != null) {
                 var mDistance = Float.POSITIVE_INFINITY
                 aStarSearch?.findBestPath(entryGate, node) { _, distance ->
@@ -104,13 +113,13 @@ class RouteDetailViewModel @Inject constructor(
                 Float.POSITIVE_INFINITY
             }
 
-            val invertNormalizerThrillLevel = if (place.game != null) {
-                (maxThrillScore - place.game.thrillLevel.score) / maxThrillScore.toFloat()
+            val invertNormalizerThrillLevel = if (routeItem.place.game != null) {
+                (maxThrillScore - routeItem.place.game.thrillLevel.score) / maxThrillScore.toFloat()
             } else {
                 0f
             }
 
-            Triple(place, distance, invertNormalizerThrillLevel)
+            Triple(routeItem.place, distance, invertNormalizerThrillLevel)
         }.toMutableList()
 
         for (index in distanceAndThrills.indices) {
@@ -137,20 +146,20 @@ class RouteDetailViewModel @Inject constructor(
         val breakTime = 60 * 10
 
         for (i in 0 until suggestPlaceList.size - 1) {
-            val startNode = getNodeByPlaceId(suggestPlaceList[i].id)
-            val endNode = getNodeByPlaceId(suggestPlaceList[i + 1].id)
+            val startNode = getNodeByPlaceId(suggestPlaceList[i].place.id)
+            val endNode = getNodeByPlaceId(suggestPlaceList[i + 1].place.id)
 
             if (startNode != null && endNode != null) {
                 aStarSearch?.findBestPath(startNode, endNode) { _, distance ->
-                    log("${suggestPlaceList[i].game?.name} -> ${suggestPlaceList[i + 1].game?.name}: $distance")
+                    log("${suggestPlaceList[i].place.game?.name} -> ${suggestPlaceList[i + 1].place.game?.name}: $distance")
                     totalDistance += distance
                 }
             }
         }
 
         suggestPlaceList.forEach { place ->
-            totalDurationInSec += if (place.game != null) {
-                (place.game.duration + 120)
+            totalDurationInSec += if (place.place.game != null) {
+                (place.place.game.duration + 120)
             } else {
                 120
             }
@@ -227,9 +236,9 @@ class RouteDetailViewModel @Inject constructor(
         suggestPlaceList.run {
             clear()
             addAll(visited.mapNotNull { it.placeId }
-                .mapNotNull { localRepository.listPlace.getPlaceById(it) })
-            add(0, startPLace)
-            add(finishPLace)
+                .mapNotNull { localRepository.listPlace.getPlaceById(it) }.map { RouteItem(place = it) })
+            add(0, RouteItem(place = startPLace))
+            add(RouteItem(place = finishPLace))
         }
     }
 
@@ -237,7 +246,8 @@ class RouteDetailViewModel @Inject constructor(
         return listNode.filter { node ->
             node.placeId?.let { placeId ->
                 localRepository.listPlace.getPlaceById(placeId)?.let { place ->
-                    suggestPlaceList.filter { it != startPLace || it != finishPLace }
+                    suggestPlaceList.filter { it.place != startPLace || it.place != finishPLace }
+                        .map { it.place }
                         .contains(place)
                 } ?: false
             } ?: false

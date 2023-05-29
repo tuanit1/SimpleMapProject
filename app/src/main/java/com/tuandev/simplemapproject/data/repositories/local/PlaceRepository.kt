@@ -19,7 +19,8 @@ class PlaceRepository(
         name = if (isEnglish) context.getString(R.string.en_place_fountain) else context.getString(
             R.string.vi_place_fountain
         ),
-        zone = zoneRepository.zoneVietnam
+        zone = zoneRepository.zoneVietnam,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeEntryGate = Place(
         id = 2,
@@ -50,35 +51,40 @@ class PlaceRepository(
         name = if (isEnglish) context.getString(R.string.en_place_sun_wheel_stage) else context.getString(
             R.string.vi_place_sun_wheel_stage
         ),
-        zone = zoneRepository.zoneVietnam
+        zone = zoneRepository.zoneVietnam,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeDragonBoat = Place(
         id = 6,
         name = if (isEnglish) context.getString(R.string.en_place_dragon_boat) else context.getString(
             R.string.vi_place_dragon_boat
         ),
-        zone = zoneRepository.zoneVietnam
+        zone = zoneRepository.zoneVietnam,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeBuddhaStatue = Place(
         id = 7,
         name = if (isEnglish) context.getString(R.string.en_place_buddha_statue) else context.getString(
             R.string.vi_place_buddha_statue
         ),
-        zone = zoneRepository.zoneVietnam
+        zone = zoneRepository.zoneVietnam,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeDragonStatue = Place(
         id = 8,
         name = if (isEnglish) context.getString(R.string.en_place_dragon_statue) else context.getString(
             R.string.vi_place_dragon_statue
         ),
-        zone = zoneRepository.zoneJapan
+        zone = zoneRepository.zoneJapan,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeBambooGarden = Place(
         id = 9,
         name = if (isEnglish) context.getString(R.string.en_place_bamboo_garden) else context.getString(
             R.string.vi_place_bamboo_garden
         ),
-        zone = zoneRepository.zoneJapan
+        zone = zoneRepository.zoneJapan,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placePandaRestaurant = Place(
         id = 10,
@@ -93,42 +99,48 @@ class PlaceRepository(
         name = if (isEnglish) context.getString(R.string.en_place_india_stage) else context.getString(
             R.string.vi_place_india_stage
         ),
-        zone = zoneRepository.zoneIndia
+        zone = zoneRepository.zoneIndia,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeTheDark = Place(
         id = 12,
         name = if (isEnglish) context.getString(R.string.en_place_the_dark) else context.getString(
             R.string.vi_place_the_dark
         ),
-        zone = zoneRepository.zoneCambodia
+        zone = zoneRepository.zoneCambodia,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeWaterPlayground = Place(
         id = 13,
         name = if (isEnglish) context.getString(R.string.en_place_water_playground) else context.getString(
             R.string.vi_place_water_playground
         ),
-        zone = zoneRepository.zoneThailand
+        zone = zoneRepository.zoneThailand,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeNepalGate = Place(
         id = 14,
         name = if (isEnglish) context.getString(R.string.en_place_nepal_gate) else context.getString(
             R.string.vi_place_nepal_gate
         ),
-        zone = zoneRepository.zoneNepal
+        zone = zoneRepository.zoneNepal,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeMarinaStage = Place(
         id = 15,
         name = if (isEnglish) context.getString(R.string.en_place_marina_stage) else context.getString(
             R.string.vi_place_marina_stage
         ),
-        zone = zoneRepository.zoneSingapore
+        zone = zoneRepository.zoneSingapore,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeMerlionLake = Place(
         id = 16,
         name = if (isEnglish) context.getString(R.string.en_place_merlion_lake) else context.getString(
             R.string.vi_place_merlion_lake
         ),
-        zone = zoneRepository.zoneSingapore
+        zone = zoneRepository.zoneSingapore,
+        listService = serviceRepository.run { listOf(serviceSightSeeing) }
     )
     val placeIndoRestaurant = Place(
         id = 17,

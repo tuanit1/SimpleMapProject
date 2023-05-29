@@ -5,6 +5,7 @@ import com.tuandev.simplemapproject.data.repositories.local.*
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
@@ -67,4 +68,11 @@ object RepositoryModule {
     ): LocalRepository {
         return LocalRepository(zoneRepository, thrillRepository, placeServiceRepository, placeRepository)
     }
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface RepositoryEntryPoint {
+        fun getPlaceServiceRepository(): PlaceServiceRepository
+    }
+
 }

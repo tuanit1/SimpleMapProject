@@ -10,6 +10,5 @@ data class OptionItem(
     }
 
     fun areContentsTheSame(item: OptionItem) = this == item
-
     fun areItemsTheSame(item: OptionItem) = this.key == item.key
 }

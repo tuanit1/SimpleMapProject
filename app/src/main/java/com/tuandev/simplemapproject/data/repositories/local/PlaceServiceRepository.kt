@@ -47,4 +47,10 @@ class PlaceServiceRepository(
             R.string.vi_place_service_ticket
         )
     )
+    val serviceSightSeeing = PlaceService(
+        id = 7,
+        name = if (isEnglish) context.getString(R.string.en_place_sight_seeing) else context.getString(
+            R.string.vi_place_sight_seeing
+        )
+    )
 }

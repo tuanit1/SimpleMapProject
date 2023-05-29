@@ -24,6 +24,7 @@
     <string name="en_place_service_souvenir">Souvenir shop</string>
     <string name="en_place_service_guest">Guest services</string>
     <string name="en_place_checking_point">Checking point</string>
+    <string name="en_place_sight_seeing">Sight seeing</string>
 
 
     <string name="vi_place_service_medical">Trợ giúp y tế</string>
@@ -32,7 +33,7 @@
     <string name="vi_place_service_ticket">Điểm bán vé</string>
     <string name="vi_place_service_souvenir">Cửa hàng lưu niệm</string>
     <string name="vi_place_service_guest">Chăm sóc khách hàng</string>
-    <string name="vi_place_checking_point">Điểm checking</string>
+    <string name="vi_place_sight_seeing">Điểm tham quan</string>
 
     <!-- Zone-->
     <string name="en_zone_vn">Vietnam zone</string>

@@ -1,6 +1,8 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail
 
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
@@ -9,6 +11,7 @@ import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
 import com.tuandev.simplemapproject.extension.show
 import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.adapter.RouteItemAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -21,14 +24,16 @@ class RouteDetailFragment :
         fun newInstance() = RouteDetailFragment()
     }
 
+    private var routeItemAdapter: RouteItemAdapter? = null
+
     override val viewModel: RouteDetailViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = { viewState ->
         when (viewState) {
-            is RouteDetailViewState.UpdateEstimatedTime -> {
+            is RouteDetailViewState.OnSuggestRouteFinish -> {
                 binding?.run {
                     tvEstimatedTime.show()
-                    tvEstimatedTime.text =
-                        "Estimated time ${getFormattedTimeString(viewState.newEstimatedTime)}"
+                    tvEstimatedTime.text = "Estimated time ${getFormattedTimeString(viewState.estimatedTime)}"
+                    routeItemAdapter?.submitList(viewState.suggestList.toList())
                 }
             }
         }
@@ -36,6 +41,15 @@ class RouteDetailFragment :
 
     override fun initView() {
         viewModel.fetchAllNodesAndLines()
+
+        routeItemAdapter = RouteItemAdapter(requireContext())
+        binding?.run {
+            rvRecommendPlace.run {
+                adapter = routeItemAdapter
+                itemAnimator = DefaultItemAnimator()
+                layoutManager = LinearLayoutManager(context)
+            }
+        }
     }
 
     override fun initListener() {

@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.tuandev.simplemapproject.data.models.OptionItem
+import com.tuandev.simplemapproject.data.models.RouteItem
 
 
 abstract class BaseListAdapter<T : Any, VH : BaseViewHolder<T>> :
@@ -26,6 +27,9 @@ class ItemDiffCallback<T : Any> : DiffUtil.ItemCallback<T>() {
             is OptionItem -> {
                 oldItem.areItemsTheSame(newItem as OptionItem)
             }
+            is RouteItem -> {
+                oldItem.areItemsTheSame(newItem as RouteItem)
+            }
             else -> false
         }
     }
@@ -34,12 +38,10 @@ class ItemDiffCallback<T : Any> : DiffUtil.ItemCallback<T>() {
             is OptionItem -> {
                 oldItem.areContentsTheSame(newItem as OptionItem)
             }
+            is RouteItem -> {
+                oldItem.areContentsTheSame(newItem as RouteItem)
+            }
             else -> false
         }
     }
 }
-
-
-
-
-

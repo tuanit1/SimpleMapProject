@@ -7,4 +7,6 @@ data class Place(
     var listImage: List<String> = mutableListOf(),
     val zone: Zone,
     val game: Game? = null
-)
+) {
+
+}
