@@ -46,12 +46,12 @@ class RouteItemAdapter(
                     llDuration.showIf(game != null)
                     llThrill.showIf(game != null)
                     if (game != null) {
-                        tvPlaceName.text = game.name
+                        tvPlaceName.text = "#${adapterPosition + 1} - ${game.name}"
                         tvDuration.text = "${game.duration}s"
                         tvThrill.text = game.thrillLevel.name
                         ivGame.show()
                     } else {
-                        tvPlaceName.text = name
+                        tvPlaceName.text = "#${adapterPosition + 1} - $name"
                         listService.forEach { service ->
                             when (service){
                                 placeServiceRepository?.serviceFood -> ivFood.show()

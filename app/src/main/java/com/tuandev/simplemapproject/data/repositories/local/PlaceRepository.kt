@@ -14,6 +14,12 @@ class PlaceRepository(
     private val language = Constants.LANGUAGE_EN
     private val isEnglish = language == Constants.LANGUAGE_EN
 
+    val placeStart = Place(
+        id = 0,
+        name = "Your start point",
+        zone = zoneRepository.zoneVietnam
+    )
+
     val placeFountain = Place(
         id = 1,
         name = if (isEnglish) context.getString(R.string.en_place_fountain) else context.getString(

@@ -35,7 +35,7 @@ class RouteDetailViewModel @Inject constructor(
     private var listLine: MutableList<Line> = mutableListOf()
     private var placeScoreList: MutableList<Pair<Place, Float>> = mutableListOf()
     private var latestEstimateTime = 0f
-    private var startPLace = placeRepository.placeFountain
+    private var startNode: Node? = null
     private var finishPLace = placeRepository.placeFountain
 
     fun suggestGame(userFeature: UserFeature) {
@@ -59,12 +59,11 @@ class RouteDetailViewModel @Inject constructor(
                         }.map { RouteItem(place = it) }
                     }
                 )
-                add(0, RouteItem(place = startPLace))
-                add(RouteItem(place = finishPLace))
             }
 
             sortRouteByTSP()
             calculatePlaceScore()
+
 
             log("Desired time: $availableTime")
             while (calculateEstimateTime() > availableTime) {
@@ -95,14 +94,13 @@ class RouteDetailViewModel @Inject constructor(
 
     private fun calculatePlaceScore() {
         var maxDistance = 0f
-        val entryGate = getNodeByPlaceId(placeRepository.placeEntryGate.id)
         val maxThrillScore = localRepository.listThrillLevel.maxOfOrNull { it.score } ?: 0
 
         val distanceAndThrills = suggestPlaceList.map { routeItem ->
             val node = getNodeByPlaceId(routeItem.place.id)
-            val distance = if (entryGate != null && node != null) {
+            val distance = if (startNode != null && node != null) {
                 var mDistance = Float.POSITIVE_INFINITY
-                aStarSearch?.findBestPath(entryGate, node) { _, distance ->
+                aStarSearch?.findBestPath(startNode!!, node) { _, distance ->
                     if (maxDistance < distance) {
                         maxDistance = distance
                     }
@@ -145,19 +143,22 @@ class RouteDetailViewModel @Inject constructor(
         val distanceThresholdToBreakTime = 500 //in second
         val breakTime = 60 * 10
 
-        for (i in 0 until suggestPlaceList.size - 1) {
-            val startNode = getNodeByPlaceId(suggestPlaceList[i].place.id)
-            val endNode = getNodeByPlaceId(suggestPlaceList[i + 1].place.id)
+        val tempList = suggestPlaceList.toMutableList()
+        tempList.add(0, RouteItem(isStart = true, placeRepository.placeStart))
 
-            if (startNode != null && endNode != null) {
-                aStarSearch?.findBestPath(startNode, endNode) { _, distance ->
-                    log("${suggestPlaceList[i].place.game?.name} -> ${suggestPlaceList[i + 1].place.game?.name}: $distance")
+        for (i in 0 until tempList.size - 1) {
+            val start = if (i == 0) startNode else getNodeByPlaceId(tempList[i].place.id)
+            val goal = getNodeByPlaceId(tempList[i + 1].place.id)
+
+            if (start != null && goal != null) {
+                aStarSearch?.findBestPath(start, goal) { _, distance ->
+                    log("${tempList[i].place.run { game?.name ?: name }} -> ${tempList[i + 1].place.run { game?.name ?: name }}: $distance")
                     totalDistance += distance
                 }
             }
         }
 
-        suggestPlaceList.forEach { place ->
+        tempList.forEach { place ->
             totalDurationInSec += if (place.place.game != null) {
                 (place.place.game.duration + 120)
             } else {
@@ -176,6 +177,7 @@ class RouteDetailViewModel @Inject constructor(
 
     private fun getSuggestPlaceNodesWithNeighbor(): List<Node> {
         val placeNodes = getSuggestedPlaceNodes()
+        startNode?.let { placeNodes.add(0, it) }
         val placeNodesWithNeighbor = placeNodes.map { it.copy(neighbors = mutableListOf()) }
 
         placeNodes.forEachIndexed { index, currentNode ->
@@ -233,11 +235,13 @@ class RouteDetailViewModel @Inject constructor(
             stack.pop()
         }
 
+        visited.removeFirst()
+
         suggestPlaceList.run {
             clear()
             addAll(visited.mapNotNull { it.placeId }
-                .mapNotNull { localRepository.listPlace.getPlaceById(it) }.map { RouteItem(place = it) })
-            add(0, RouteItem(place = startPLace))
+                .mapNotNull { localRepository.listPlace.getPlaceById(it) }
+                .map { RouteItem(place = it) })
             add(RouteItem(place = finishPLace))
         }
     }
@@ -246,8 +250,9 @@ class RouteDetailViewModel @Inject constructor(
         return listNode.filter { node ->
             node.placeId?.let { placeId ->
                 localRepository.listPlace.getPlaceById(placeId)?.let { place ->
-                    suggestPlaceList.filter { it.place != startPLace || it.place != finishPLace }
+                    suggestPlaceList
                         .map { it.place }
+                        .filter { it != finishPLace }
                         .contains(place)
                 } ?: false
             } ?: false
@@ -255,7 +260,6 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     private fun List<Place>.getPlaceById(id: Int) = find { it.id == id }
-
     private fun List<Node>.getNodeById(id: String?) = find { it.id == id }
     fun fetchAllNodesAndLines() {
         callApiFromFireStore(
@@ -263,6 +267,8 @@ class RouteDetailViewModel @Inject constructor(
             onSuccess = { nodeResult ->
                 listNode.clear()
                 listNode.addAll(nodeResult.map { it.mapToNode() })
+
+                startNode = listNode.find { it.placeId == placeRepository.placeFountain.id }
 
                 callApiFromFireStore(
                     task = fireStoreRepository.getAllLines(),
