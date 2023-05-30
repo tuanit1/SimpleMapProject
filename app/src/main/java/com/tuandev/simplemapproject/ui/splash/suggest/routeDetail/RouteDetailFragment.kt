@@ -1,5 +1,6 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail
 
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +15,7 @@ import com.tuandev.simplemapproject.extension.show
 import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.adapter.RouteItemAdapter
+import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -35,20 +37,69 @@ class RouteDetailFragment :
         when (viewState) {
             is RouteDetailViewState.OnSuggestRouteFinish -> {
                 binding?.run {
-                    tvEstimatedTime.text = "Estimated time: ${getFormattedTimeString(viewState.estimatedTime)}".handleHighlightSpannable(
-                        listOf("Estimated time:")
+                    tvEstimatedTime.setTextColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            R.color.blackTextColor
+                        )
                     )
+                    tvEstimatedTime.text =
+                        context?.getString(
+                            R.string.estimated_time,
+                            getFormattedTimeString(viewState.estimatedTime)
+                        )?.handleHighlightSpannable(
+                            listOf("Estimated time:")
+                        )
                     routeItemAdapter?.submitList(viewState.suggestList.toList())
                 }
             }
             is RouteDetailViewState.OnSuggestListUpdated -> {
                 mUserFeature?.run {
-                    if(viewState.estimatedTime > availableTime){
-                        routeItemAdapter?.submitList(viewState.suggestList.toList())
-                    } else {
-                        routeItemAdapter?.submitList(viewState.suggestList.toList())
+                    binding?.run {
+                        if (viewState.estimatedTime > availableTime) {
+                            ConfirmMessageDialog(
+                                title = "Message",
+                                message = "This update will reach out your available time. Are you sure to continue?"
+                            ).apply {
+                                successAction = {
+                                    routeItemAdapter?.submitList(viewState.suggestList.toList())
+                                    tvEstimatedTime.setTextColor(
+                                        ContextCompat.getColor(
+                                            requireContext(),
+                                            R.color.maximumRed
+                                        )
+                                    )
+                                    tvEstimatedTime.text = context?.getString(
+                                        R.string.estimated_time,
+                                        getFormattedTimeString(viewState.estimatedTime)
+                                    )?.handleHighlightSpannable(
+                                        listOf("Estimated time:")
+                                    )
+                                }
+                                cancelAction = {
+                                    viewModel.restoreSavedSuggestList()
+                                }
+                            }.show(childFragmentManager, null)
+                        } else {
+                            tvEstimatedTime.setTextColor(
+                                ContextCompat.getColor(
+                                    requireContext(),
+                                    R.color.blackTextColor
+                                )
+                            )
+                            tvEstimatedTime.text = context?.getString(
+                                R.string.estimated_time,
+                                getFormattedTimeString(viewState.estimatedTime)
+                            )?.handleHighlightSpannable(
+                                listOf("Estimated time:")
+                            )
+                            routeItemAdapter?.submitList(viewState.suggestList.toList())
+                        }
                     }
                 }
+            }
+            is RouteDetailViewState.OnUpdateCurrentPlace -> {
+                routeItemAdapter?.notifyItemRangeChanged(0, viewState.suggestList.size)
             }
         }
     }
@@ -80,7 +131,9 @@ class RouteDetailFragment :
             }
 
             btnAddPlace.setOnClickListener {
-                showChoosePlaceDialog()
+                showChoosePlaceDialog { placeId ->
+                    viewModel.handleAddRouteItem(placeId.toInt())
+                }
             }
 
             suggestFragment.run {
@@ -91,17 +144,43 @@ class RouteDetailFragment :
                 }
             }
 
-            routeItemAdapter?.onItemClick = {
+            routeItemAdapter?.onItemClick = { position ->
                 OptionItemDialog(
                     title = "Choose your action",
                     optionList = listOf(
+                        OptionItem(OptionItem.KEY_REPLACE_PLACE, "Replace this place"),
+                        OptionItem(OptionItem.KEY_REMOVE_PLACE, "Remove this place"),
+                        OptionItem(
+                            OptionItem.KEY_UPDATE_CURRENT_PLACE,
+                            "Update your current to this place"
+                        ),
+                        OptionItem(OptionItem.KEY_OPEN_PLACE_DETAIL, "View place's detail")
                     )
-                )
+                ).apply {
+                    onItemClick = { key ->
+                        when (key) {
+                            OptionItem.KEY_REPLACE_PLACE -> {
+                                showChoosePlaceDialog { placeId ->
+                                    viewModel.handleReplaceItem(
+                                        placeId = placeId.toInt(),
+                                        replaceIndex = position
+                                    )
+                                }
+                            }
+                            OptionItem.KEY_REMOVE_PLACE -> {
+                                viewModel.handleDeleteSuggestNode(position)
+                            }
+                            OptionItem.KEY_UPDATE_CURRENT_PLACE -> {
+                                viewModel.updateCurrentPlace(position)
+                            }
+                        }
+                    }
+                }.show(childFragmentManager, null)
             }
         }
     }
 
-    private fun showChoosePlaceDialog() {
+    private fun showChoosePlaceDialog(onItemSelected: (String) -> Unit) {
         val placeOptionList = viewModel.getAddablePlace().map { place ->
             if (place.game != null) {
                 OptionItem(place.id.toString(), "Game: ${place.game.name}")
@@ -116,7 +195,8 @@ class RouteDetailFragment :
             isSearchEnable = true
         ).apply {
             onItemClick = { placeId ->
-                viewModel.handleAddRouteItem(placeId.toInt())
+                onItemSelected(placeId)
+
             }
         }.show(childFragmentManager, null)
     }
@@ -137,12 +217,17 @@ class RouteDetailFragment :
                 tvGameType.text = gameType?.handleHighlightSpannable(listOf("Typical of games:"))
                 tvMaximumThrill.showIf(maxThrill != null)
                 tvMaximumThrill.text =
-                    context?.getString(R.string.maximum_thrill_level, maxThrill?.name)?.handleHighlightSpannable(
-                        listOf("Maximum thrill level:")
+                    context?.getString(R.string.maximum_thrill_level, maxThrill?.name)
+                        ?.handleHighlightSpannable(
+                            listOf("Maximum thrill level:")
+                        )
+                tvAvailableTime.text =
+                    context?.getString(
+                        R.string.available_time,
+                        getFormattedTimeString(availableTime)
+                    )?.handleHighlightSpannable(
+                        listOf("Available time:")
                     )
-                tvAvailableTime.text = "Available time: ${getFormattedTimeString(availableTime)}".handleHighlightSpannable(
-                    listOf("Available time:")
-                )
             }
         }
     }
@@ -150,7 +235,7 @@ class RouteDetailFragment :
     private fun getFormattedTimeString(availableTime: Float): String? {
         val hour = availableTime.toInt()
         val min = ((availableTime - hour) * 60).toInt()
-        return context?.getString(R.string.available_time, hour, min)
+        return context?.getString(R.string.formatted_time, hour, min)
     }
 
 }

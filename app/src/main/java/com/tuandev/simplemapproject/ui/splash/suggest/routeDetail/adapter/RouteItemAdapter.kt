@@ -19,7 +19,7 @@ class RouteItemAdapter(
 ) : BaseListAdapter<RouteItem, RouteItemAdapter.RouteItemViewHolder>() {
 
     private var placeServiceRepository: PlaceServiceRepository? = null
-    var onItemClick: (RouteItem) -> Unit = {}
+    var onItemClick: (Int) -> Unit = {}
 
     init {
         placeServiceRepository = EntryPointAccessors.fromApplication(
@@ -85,7 +85,7 @@ class RouteItemAdapter(
                 }
 
                 cardItem.setOnClickListener {
-                    onItemClick(item)
+                    onItemClick(adapterPosition)
                 }
             }
         }

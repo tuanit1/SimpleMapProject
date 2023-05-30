@@ -2,13 +2,13 @@ package com.tuandev.simplemapproject.widget
 
 import com.tuandev.simplemapproject.base.BaseDialogFragment
 import com.tuandev.simplemapproject.databinding.DialogConfirmMessageBinding
-import com.tuandev.simplemapproject.databinding.DialogErrorMessageBinding
 
 class ConfirmMessageDialog(
     private val title: String,
     private val message: String,
 ) : BaseDialogFragment<DialogConfirmMessageBinding>(DialogConfirmMessageBinding::inflate) {
     var successAction: () -> Unit = {}
+    var cancelAction: () -> Unit = {}
     override fun initView() {
         binding?.run {
             tvTitle.text = title
@@ -18,6 +18,7 @@ class ConfirmMessageDialog(
                 dismiss()
             }
             btnCancel.setOnClickListener {
+                cancelAction()
                 dismiss()
             }
         }

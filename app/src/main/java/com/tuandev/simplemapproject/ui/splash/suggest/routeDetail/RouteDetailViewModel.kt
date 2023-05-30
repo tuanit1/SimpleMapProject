@@ -23,6 +23,8 @@ sealed class RouteDetailViewState : ViewState() {
 
     class OnSuggestListUpdated(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
         RouteDetailViewState()
+
+    class OnUpdateCurrentPlace(val suggestList: MutableList<RouteItem>) : RouteDetailViewState()
 }
 
 @HiltViewModel
@@ -336,23 +338,71 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     fun handleAddRouteItem(placeId: Int) {
-        if (getNodeByPlaceId(placeId) != null){
+        if (getNodeByPlaceId(placeId) != null) {
             localRepository.listPlace.find { it.id == placeId }?.let { place ->
                 saveCurrentSuggestList()
                 suggestPlaceList.add(RouteItem(place = place))
-                handleUpdateSuggestMode()
+                handleUpdateSuggestNode()
             }
-        }else{
+        } else {
             showErrorPopup("Node of this place has not been assigned yet")
         }
     }
 
-    private fun handleUpdateSuggestMode() {
+    fun handleReplaceItem(placeId: Int, replaceIndex: Int) {
+        if (getNodeByPlaceId(placeId) != null) {
+            localRepository.listPlace.find { it.id == placeId }?.let { place ->
+                if (replaceIndex == suggestPlaceList.lastIndex) {
+                    finishPLace = place
+                }
+                saveCurrentSuggestList()
+                suggestPlaceList[replaceIndex] = RouteItem(place = place)
+                handleUpdateSuggestNode()
+            }
+        } else {
+            showErrorPopup("Node of this place has not been assigned yet")
+        }
+    }
+
+    fun handleDeleteSuggestNode(removeIndex: Int) {
+        if (removeIndex == suggestPlaceList.lastIndex) {
+            showErrorPopup("You can not remove the finishing place")
+        } else {
+            suggestPlaceList.removeAt(removeIndex)
+            handleUpdateSuggestNode()
+        }
+    }
+
+    private fun handleUpdateSuggestNode() {
         sortRouteByTSP()
         updateSuggestRouteIndex()
         val newEstimatedTime = calculateEstimateTime()
-        updateViewState(RouteDetailViewState.OnSuggestListUpdated(suggestPlaceList, newEstimatedTime))
+        updateViewState(
+            RouteDetailViewState.OnSuggestListUpdated(
+                suggestPlaceList,
+                newEstimatedTime
+            )
+        )
     }
+
+    fun updateCurrentPlace(position: Int) {
+        val currentIndex = suggestPlaceList.indexOfFirst { it.itemState == RouteItem.SELECTED }
+
+        if (currentIndex != position) {
+            for (i in suggestPlaceList.indices) {
+                val newState = when {
+                    i < position -> RouteItem.VISITED
+                    i == position -> RouteItem.SELECTED
+                    else -> RouteItem.NOT_VISITED
+                }
+                suggestPlaceList[i].itemState = newState
+            }
+            updateViewState(RouteDetailViewState.OnUpdateCurrentPlace(suggestPlaceList))
+        } else {
+            showErrorPopup("You are currently on this place")
+        }
+    }
+
 
     private fun saveCurrentSuggestList() {
         saveSuggestPlaceList.run {
@@ -361,4 +411,10 @@ class RouteDetailViewModel @Inject constructor(
         }
     }
 
+    fun restoreSavedSuggestList() {
+        suggestPlaceList.run {
+            clear()
+            addAll(saveSuggestPlaceList)
+        }
+    }
 }
