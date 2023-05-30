@@ -19,6 +19,7 @@ class RouteItemAdapter(
 ) : BaseListAdapter<RouteItem, RouteItemAdapter.RouteItemViewHolder>() {
 
     private var placeServiceRepository: PlaceServiceRepository? = null
+    var onItemClick: (RouteItem) -> Unit = {}
 
     init {
         placeServiceRepository = EntryPointAccessors.fromApplication(
@@ -46,12 +47,12 @@ class RouteItemAdapter(
                     llDuration.showIf(game != null)
                     llThrill.showIf(game != null)
                     if (game != null) {
-                        tvPlaceName.text = "#${adapterPosition + 1} - ${game.name}"
+                        tvPlaceName.text = "#${item.itemIndex} - ${game.name}"
                         tvDuration.text = "${game.duration}s"
                         tvThrill.text = game.thrillLevel.name
                         ivGame.show()
                     } else {
-                        tvPlaceName.text = "#${adapterPosition + 1} - $name"
+                        tvPlaceName.text = "#${item.itemIndex} - $name"
                         listService.forEach { service ->
                             when (service){
                                 placeServiceRepository?.serviceFood -> ivFood.show()
@@ -64,6 +65,27 @@ class RouteItemAdapter(
                             }
                         }
                     }
+                }
+                when (item.itemState){
+                    RouteItem.NOT_VISITED -> {
+                        rlOutlineCheck.isSelected = false
+                        ivCheck.gone()
+                        pbCurrent.gone()
+                    }
+                    RouteItem.SELECTED -> {
+                        rlOutlineCheck.isSelected = true
+                        ivCheck.gone()
+                        pbCurrent.show()
+                    }
+                    RouteItem.VISITED -> {
+                        rlOutlineCheck.isSelected = true
+                        ivCheck.show()
+                        pbCurrent.gone()
+                    }
+                }
+
+                cardItem.setOnClickListener {
+                    onItemClick(item)
                 }
             }
         }

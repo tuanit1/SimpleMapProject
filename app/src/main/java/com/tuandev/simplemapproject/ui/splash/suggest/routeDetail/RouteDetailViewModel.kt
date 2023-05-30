@@ -20,6 +20,9 @@ import javax.inject.Inject
 sealed class RouteDetailViewState : ViewState() {
     class OnSuggestRouteFinish(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
         RouteDetailViewState()
+
+    class OnSuggestListUpdated(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
+        RouteDetailViewState()
 }
 
 @HiltViewModel
@@ -30,6 +33,7 @@ class RouteDetailViewModel @Inject constructor(
 ) : BaseViewModel<ViewState>() {
 
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
+    private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
     private var aStarSearch: AStarSearch? = null
     private var listLine: MutableList<Line> = mutableListOf()
@@ -37,6 +41,7 @@ class RouteDetailViewModel @Inject constructor(
     private var latestEstimateTime = 0f
     private var startNode: Node? = null
     private var finishPLace = placeRepository.placeFountain
+//    private var currentDest: No
 
     fun suggestGame(userFeature: UserFeature) {
         val listGamePlaces = listNode
@@ -64,13 +69,14 @@ class RouteDetailViewModel @Inject constructor(
             sortRouteByTSP()
             calculatePlaceScore()
 
-
             log("Desired time: $availableTime")
             while (calculateEstimateTime() > availableTime) {
                 val worstPlace = placeScoreList.maxBy { it.second }
                 suggestPlaceList.removeAll { it.place == worstPlace.first }
                 placeScoreList.remove(worstPlace)
             }
+
+            updateSuggestRouteIndex()
 
             updateViewState(
                 RouteDetailViewState.OnSuggestRouteFinish(
@@ -89,6 +95,12 @@ class RouteDetailViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun updateSuggestRouteIndex() {
+        for (i in 0 until suggestPlaceList.size) {
+            suggestPlaceList[i].itemIndex = i + 1
         }
     }
 
@@ -144,7 +156,7 @@ class RouteDetailViewModel @Inject constructor(
         val breakTime = 60 * 10
 
         val tempList = suggestPlaceList.toMutableList()
-        tempList.add(0, RouteItem(isStart = true, placeRepository.placeStart))
+        tempList.add(0, RouteItem(isStart = true, place = placeRepository.placeStart))
 
         for (i in 0 until tempList.size - 1) {
             val start = if (i == 0) startNode else getNodeByPlaceId(tempList[i].place.id)
@@ -201,6 +213,9 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     private fun sortRouteByTSP() {
+        val visitedRouteItems = suggestPlaceList.filter { it.itemState == RouteItem.VISITED }
+        suggestPlaceList.removeAll { it.itemState == RouteItem.VISITED }
+
         val suggestPlaceNodes = getSuggestPlaceNodesWithNeighbor()
         val startNode = suggestPlaceNodes.first()
         val stack = Stack<Node>()
@@ -239,9 +254,15 @@ class RouteDetailViewModel @Inject constructor(
 
         suggestPlaceList.run {
             clear()
+            addAll(visitedRouteItems)
             addAll(visited.mapNotNull { it.placeId }
                 .mapNotNull { localRepository.listPlace.getPlaceById(it) }
-                .map { RouteItem(place = it) })
+                .mapIndexed { index, place ->
+                    RouteItem(
+                        place = place,
+                        itemState = if (index == 0) RouteItem.SELECTED else RouteItem.NOT_VISITED
+                    )
+                })
             add(RouteItem(place = finishPLace))
         }
     }
@@ -308,4 +329,36 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     private fun getNodeByPlaceId(placeId: Int) = listNode.find { it.placeId == placeId }
+    fun getAddablePlace(): List<Place> {
+        return localRepository.listPlace.filter { place ->
+            !suggestPlaceList.map { routeItem -> routeItem.place }.contains(place)
+        }
+    }
+
+    fun handleAddRouteItem(placeId: Int) {
+        if (getNodeByPlaceId(placeId) != null){
+            localRepository.listPlace.find { it.id == placeId }?.let { place ->
+                saveCurrentSuggestList()
+                suggestPlaceList.add(RouteItem(place = place))
+                handleUpdateSuggestMode()
+            }
+        }else{
+            showErrorPopup("Node of this place has not been assigned yet")
+        }
+    }
+
+    private fun handleUpdateSuggestMode() {
+        sortRouteByTSP()
+        updateSuggestRouteIndex()
+        val newEstimatedTime = calculateEstimateTime()
+        updateViewState(RouteDetailViewState.OnSuggestListUpdated(suggestPlaceList, newEstimatedTime))
+    }
+
+    private fun saveCurrentSuggestList() {
+        saveSuggestPlaceList.run {
+            clear()
+            addAll(suggestPlaceList)
+        }
+    }
+
 }

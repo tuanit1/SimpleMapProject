@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="2dp"
     android:layout_marginBottom="10dp"
-    app:cardBackgroundColor="#f2f7fb"
+    app:cardBackgroundColor="@color/routeItemColor"
+    android:id="@+id/cardItem"
     app:cardCornerRadius="15dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -170,18 +171,28 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:background="@drawable/bg_route_item_check"
-            android:padding="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/ivCheck"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="6dp"
                 android:src="@drawable/ic_check"
-                android:visibility="visible"
-                app:tint="@color/white" />
+                android:visibility="gone"
+                app:tint="@color/routeItemColor" />
+
+            <ProgressBar
+                android:id="@+id/pbCurrent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:indeterminate="true"
+                android:layout_margin="4dp"
+                android:visibility="gone"
+                android:indeterminateTint="@color/routeItemColor"/>
+
         </RelativeLayout>
 
         <View

@@ -15,4 +15,5 @@
     <color name="stPatrickBlue">#1f1f7b</color>
     <color name="chineseGold">#d3a100</color>
     <color name="cyanBlueAzure">#3B82CA</color>
+    <color name="routeItemColor">#f2f7fb</color>
 </resources>
