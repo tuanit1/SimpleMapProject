@@ -8,6 +8,7 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.OptionItem
+import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
 import com.tuandev.simplemapproject.extension.handleHighlightSpannable
@@ -35,51 +36,11 @@ class RouteDetailFragment :
     override val viewModel: RouteDetailViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = { viewState ->
         when (viewState) {
-            is RouteDetailViewState.OnSuggestRouteFinish -> {
-                binding?.run {
-                    tvEstimatedTime.setTextColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.blackTextColor
-                        )
-                    )
-                    tvEstimatedTime.text =
-                        context?.getString(
-                            R.string.estimated_time,
-                            getFormattedTimeString(viewState.estimatedTime)
-                        )?.handleHighlightSpannable(
-                            listOf("Estimated time:")
-                        )
-                    routeItemAdapter?.submitList(viewState.suggestList.toList())
-                }
-            }
             is RouteDetailViewState.OnSuggestListUpdated -> {
                 mUserFeature?.run {
                     binding?.run {
                         if (viewState.estimatedTime > availableTime) {
-                            ConfirmMessageDialog(
-                                title = "Message",
-                                message = "This update will reach out your available time. Are you sure to continue?"
-                            ).apply {
-                                successAction = {
-                                    routeItemAdapter?.submitList(viewState.suggestList.toList())
-                                    tvEstimatedTime.setTextColor(
-                                        ContextCompat.getColor(
-                                            requireContext(),
-                                            R.color.maximumRed
-                                        )
-                                    )
-                                    tvEstimatedTime.text = context?.getString(
-                                        R.string.estimated_time,
-                                        getFormattedTimeString(viewState.estimatedTime)
-                                    )?.handleHighlightSpannable(
-                                        listOf("Estimated time:")
-                                    )
-                                }
-                                cancelAction = {
-                                    viewModel.restoreSavedSuggestList()
-                                }
-                            }.show(childFragmentManager, null)
+                            showDialogReachOutTime(viewState)
                         } else {
                             tvEstimatedTime.setTextColor(
                                 ContextCompat.getColor(
@@ -94,6 +55,7 @@ class RouteDetailFragment :
                                 listOf("Estimated time:")
                             )
                             routeItemAdapter?.submitList(viewState.suggestList.toList())
+                            (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList())
                         }
                     }
                 }
@@ -102,6 +64,34 @@ class RouteDetailFragment :
                 routeItemAdapter?.notifyItemRangeChanged(0, viewState.suggestList.size)
             }
         }
+    }
+
+    private fun showDialogReachOutTime(viewState: RouteDetailViewState.OnSuggestListUpdated) {
+        ConfirmMessageDialog(
+            title = "Message",
+            message = "This update will reach out your available time. Are you sure to continue?"
+        ).apply {
+            successAction = {
+                binding?.run {
+                    routeItemAdapter?.submitList(viewState.suggestList.toList())
+                    tvEstimatedTime.setTextColor(
+                        ContextCompat.getColor(
+                            requireContext(),
+                            R.color.maximumRed
+                        )
+                    )
+                    tvEstimatedTime.text = context?.getString(
+                        R.string.estimated_time,
+                        getFormattedTimeString(viewState.estimatedTime)
+                    )?.handleHighlightSpannable(
+                        listOf("Estimated time:")
+                    )
+                }
+            }
+            cancelAction = {
+                viewModel.restoreSavedSuggestList()
+            }
+        }.show(childFragmentManager, null)
     }
 
     override fun initView() {
@@ -114,6 +104,12 @@ class RouteDetailFragment :
                 itemAnimator = DefaultItemAnimator()
                 layoutManager = LinearLayoutManager(context)
             }
+        }
+
+        (parentFragment as? SuggestFragment)?.getSaveSuggestList()?.let { saveSuggestList ->
+//            viewModel.updateSuggestList(saveSuggestList)
+            //store UserFeature to Room DB
+            routeItemAdapter?.submitList(saveSuggestList)
         }
     }
 
@@ -160,11 +156,15 @@ class RouteDetailFragment :
                     onItemClick = { key ->
                         when (key) {
                             OptionItem.KEY_REPLACE_PLACE -> {
-                                showChoosePlaceDialog { placeId ->
-                                    viewModel.handleReplaceItem(
-                                        placeId = placeId.toInt(),
-                                        replaceIndex = position
-                                    )
+                                if (viewModel.getSuggestList()[position].itemState == RouteItem.VISITED) {
+                                    viewModel.showMessagePopup("Replacing a VISITED place is not allowed")
+                                } else {
+                                    showChoosePlaceDialog { placeId ->
+                                        viewModel.handleReplaceItem(
+                                            placeId = placeId.toInt(),
+                                            replaceIndex = position
+                                        )
+                                    }
                                 }
                             }
                             OptionItem.KEY_REMOVE_PLACE -> {

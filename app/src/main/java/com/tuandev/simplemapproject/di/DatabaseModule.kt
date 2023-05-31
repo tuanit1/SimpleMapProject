@@ -3,9 +3,6 @@ package com.tuandev.simplemapproject.di
 import android.content.Context
 import androidx.room.Room
 import com.tuandev.simplemapproject.data.database.AppDatabase
-import com.tuandev.simplemapproject.data.database.daos.LineDao
-import com.tuandev.simplemapproject.data.database.daos.NodeDao
-import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,19 +15,10 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(context, AppDatabase::class.java, "db").build()
-    }
+    fun provideAppDatabase(@ApplicationContext context: Context) =
+        Room.databaseBuilder(context, AppDatabase::class.java, "db").build()
 
-    @Provides
     @Singleton
-    fun provideLineDao(appDatabase: AppDatabase): LineDao {
-        return appDatabase.lineDao()
-    }
-
     @Provides
-    @Singleton
-    fun provideNodeDao(appDatabase: AppDatabase): NodeDao {
-        return appDatabase.nodeDao()
-    }
+    fun provideSuggestRouteDao(db: AppDatabase) = db.suggestRouteDao()
 }

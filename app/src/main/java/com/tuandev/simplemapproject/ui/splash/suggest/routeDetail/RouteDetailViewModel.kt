@@ -18,9 +18,6 @@ import java.util.*
 import javax.inject.Inject
 
 sealed class RouteDetailViewState : ViewState() {
-    class OnSuggestRouteFinish(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
-        RouteDetailViewState()
-
     class OnSuggestListUpdated(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
         RouteDetailViewState()
 
@@ -43,7 +40,6 @@ class RouteDetailViewModel @Inject constructor(
     private var latestEstimateTime = 0f
     private var startNode: Node? = null
     private var finishPLace = placeRepository.placeFountain
-//    private var currentDest: No
 
     fun suggestGame(userFeature: UserFeature) {
         val listGamePlaces = listNode
@@ -81,7 +77,7 @@ class RouteDetailViewModel @Inject constructor(
             updateSuggestRouteIndex()
 
             updateViewState(
-                RouteDetailViewState.OnSuggestRouteFinish(
+                RouteDetailViewState.OnSuggestListUpdated(
                     suggestList = suggestPlaceList,
                     estimatedTime = latestEstimateTime
                 )
@@ -403,7 +399,6 @@ class RouteDetailViewModel @Inject constructor(
         }
     }
 
-
     private fun saveCurrentSuggestList() {
         saveSuggestPlaceList.run {
             clear()
@@ -415,6 +410,21 @@ class RouteDetailViewModel @Inject constructor(
         suggestPlaceList.run {
             clear()
             addAll(saveSuggestPlaceList)
+        }
+    }
+
+    fun getSuggestList() = suggestPlaceList
+    fun updateSuggestList(suggestList: List<RouteItem>) {
+        suggestPlaceList.run {
+            clear()
+            addAll(suggestList)
+            val newEstimatedTime = calculateEstimateTime()
+            updateViewState(
+                RouteDetailViewState.OnSuggestListUpdated(
+                    suggestPlaceList,
+                    newEstimatedTime
+                )
+            )
         }
     }
 }
