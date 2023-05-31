@@ -2,6 +2,7 @@ package com.tuandev.simplemapproject.widget.markerselecteddialog
 
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tuandev.simplemapproject.base.BaseDialogFragment
 import com.tuandev.simplemapproject.data.models.OptionItem
@@ -34,6 +35,12 @@ class OptionItemDialog(
                 adapter = optionAdapter
                 layoutManager = LinearLayoutManager(context)
                 itemAnimator = DefaultItemAnimator()
+                addItemDecoration(
+                    DividerItemDecoration(
+                        requireContext(),
+                        DividerItemDecoration.VERTICAL
+                    )
+                )
             }
 
             rlSearch.showIf(isSearchEnable)

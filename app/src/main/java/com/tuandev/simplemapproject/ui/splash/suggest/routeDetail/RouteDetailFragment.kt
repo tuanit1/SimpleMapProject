@@ -148,13 +148,13 @@ class RouteDetailFragment :
                 OptionItemDialog(
                     title = "Choose your action",
                     optionList = listOf(
-                        OptionItem(OptionItem.KEY_REPLACE_PLACE, "Replace this place"),
-                        OptionItem(OptionItem.KEY_REMOVE_PLACE, "Remove this place"),
+                        OptionItem(OptionItem.KEY_OPEN_PLACE_DETAIL, "View place's detail"),
                         OptionItem(
                             OptionItem.KEY_UPDATE_CURRENT_PLACE,
                             "Update your current to this place"
                         ),
-                        OptionItem(OptionItem.KEY_OPEN_PLACE_DETAIL, "View place's detail")
+                        OptionItem(OptionItem.KEY_REPLACE_PLACE, "Replace this place"),
+                        OptionItem(OptionItem.KEY_REMOVE_PLACE, "Remove this place")
                     )
                 ).apply {
                     onItemClick = { key ->
