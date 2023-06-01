@@ -11,6 +11,7 @@ import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.suggestMap.SuggestMapFragment
+import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -36,7 +37,18 @@ class SuggestFragment :
     private fun listenOnLiveData() {
         viewModel.run {
             mUserFeature.observe(viewLifecycleOwner) { userFeature ->
-                onUserFeatureUpdatedListener(userFeature)
+                if (userFeature != null) {
+                    onUserFeatureUpdatedListener(userFeature)
+                } else {
+                    ConfirmMessageDialog(
+                        title = "Message",
+                        message = "At first, we need to know how do you want to play in Asia Park."
+                    ).apply {
+                        successAction = {
+                            showFeatureQuestionFragment(true)
+                        }
+                    }.show(childFragmentManager, null)
+                }
             }
 
             suggestRouteDao.getAll().observe(viewLifecycleOwner) { suggestList ->
@@ -64,10 +76,12 @@ class SuggestFragment :
         )
     }
 
-    fun showFeatureQuestionFragment() {
+    fun showFeatureQuestionFragment(isInitFeature: Boolean) {
         openFragment(
             containerId = getContainerId(),
-            fragment = FeatureQuestionFragment.newInstance()
+            fragment = FeatureQuestionFragment.newInstance().apply {
+                this.isInitFeature = isInitFeature
+            }
         )
     }
 
@@ -80,4 +94,5 @@ class SuggestFragment :
     }
 
     fun getSaveSuggestList() = viewModel.getSuggestList()
+    fun getUserFeature() = viewModel.mUserFeature.value
 }

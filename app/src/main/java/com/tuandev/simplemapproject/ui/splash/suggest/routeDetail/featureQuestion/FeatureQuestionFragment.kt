@@ -15,12 +15,12 @@ import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestio
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionThrillLevel.QuestionThrillLevelFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionTimeLimit.QuestionTimeLimitFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.questionTimeType.QuestionTimeTypeFragment
-import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 
 class FeatureQuestionFragment : Fragment() {
 
     private var binding: FragmentFeatureQuestionBinding? = null
     val mUserFeature = UserFeature()
+    var isInitFeature = false
 
     companion object {
         fun newInstance() = FeatureQuestionFragment()
@@ -85,6 +85,10 @@ class FeatureQuestionFragment : Fragment() {
             (parentFragment as SuggestFragment).run {
                 updateUserFeature(mUserFeature)
                 childFragmentManager.popBackStack()
+
+                if (isInitFeature) {
+                    showRouteDetailFragment()
+                }
             }
         }
     }

@@ -20,11 +20,16 @@ class SuggestViewModel @Inject constructor(
     private val localRepository: LocalRepository
 ) : BaseViewModel<ViewState>() {
 
-    var mUserFeature: MutableLiveData<UserFeature> = MutableLiveData()
+    var mUserFeature: MutableLiveData<UserFeature?> = MutableLiveData()
     var mSuggestList: MutableList<SaveSuggestRoute> = mutableListOf()
+
+    init {
+        mUserFeature.value = localRepository.getUserFeature()
+    }
 
     fun updateUserFeature(userFeature: UserFeature) {
         mUserFeature.value = userFeature
+        localRepository.saveUserFeature(userFeature)
     }
 
     fun updateSuggestList(suggestList: List<RouteItem>) {

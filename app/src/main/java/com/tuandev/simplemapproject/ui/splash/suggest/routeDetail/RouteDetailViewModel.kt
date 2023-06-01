@@ -22,6 +22,8 @@ sealed class RouteDetailViewState : ViewState() {
         RouteDetailViewState()
 
     class OnUpdateCurrentPlace(val suggestList: MutableList<RouteItem>) : RouteDetailViewState()
+
+    object OnFetchNodeLineDataSuccess : RouteDetailViewState()
 }
 
 @HiltViewModel
@@ -31,6 +33,7 @@ class RouteDetailViewModel @Inject constructor(
     private val fireStoreRepository: FireStoreRepository,
 ) : BaseViewModel<ViewState>() {
 
+    var mUserFeature: UserFeature? = null
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
@@ -41,13 +44,13 @@ class RouteDetailViewModel @Inject constructor(
     private var startNode: Node? = null
     private var finishPLace = placeRepository.placeFountain
 
-    fun suggestGame(userFeature: UserFeature) {
+    fun suggestRoute() {
         val listGamePlaces = listNode
             .mapNotNull { it.placeId }
             .mapNotNull { localRepository.listPlace.getPlaceById(it) }
             .filter { it.game != null }
 
-        userFeature.run {
+        mUserFeature?.run {
             suggestPlaceList.run {
                 clear()
                 addAll(
@@ -297,6 +300,7 @@ class RouteDetailViewModel @Inject constructor(
                             listLine.addAll(lineResult.map { it.mapToLine() })
                             listNode.updateNeighbors()
                             aStarSearch = AStarSearch(listNode)
+                            updateViewState(RouteDetailViewState.OnFetchNodeLineDataSuccess)
                         }
                     },
                     isShowLoading = true

@@ -9,7 +9,6 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.data.models.RouteItem
-import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentRouteDetailBinding
 import com.tuandev.simplemapproject.extension.handleHighlightSpannable
 import com.tuandev.simplemapproject.extension.show
@@ -31,13 +30,12 @@ class RouteDetailFragment :
     }
 
     private var routeItemAdapter: RouteItemAdapter? = null
-    private var mUserFeature: UserFeature? = null
 
     override val viewModel: RouteDetailViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = { viewState ->
         when (viewState) {
             is RouteDetailViewState.OnSuggestListUpdated -> {
-                mUserFeature?.run {
+                viewModel.mUserFeature?.run {
                     binding?.run {
                         if (viewState.estimatedTime > availableTime) {
                             showDialogReachOutTime(viewState)
@@ -62,6 +60,9 @@ class RouteDetailFragment :
             }
             is RouteDetailViewState.OnUpdateCurrentPlace -> {
                 routeItemAdapter?.notifyItemRangeChanged(0, viewState.suggestList.size)
+            }
+            is RouteDetailViewState.OnFetchNodeLineDataSuccess -> {
+                handleLoadLocalData()
             }
         }
     }
@@ -95,8 +96,6 @@ class RouteDetailFragment :
     }
 
     override fun initView() {
-        viewModel.fetchAllNodesAndLines()
-
         routeItemAdapter = RouteItemAdapter(requireContext())
         binding?.run {
             rvRecommendPlace.run {
@@ -106,10 +105,28 @@ class RouteDetailFragment :
             }
         }
 
-        (parentFragment as? SuggestFragment)?.getSaveSuggestList()?.let { saveSuggestList ->
-//            viewModel.updateSuggestList(saveSuggestList)
-            //store UserFeature to Room DB
-            routeItemAdapter?.submitList(saveSuggestList)
+        viewModel.fetchAllNodesAndLines()
+    }
+
+    private fun handleLoadLocalData() {
+        (parentFragment as? SuggestFragment)?.run {
+            viewModel.run {
+                mUserFeature = getUserFeature()
+
+                if (mUserFeature != null) {
+                    updateFeatureView()
+                    getSaveSuggestList().let { saveSuggestList ->
+                        if (saveSuggestList.isNotEmpty()) {
+                            viewModel.updateSuggestList(saveSuggestList)
+                        } else {
+                            suggestRoute()
+                        }
+                    }
+                } else {
+                    showFeatureQuestionFragment(false)
+                }
+            }
+
         }
     }
 
@@ -123,7 +140,7 @@ class RouteDetailFragment :
             }
 
             btnRegenerateRoute.setOnClickListener {
-                (parentFragment as? SuggestFragment)?.showFeatureQuestionFragment()
+                (parentFragment as? SuggestFragment)?.showFeatureQuestionFragment(false)
             }
 
             btnAddPlace.setOnClickListener {
@@ -134,9 +151,12 @@ class RouteDetailFragment :
 
             suggestFragment.run {
                 onUserFeatureUpdatedListener = { userFeature ->
-                    mUserFeature = userFeature
-                    updateFeatureView(userFeature)
-                    suggestRoute(userFeature)
+                    viewModel.run {
+                        mUserFeature = userFeature
+                        updateFeatureView()
+                        suggestRoute()
+                    }
+
                 }
             }
 
@@ -201,13 +221,10 @@ class RouteDetailFragment :
         }.show(childFragmentManager, null)
     }
 
-    private fun suggestRoute(userFeature: UserFeature) {
-        viewModel.suggestGame(userFeature)
-    }
-
-    private fun updateFeatureView(userFeature: UserFeature) {
+    private fun updateFeatureView() {
         binding?.run {
-            userFeature.run {
+            viewModel.mUserFeature?.run {
+                llButton.show()
                 llUserFeature.show()
                 val gameType = when {
                     isFamilyOnly -> context?.getString(R.string.game_type, "Family")

@@ -61,12 +61,19 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideLocalRepository(
+        @ApplicationContext context: Context,
         zoneRepository: ZoneRepository,
         thrillRepository: ThrillLevelRepository,
         placeServiceRepository: PlaceServiceRepository,
         placeRepository: PlaceRepository,
     ): LocalRepository {
-        return LocalRepository(zoneRepository, thrillRepository, placeServiceRepository, placeRepository)
+        return LocalRepository(
+            context,
+            zoneRepository,
+            thrillRepository,
+            placeServiceRepository,
+            placeRepository
+        )
     }
 
     @EntryPoint
