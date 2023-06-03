@@ -3,6 +3,7 @@ package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.adapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseListAdapter
 import com.tuandev.simplemapproject.base.BaseViewHolder
 import com.tuandev.simplemapproject.data.models.RouteItem
@@ -42,7 +43,6 @@ class RouteItemAdapter(
     ) : BaseViewHolder<RouteItem>(binding.root) {
         override fun bind(item: RouteItem) {
             binding.run {
-                hideAllServiceImage()
                 item.place.run {
                     llDuration.showIf(game != null)
                     llThrill.showIf(game != null)
@@ -50,20 +50,10 @@ class RouteItemAdapter(
                         tvPlaceName.text = "#${item.itemIndex} - ${game.name}"
                         tvDuration.text = "${game.duration}s"
                         tvThrill.text = game.thrillLevel.name
-                        ivGame.show()
+                        ivServiceType.setRes(R.drawable.ic_game_node)
                     } else {
                         tvPlaceName.text = "#${item.itemIndex} - $name"
-                        listService.forEach { service ->
-                            when (service){
-                                placeServiceRepository?.serviceFood -> ivFood.show()
-                                placeServiceRepository?.serviceGuest -> ivCustomerService.show()
-                                placeServiceRepository?.serviceWC -> ivWC.show()
-                                placeServiceRepository?.serviceMedical -> ivMed.show()
-                                placeServiceRepository?.serviceSouvenir -> ivSourvenir.show()
-                                placeServiceRepository?.serviceTicket -> ivTicket.show()
-                                placeServiceRepository?.serviceSightSeeing -> ivSightSeeing.show()
-                            }
-                        }
+                        ivServiceType.setRes(serviceType?.imgRes ?: R.drawable.ic_place_node)
                     }
                 }
                 when (item.itemState){
@@ -87,19 +77,6 @@ class RouteItemAdapter(
                 cardItem.setOnClickListener {
                     onItemClick(adapterPosition)
                 }
-            }
-        }
-
-        private fun hideAllServiceImage() {
-            binding.run {
-                ivGame.gone()
-                ivWC.gone()
-                ivCustomerService.gone()
-                ivFood.gone()
-                ivMed.gone()
-                ivSourvenir.gone()
-                ivTicket.gone()
-                ivSightSeeing.gone()
             }
         }
     }

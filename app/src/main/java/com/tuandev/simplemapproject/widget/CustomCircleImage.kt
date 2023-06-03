@@ -41,4 +41,8 @@ class CustomCircleImage @JvmOverloads constructor(
             styleAttrs.recycle()
         }
     }
+
+    fun setRes(res: Int) {
+        binding?.iv?.setImageResource(res)
+    }
 }

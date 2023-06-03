@@ -21,7 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RouteDetailFragment :
-    BaseFragment<FragmentRouteDetailBinding, RouteDetailViewModel, ViewState>(
+    BaseFragment<FragmentRouteDetailBinding, RouteDetailViewModel, RouteDetailViewState>(
         FragmentRouteDetailBinding::inflate
     ) {
 
@@ -36,25 +36,10 @@ class RouteDetailFragment :
         when (viewState) {
             is RouteDetailViewState.OnSuggestListUpdated -> {
                 viewModel.mUserFeature?.run {
-                    binding?.run {
-                        if (viewState.estimatedTime > availableTime) {
-                            showDialogReachOutTime(viewState)
-                        } else {
-                            tvEstimatedTime.setTextColor(
-                                ContextCompat.getColor(
-                                    requireContext(),
-                                    R.color.blackTextColor
-                                )
-                            )
-                            tvEstimatedTime.text = context?.getString(
-                                R.string.estimated_time,
-                                getFormattedTimeString(viewState.estimatedTime)
-                            )?.handleHighlightSpannable(
-                                listOf("Estimated time:")
-                            )
-                            routeItemAdapter?.submitList(viewState.suggestList.toList())
-                            (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList())
-                        }
+                    if (viewState.estimatedTime > availableTime) {
+                        showDialogReachOutTime(viewState)
+                    } else {
+                        handleUpdateUserFeatureView(viewState)
                     }
                 }
             }
@@ -67,27 +52,43 @@ class RouteDetailFragment :
         }
     }
 
+    private fun handleUpdateUserFeatureView(viewState: RouteDetailViewState.OnSuggestListUpdated) {
+        binding?.run {
+            viewModel.mUserFeature?.run {
+                tvEstimatedTime.setTextColor(
+                    if (viewState.estimatedTime > availableTime)
+                        ContextCompat.getColor(
+                            requireContext(),
+                            R.color.maximumRed
+                        )
+                    else
+                        ContextCompat.getColor(
+                            requireContext(),
+                            R.color.blackTextColor
+                        )
+                )
+                tvEstimatedTime.text = context?.getString(
+                    R.string.estimated_time,
+                    getFormattedTimeString(viewState.estimatedTime)
+                )?.handleHighlightSpannable(
+                    listOf("Estimated time:")
+                )
+                routeItemAdapter?.submitList(viewState.suggestList.toList())
+
+                if (!viewState.isUpdateViewOnly) {
+                    (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList())
+                }
+            }
+        }
+    }
+
     private fun showDialogReachOutTime(viewState: RouteDetailViewState.OnSuggestListUpdated) {
         ConfirmMessageDialog(
             title = "Message",
             message = "This update will reach out your available time. Are you sure to continue?"
         ).apply {
             successAction = {
-                binding?.run {
-                    routeItemAdapter?.submitList(viewState.suggestList.toList())
-                    tvEstimatedTime.setTextColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.maximumRed
-                        )
-                    )
-                    tvEstimatedTime.text = context?.getString(
-                        R.string.estimated_time,
-                        getFormattedTimeString(viewState.estimatedTime)
-                    )?.handleHighlightSpannable(
-                        listOf("Estimated time:")
-                    )
-                }
+                handleUpdateUserFeatureView(viewState)
             }
             cancelAction = {
                 viewModel.restoreSavedSuggestList()
@@ -104,7 +105,6 @@ class RouteDetailFragment :
                 layoutManager = LinearLayoutManager(context)
             }
         }
-
         viewModel.fetchAllNodesAndLines()
     }
 

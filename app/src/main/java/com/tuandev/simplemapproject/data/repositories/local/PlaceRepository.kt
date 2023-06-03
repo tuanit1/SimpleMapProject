@@ -26,7 +26,7 @@ class PlaceRepository(
             R.string.vi_place_fountain
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeEntryGate = Place(
         id = 2,
@@ -34,7 +34,7 @@ class PlaceRepository(
             R.string.vi_place_entry_gate
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceGuest, serviceSouvenir, serviceTicket) }
+        serviceType = serviceRepository.serviceTicket,
     )
     val placeSightSeeingCabin = Place(
         id = 3,
@@ -42,7 +42,7 @@ class PlaceRepository(
             R.string.vi_place_sightseeing_cabin
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceFood) }
+        serviceType = serviceRepository.serviceFood,
     )
     val placeNightMarket = Place(
         id = 4,
@@ -50,7 +50,7 @@ class PlaceRepository(
             R.string.vi_place_night_market
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceFood) }
+        serviceType = serviceRepository.serviceFood,
     )
     val placeSunWheelStage = Place(
         id = 5,
@@ -58,7 +58,7 @@ class PlaceRepository(
             R.string.vi_place_sun_wheel_stage
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeDragonBoat = Place(
         id = 6,
@@ -66,7 +66,7 @@ class PlaceRepository(
             R.string.vi_place_dragon_boat
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeBuddhaStatue = Place(
         id = 7,
@@ -74,7 +74,7 @@ class PlaceRepository(
             R.string.vi_place_buddha_statue
         ),
         zone = zoneRepository.zoneVietnam,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeDragonStatue = Place(
         id = 8,
@@ -82,7 +82,7 @@ class PlaceRepository(
             R.string.vi_place_dragon_statue
         ),
         zone = zoneRepository.zoneJapan,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeBambooGarden = Place(
         id = 9,
@@ -90,7 +90,7 @@ class PlaceRepository(
             R.string.vi_place_bamboo_garden
         ),
         zone = zoneRepository.zoneJapan,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placePandaRestaurant = Place(
         id = 10,
@@ -98,7 +98,7 @@ class PlaceRepository(
             R.string.vi_place_panda_restaurant
         ),
         zone = zoneRepository.zoneChina,
-        listService = serviceRepository.run { listOf(serviceFood) }
+        serviceType = serviceRepository.serviceFood,
     )
     val placeIndiaStage = Place(
         id = 11,
@@ -106,7 +106,7 @@ class PlaceRepository(
             R.string.vi_place_india_stage
         ),
         zone = zoneRepository.zoneIndia,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeTheDark = Place(
         id = 12,
@@ -114,7 +114,7 @@ class PlaceRepository(
             R.string.vi_place_the_dark
         ),
         zone = zoneRepository.zoneCambodia,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeWaterPlayground = Place(
         id = 13,
@@ -122,7 +122,7 @@ class PlaceRepository(
             R.string.vi_place_water_playground
         ),
         zone = zoneRepository.zoneThailand,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeNepalGate = Place(
         id = 14,
@@ -130,7 +130,7 @@ class PlaceRepository(
             R.string.vi_place_nepal_gate
         ),
         zone = zoneRepository.zoneNepal,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeMarinaStage = Place(
         id = 15,
@@ -138,7 +138,7 @@ class PlaceRepository(
             R.string.vi_place_marina_stage
         ),
         zone = zoneRepository.zoneSingapore,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeMerlionLake = Place(
         id = 16,
@@ -146,7 +146,7 @@ class PlaceRepository(
             R.string.vi_place_merlion_lake
         ),
         zone = zoneRepository.zoneSingapore,
-        listService = serviceRepository.run { listOf(serviceSightSeeing) }
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeIndoRestaurant = Place(
         id = 17,
@@ -154,7 +154,7 @@ class PlaceRepository(
             R.string.vi_place_indo_restaurant
         ),
         zone = zoneRepository.zoneIndonesia,
-        listService = serviceRepository.run { listOf(serviceFood) }
+        serviceType = serviceRepository.serviceFood,
     )
     val gamePlaceSunWheel = Place(
         id = 18,

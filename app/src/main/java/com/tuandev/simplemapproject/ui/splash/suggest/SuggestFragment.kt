@@ -26,6 +26,9 @@ class SuggestFragment :
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
+    var onSuggestRouteUpdatedListener: (List<RouteItem>) -> Unit = {}
+    private var isLoadRouteFromMapFragment = true
+
     override fun initView() {
         openSuggestMapFragment()
     }
@@ -56,6 +59,10 @@ class SuggestFragment :
                     clear()
                     addAll(suggestList)
                 }
+                if (!isLoadRouteFromMapFragment) {
+                    onSuggestRouteUpdatedListener(getSuggestList())
+                }
+                isLoadRouteFromMapFragment = false
             }
         }
     }

@@ -94,75 +94,11 @@
             app:layout_constraintTop_toBottomOf="@+id/llThrill">
 
             <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivGame"
+                android:id="@+id/ivServiceType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="5dp"
                 android:src="@drawable/ic_game_node"
-                android:visibility="visible"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivSightSeeing"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_place_node"
-                android:visibility="gone"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivMed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_medical"
-                android:visibility="gone"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivFood"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_restaurant"
-                android:visibility="gone"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivTicket"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_ticket"
-                android:visibility="gone"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivWC"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="5dp"
-                android:adjustViewBounds="true"
-                android:src="@drawable/ic_toilet"
-                android:visibility="gone" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivSourvenir"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_sourvenir"
-                android:visibility="gone"
-                app:size="30dp" />
-
-            <com.tuandev.simplemapproject.widget.CustomCircleImage
-                android:id="@+id/ivCustomerService"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="5dp"
-                android:src="@drawable/ic_customer"
-                android:visibility="gone"
                 app:size="30dp" />
         </LinearLayout>
 

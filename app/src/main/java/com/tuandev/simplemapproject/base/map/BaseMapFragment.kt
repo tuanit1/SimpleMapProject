@@ -15,7 +15,9 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
+import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.extension.toRoundedFloat
@@ -61,9 +63,12 @@ class BaseMapFragment :
     var onPolylineClick: (Polyline) -> Unit = {}
     var onNodeAdded: (Node) -> Unit = {}
     var onLineAdded: (Line) -> Unit = {}
+    var onNodesLinesLoaded: () -> Unit = {}
     private var lastSelectedMarker: Marker? = null
     private var aStarSearch: AStarSearch? = null
     private var currentGuildPath: Polyline? = null
+    private var allSuggestPaths: MutableList<Polyline> = mutableListOf()
+    private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -78,12 +83,20 @@ class BaseMapFragment :
             }
 
             is BaseMapViewState.GetNodesSuccess -> {
-                loadAllNodeToMap()
+                when (mapMode) {
+                    MapMode.TOOL -> loadAllNodeToMap()
+                    MapMode.SUGGEST_ROUTE -> {}
+                }
             }
 
             is BaseMapViewState.GetLinesSuccess -> {
-                loadAllLineToMap()
+
                 initAStarSearch()
+
+                when (mapMode) {
+                    MapMode.TOOL -> loadAllLineToMap()
+                    MapMode.SUGGEST_ROUTE -> onNodesLinesLoaded()
+                }
             }
 
             is BaseMapViewState.ToggleLine -> {
@@ -146,9 +159,12 @@ class BaseMapFragment :
 
         mapMode = arguments?.getString("mapMode") ?: ""
 
+        val mapType =
+            if (mapMode == MapMode.SUGGEST_ROUTE) GoogleMap.MAP_TYPE_HYBRID else GoogleMap.MAP_TYPE_NORMAL
+
         supportMapFragment = SupportMapFragment.newInstance(
             GoogleMapOptions()
-                .mapType(GoogleMap.MAP_TYPE_NORMAL)
+                .mapType(mapType)
                 .rotateGesturesEnabled(false)
                 .compassEnabled(false)
                 .minZoomPreference(17f)
@@ -166,7 +182,7 @@ class BaseMapFragment :
         when (mapMode) {
             MapMode.TOOL -> viewModel.fetchAllNodesAndLines()
             MapMode.EXPLORE -> {}
-            MapMode.SUGGEST_ROUTE -> {}
+            MapMode.SUGGEST_ROUTE -> viewModel.fetchAllNodesAndLines()
         }
     }
 
@@ -302,7 +318,7 @@ class BaseMapFragment :
     private fun drawLine(node1: Marker, node2: Marker, id: String? = null): Polyline? =
         mMap?.addPolyline(
             PolylineOptions()
-                .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
+                .color(ContextCompat.getColor(requireContext(), R.color.lineColor))
                 .add(node1.position, node2.position)
                 .clickable(true)
                 .width(10f)
@@ -310,13 +326,13 @@ class BaseMapFragment :
             tag = id
         }
 
-    private fun handleDrawGuildPath(nodes: List<Node>) {
-        currentGuildPath?.remove()
-        currentGuildPath = mMap?.addPolyline(
+    private fun handleDrawGuildPath(nodes: List<Node>): Polyline? {
+        return mMap?.addPolyline(
             PolylineOptions()
-                .color(ContextCompat.getColor(requireContext(), R.color.redPastel))
+                .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
                 .addAll(nodes.map { LatLng(it.latitude, it.longitude) })
-                .width(30f)
+                .jointType(JointType.ROUND)
+                .width(20f)
         )
     }
 
@@ -362,8 +378,8 @@ class BaseMapFragment :
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
                 resId = R.drawable.ic_game_node,
-                height = 70,
-                width = 70
+                height = 90,
+                width = 90
             )
         )
 
@@ -440,7 +456,8 @@ class BaseMapFragment :
 
             if (lastSelectedMarker != marker && start != null && goal != null) {
                 aStarSearch?.findBestPath(start, goal) { nodes, _ ->
-                    handleDrawGuildPath(nodes)
+                    currentGuildPath?.remove()
+                    currentGuildPath = handleDrawGuildPath(nodes)
                     viewModel.updateLineViewState(isVisible = false)
                 }
             }
@@ -534,4 +551,77 @@ class BaseMapFragment :
     private fun getNodeById(nodeId: String) = viewModel.getNodeById(nodeId)
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
+    fun handleSuggestRouteUpdated(suggestRoute: List<RouteItem>) {
+
+        removeCurrentSuggestViewData()
+        handleDisplaySuggestPlaceMarker(suggestRoute)
+
+        for (i in 0 until suggestRoute.size - 1) {
+            val start = viewModel.getNodeByPlaceId(suggestRoute[i].place.id)
+            val goal = viewModel.getNodeByPlaceId(suggestRoute[i + 1].place.id)
+
+            if (start != null && goal != null) {
+                aStarSearch?.findBestPath(start, goal) { nodes, _ ->
+                    handleDrawGuildPath(nodes)?.let { polyline ->
+                        allSuggestPaths.add(polyline)
+                    }
+                }
+            } else {
+                log("Error when draw line between two place ${suggestRoute[i].place.id} & ${suggestRoute[i + 1].place.id}")
+            }
+        }
+    }
+
+    private fun handleDisplaySuggestPlaceMarker(suggestRoute: List<RouteItem>) {
+        suggestRoute.forEach { routeItem ->
+            viewModel.getNodeByPlaceId(routeItem.place.id)?.run {
+                routeItem.run {
+                    if (place.game != null) {
+                        drawMarker(
+                            latLng = LatLng(latitude, longitude),
+                            nodeId = id,
+                            bitmapDescriptor = getGameImage()
+                        )?.let { allSuggestPlaces.add(it) }
+                    } else {
+                        drawMarker(
+                            latLng = LatLng(
+                                latitude,
+                                longitude
+                            ),
+                            nodeId = id,
+                            bitmapDescriptor = getPlaceImageWithDrawable(
+                                res = place.serviceType?.imgRes ?: R.drawable.ic_place_node,
+                                size = 90
+                            )
+                        )?.let { allSuggestPlaces.add(it) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getPlaceImageWithDrawable(
+        res: Int,
+        size: Int,
+    ): BitmapDescriptor {
+        return BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = res,
+                height = size,
+                width = size
+            )
+        )
+    }
+
+    private fun removeCurrentSuggestViewData() {
+        allSuggestPaths.run {
+            forEach { it.remove() }
+            clear()
+        }
+
+        allSuggestPlaces.run {
+            forEach { it.remove() }
+            clear()
+        }
+    }
 }

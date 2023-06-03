@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
-import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.data.models.ImageData
@@ -13,7 +12,9 @@ import com.tuandev.simplemapproject.data.models.NeighborWithDistance
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.data.repositories.remote.FireStoreRepository
-import com.tuandev.simplemapproject.extension.*
+import com.tuandev.simplemapproject.extension.mapToImageData
+import com.tuandev.simplemapproject.extension.mapToLine
+import com.tuandev.simplemapproject.extension.mapToNode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -243,4 +244,6 @@ class BaseMapViewModel @Inject constructor(
             isShowLoading = true
         )
     }
+
+    fun getNodeByPlaceId(placeId: Int) = listNode.find { it.placeId == placeId }
 }

@@ -18,7 +18,11 @@ import java.util.*
 import javax.inject.Inject
 
 sealed class RouteDetailViewState : ViewState() {
-    class OnSuggestListUpdated(val suggestList: MutableList<RouteItem>, val estimatedTime: Float) :
+    class OnSuggestListUpdated(
+        val suggestList: MutableList<RouteItem>,
+        val estimatedTime: Float,
+        val isUpdateViewOnly: Boolean = false
+    ) :
         RouteDetailViewState()
 
     class OnUpdateCurrentPlace(val suggestList: MutableList<RouteItem>) : RouteDetailViewState()
@@ -31,14 +35,14 @@ class RouteDetailViewModel @Inject constructor(
     private val placeRepository: PlaceRepository,
     private val localRepository: LocalRepository,
     private val fireStoreRepository: FireStoreRepository,
-) : BaseViewModel<ViewState>() {
+) : BaseViewModel<RouteDetailViewState>() {
 
     var mUserFeature: UserFeature? = null
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
-    private var aStarSearch: AStarSearch? = null
     private var listLine: MutableList<Line> = mutableListOf()
+    private var aStarSearch: AStarSearch? = null
     private var placeScoreList: MutableList<Pair<Place, Float>> = mutableListOf()
     private var latestEstimateTime = 0f
     private var startNode: Node? = null
@@ -333,7 +337,8 @@ class RouteDetailViewModel @Inject constructor(
     private fun getNodeByPlaceId(placeId: Int) = listNode.find { it.placeId == placeId }
     fun getAddablePlace(): List<Place> {
         return localRepository.listPlace.filter { place ->
-            !suggestPlaceList.map { routeItem -> routeItem.place }.contains(place)
+            !suggestPlaceList.map { routeItem -> routeItem.place }
+                .contains(place) && getNodeByPlaceId(place.id) != null
         }
     }
 
@@ -426,7 +431,8 @@ class RouteDetailViewModel @Inject constructor(
             updateViewState(
                 RouteDetailViewState.OnSuggestListUpdated(
                     suggestPlaceList,
-                    newEstimatedTime
+                    newEstimatedTime,
+                    isUpdateViewOnly = true
                 )
             )
         }
