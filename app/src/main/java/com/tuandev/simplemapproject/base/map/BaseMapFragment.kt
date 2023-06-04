@@ -6,6 +6,7 @@ import android.location.Location
 import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
@@ -27,6 +28,7 @@ import com.tuandev.simplemapproject.util.Event
 import com.tuandev.simplemapproject.widget.EditNodeDialog
 import com.tuandev.simplemapproject.widget.imagelistdialog.ImageListDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class BaseMapFragment :
@@ -84,7 +86,6 @@ class BaseMapFragment :
 
             is BaseMapViewState.GetNodesSuccess -> {
                 when (mapMode) {
-                    MapMode.TOOL -> loadAllNodeToMap()
                     MapMode.SUGGEST_ROUTE -> {}
                 }
             }
@@ -94,7 +95,7 @@ class BaseMapFragment :
                 initAStarSearch()
 
                 when (mapMode) {
-                    MapMode.TOOL -> loadAllLineToMap()
+                    MapMode.TOOL -> loadAllNodeAndLineToMap()
                     MapMode.SUGGEST_ROUTE -> onNodesLinesLoaded()
                 }
             }
@@ -237,8 +238,10 @@ class BaseMapFragment :
                 TouchEvent.run {
                     when (viewModel.currentTouchEvent.value) {
                         DRAW_MARKER -> {
-                            drawNodeMarker(latLng)?.let { marker ->
-                                viewModel.addNode(marker)
+                            viewModel.viewModelScope.launch {
+                                drawNodeMarker(latLng, onDrawn = { marker ->
+                                    viewModel.addNode(marker)
+                                }).await()
                             }
                         }
                     }
@@ -299,19 +302,26 @@ class BaseMapFragment :
             tag = nodeId
         }
 
-    private fun drawNodeMarker(latLng: LatLng, nodeId: String? = null): Marker? {
-        val node = viewModel.getNodeById(nodeId)
-        val place = viewModel.getPlaceById(node?.placeId)
-        val nodeImage = if (place != null) {
-            if (place.game != null) {
-                getGameImage()
+    private suspend fun drawNodeMarker(
+        latLng: LatLng,
+        node: Node? = null,
+        onDrawn: (Marker) -> Unit
+    ) = coroutineScope {
+        async(Dispatchers.IO) {
+            val place = viewModel.getPlaceById(node?.placeId)
+            val nodeImage = if (place != null) {
+                if (place.game != null) {
+                    getGameImage()
+                } else {
+                    getPlaceImage()
+                }
             } else {
-                getPlaceImage()
+                getNodeImage()
             }
-        } else {
-            getNodeImage()
+            withContext(Dispatchers.Main) {
+                drawMarker(latLng, node?.id, nodeImage)?.let(onDrawn)
+            }
         }
-        return drawMarker(latLng, nodeId, nodeImage)
     }
 
 
@@ -467,10 +477,26 @@ class BaseMapFragment :
         }
     }
 
-    private fun loadAllNodeToMap() {
-        viewModel.listNode.forEach { node ->
-            node.run {
-                marker = drawNodeMarker(latLng = LatLng(latitude, longitude), nodeId = id)
+    private fun loadAllNodeAndLineToMap() {
+        viewModel.run {
+            viewModelScope.launch {
+                val deferredList = mutableListOf<Deferred<*>>()
+                listNode.forEach { node ->
+                    deferredList.add(
+                        node.run {
+                            drawNodeMarker(
+                                latLng = LatLng(latitude, longitude),
+                                node = node,
+                                onDrawn = {
+                                    marker = it
+                                }
+                            )
+                        }
+
+                    )
+                }
+                awaitAll(deferreds = deferredList.toTypedArray())
+                loadAllLineToMap()
             }
         }
     }
@@ -552,52 +578,69 @@ class BaseMapFragment :
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
     fun handleSuggestRouteUpdated(suggestRoute: List<RouteItem>) {
-
         removeCurrentSuggestViewData()
         handleDisplaySuggestPlaceMarker(suggestRoute)
+        handleDisplayOverviewRoute(suggestRoute)
+    }
 
-        for (i in 0 until suggestRoute.size - 1) {
-            val start = viewModel.getNodeByPlaceId(suggestRoute[i].place.id)
-            val goal = viewModel.getNodeByPlaceId(suggestRoute[i + 1].place.id)
+    private fun handleDisplayOverviewRoute(suggestRoute: List<RouteItem>) {
+        viewModel.run {
+            viewModelScope.launch(Dispatchers.IO) {
+                for (i in 0 until suggestRoute.size - 1) {
+                    val start = getNodeByPlaceId(suggestRoute[i].place.id)
+                    val goal = getNodeByPlaceId(suggestRoute[i + 1].place.id)
 
-            if (start != null && goal != null) {
-                aStarSearch?.findBestPath(start, goal) { nodes, _ ->
-                    handleDrawGuildPath(nodes)?.let { polyline ->
-                        allSuggestPaths.add(polyline)
+                    if (start != null && goal != null) {
+                        aStarSearch?.findBestPath(start, goal) { nodes, _ ->
+                            viewModelScope.launch(Dispatchers.Main) {
+                                handleDrawGuildPath(nodes)?.let { polyline ->
+                                    allSuggestPaths.add(polyline)
+                                }
+                            }
+                        }
+                    } else {
+                        log("Error when draw line between two place ${suggestRoute[i].place.id} & ${suggestRoute[i + 1].place.id}")
                     }
                 }
-            } else {
-                log("Error when draw line between two place ${suggestRoute[i].place.id} & ${suggestRoute[i + 1].place.id}")
             }
         }
     }
 
     private fun handleDisplaySuggestPlaceMarker(suggestRoute: List<RouteItem>) {
-        suggestRoute.forEach { routeItem ->
-            viewModel.getNodeByPlaceId(routeItem.place.id)?.run {
-                routeItem.run {
-                    if (place.game != null) {
-                        drawMarker(
-                            latLng = LatLng(latitude, longitude),
-                            nodeId = id,
-                            bitmapDescriptor = getGameImage()
-                        )?.let { allSuggestPlaces.add(it) }
-                    } else {
-                        drawMarker(
-                            latLng = LatLng(
-                                latitude,
-                                longitude
-                            ),
-                            nodeId = id,
-                            bitmapDescriptor = getPlaceImageWithDrawable(
-                                res = place.serviceType?.imgRes ?: R.drawable.ic_place_node,
-                                size = 90
-                            )
-                        )?.let { allSuggestPlaces.add(it) }
+        viewModel.run {
+            viewModelScope.launch(Dispatchers.IO) {
+                suggestRoute.forEach { routeItem ->
+                    getNodeByPlaceId(routeItem.place.id)?.run {
+                        routeItem.run {
+                            withContext(Dispatchers.Main) {
+                                if (place.game != null) {
+                                    drawMarker(
+                                        latLng = LatLng(latitude, longitude),
+                                        nodeId = id,
+                                        bitmapDescriptor = getGameImage()
+                                    )?.let { allSuggestPlaces.add(it) }
+                                } else {
+                                    drawMarker(
+                                        latLng = LatLng(
+                                            latitude,
+                                            longitude
+                                        ),
+                                        nodeId = id,
+                                        bitmapDescriptor = getPlaceImageWithDrawable(
+                                            res = place.serviceType?.imgRes
+                                                ?: R.drawable.ic_place_node,
+                                            size = 90
+                                        )
+                                    )?.let { allSuggestPlaces.add(it) }
+                                }
+                            }
+                        }
                     }
+
                 }
             }
         }
+
     }
 
     private fun getPlaceImageWithDrawable(
