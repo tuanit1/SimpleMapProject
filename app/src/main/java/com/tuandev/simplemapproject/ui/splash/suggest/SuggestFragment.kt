@@ -8,6 +8,7 @@ import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentSuggestBinding
 import com.tuandev.simplemapproject.extension.openFragment
+import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.suggestMap.SuggestMapFragment
@@ -25,9 +26,9 @@ class SuggestFragment :
     override val viewModel: SuggestViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
+    private var isSuggestRouteUpdated = false
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
-    var onSuggestRouteUpdatedListener: (List<RouteItem>) -> Unit = {}
-    private var isLoadRouteFromMapFragment = true
+    var invokeMapUpdate: () -> Unit = {}
 
     override fun initView() {
         openSuggestMapFragment()
@@ -59,10 +60,6 @@ class SuggestFragment :
                     clear()
                     addAll(suggestList)
                 }
-                if (!isLoadRouteFromMapFragment) {
-                    onSuggestRouteUpdatedListener(getSuggestList())
-                }
-                isLoadRouteFromMapFragment = false
             }
         }
     }
@@ -97,7 +94,16 @@ class SuggestFragment :
     }
 
     fun updateSuggestRouteList(suggestList: List<RouteItem>) {
+        isSuggestRouteUpdated = true
         viewModel.updateSuggestList(suggestList)
+    }
+
+    fun checkIfNeedUpdateMap() {
+        if (isSuggestRouteUpdated) {
+            isSuggestRouteUpdated = false
+            context?.showToast("Updating suggest route...")
+            invokeMapUpdate()
+        }
     }
 
     fun getSaveSuggestList() = viewModel.getSuggestList()

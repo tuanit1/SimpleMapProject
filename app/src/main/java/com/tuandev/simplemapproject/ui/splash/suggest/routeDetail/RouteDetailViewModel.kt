@@ -14,6 +14,7 @@ import com.tuandev.simplemapproject.util.AStarSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
@@ -38,6 +39,8 @@ class RouteDetailViewModel @Inject constructor(
 ) : BaseViewModel<RouteDetailViewState>() {
 
     var mUserFeature: UserFeature? = null
+
+    var isFirstLoad = true
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
@@ -379,15 +382,19 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     private fun handleUpdateSuggestNode() {
-        sortRouteByTSP()
-        updateSuggestRouteIndex()
-        val newEstimatedTime = calculateEstimateTime()
-        updateViewState(
-            RouteDetailViewState.OnSuggestListUpdated(
-                suggestPlaceList,
-                newEstimatedTime
-            )
-        )
+        viewModelScope.launch(Dispatchers.IO) {
+            sortRouteByTSP()
+            updateSuggestRouteIndex()
+            val newEstimatedTime = calculateEstimateTime()
+            withContext(Dispatchers.Main) {
+                updateViewState(
+                    RouteDetailViewState.OnSuggestListUpdated(
+                        suggestPlaceList,
+                        newEstimatedTime
+                    )
+                )
+            }
+        }
     }
 
     fun updateCurrentPlace(position: Int) {
@@ -423,6 +430,7 @@ class RouteDetailViewModel @Inject constructor(
     }
 
     fun getSuggestList() = suggestPlaceList
+
     fun updateSuggestList(suggestList: List<RouteItem>) {
         suggestPlaceList.run {
             clear()

@@ -579,8 +579,8 @@ class BaseMapFragment :
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
     fun handleSuggestRouteUpdated(suggestRoute: List<RouteItem>) {
         removeCurrentSuggestViewData()
-        handleDisplaySuggestPlaceMarker(suggestRoute)
         handleDisplayOverviewRoute(suggestRoute)
+        handleDisplaySuggestPlaceMarker(suggestRoute)
     }
 
     private fun handleDisplayOverviewRoute(suggestRoute: List<RouteItem>) {
@@ -608,6 +608,7 @@ class BaseMapFragment :
 
     private fun handleDisplaySuggestPlaceMarker(suggestRoute: List<RouteItem>) {
         viewModel.run {
+            loadingProgressLiveData.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 suggestRoute.forEach { routeItem ->
                     getNodeByPlaceId(routeItem.place.id)?.run {
@@ -636,11 +637,12 @@ class BaseMapFragment :
                             }
                         }
                     }
-
+                }
+                withContext(Dispatchers.Main) {
+                    loadingProgressLiveData.value = false
                 }
             }
         }
-
     }
 
     private fun getPlaceImageWithDrawable(

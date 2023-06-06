@@ -27,6 +27,7 @@ import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.ui.splash.SplashFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.toolMap.ToolMapFragment
 import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
@@ -71,12 +72,19 @@ class MainActivity : AppCompatActivity() {
                 if (count > 1) {
                     when (val currentFragment = supportFragmentManager.fragments.last()) {
                         is SuggestFragment -> {
-                            when (val childSuggestFragment = currentFragment.childFragmentManager.fragments.last()){
+                            when (val childSuggestFragment =
+                                currentFragment.childFragmentManager.fragments.last()) {
                                 is BaseMapFragment -> {
                                     supportFragmentManager.popBackStack()
                                 }
                                 is FeatureQuestionFragment -> {
                                     childSuggestFragment.handleChildFragmentBackPress()
+                                }
+                                is RouteDetailFragment -> {
+                                    currentFragment.run {
+                                        checkIfNeedUpdateMap()
+                                        handleChildFragmentBackPress()
+                                    }
                                 }
                                 else -> {
                                     currentFragment.handleChildFragmentBackPress()

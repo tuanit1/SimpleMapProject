@@ -36,9 +36,10 @@ class RouteDetailFragment :
         when (viewState) {
             is RouteDetailViewState.OnSuggestListUpdated -> {
                 viewModel.mUserFeature?.run {
-                    if (viewState.estimatedTime > availableTime) {
+                    if (viewState.estimatedTime > availableTime && !viewModel.isFirstLoad) {
                         showDialogReachOutTime(viewState)
                     } else {
+                        viewModel.isFirstLoad = false
                         handleUpdateUserFeatureView(viewState)
                     }
                 }
@@ -85,7 +86,7 @@ class RouteDetailFragment :
     private fun showDialogReachOutTime(viewState: RouteDetailViewState.OnSuggestListUpdated) {
         ConfirmMessageDialog(
             title = "Message",
-            message = "This update will reach out your available time. Are you sure to continue?"
+            message = "The suggest route has exceeded your available time. Are you sure to continue?"
         ).apply {
             successAction = {
                 handleUpdateUserFeatureView(viewState)
