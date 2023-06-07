@@ -127,7 +127,6 @@ class RouteDetailFragment :
                     showFeatureQuestionFragment(false)
                 }
             }
-
         }
     }
 
@@ -157,7 +156,6 @@ class RouteDetailFragment :
                         updateFeatureView()
                         suggestRoute()
                     }
-
                 }
             }
 

@@ -3,16 +3,20 @@ package com.tuandev.simplemapproject.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.location.LocationManager
 import android.media.ExifInterface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -41,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val PICK_IMAGE_REQUEST = "PICK_IMAGE_REQUEST"
         const val TAKE_PHOTO_REQUEST = "TAKE_PHOTO_REQUEST"
+        const val PERMISSIONS_REQUEST_SYSTEM_LOCATION = 111
     }
 
     var onActivityBackPressListener = {}
@@ -114,10 +119,12 @@ class MainActivity : AppCompatActivity() {
     private fun getContainerId() = R.id.main_activity_container
 
     fun openSuggestRouteFragment() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = SuggestFragment.newInstance()
-        )
+        checkLocationPermission {
+            openFragment(
+                containerId = getContainerId(),
+                fragment = SuggestFragment.newInstance()
+            )
+        }
     }
 
     fun openSplashFragment() {
@@ -151,6 +158,32 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
+            onPermissionGranted()
+        }
+    }
+
+    private fun checkAppLocationPermission(action: () -> Unit) {
+        val requiredPermissions = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+
+        requiredPermissions.forEach {
+            if (ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED) {
+                requiredPermissions.remove(it)
+            }
+        }
+        onPermissionGranted = {
+            action()
+        }
+        requestMultiplePermissionsLauncher.launch(requiredPermissions.toTypedArray())
+    }
+
+    private val requestMultiplePermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { grantedMap ->
+        val isAllGranted = grantedMap.run { if (isNotEmpty()) all { it.value } else false }
+        if (isAllGranted) {
             onPermissionGranted()
         }
     }
@@ -203,7 +236,7 @@ class MainActivity : AppCompatActivity() {
     fun handleGetPhotoFromGallery(action: (ByteArray) -> Unit) {
         requestCode = PICK_IMAGE_REQUEST
         onImageFromResultReady = action
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             pickImageFromGallery()
         } else {
             checkUserPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) {
@@ -221,7 +254,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun invokeBackPress(){
+    fun invokeBackPress() {
         onBackPressedDispatcher.onBackPressed()
     }
 
@@ -263,7 +296,7 @@ class MainActivity : AppCompatActivity() {
         title: String,
         content: String,
         action: () -> Unit
-    ){
+    ) {
         ConfirmMessageDialog(
             title = title,
             message = content
@@ -272,5 +305,34 @@ class MainActivity : AppCompatActivity() {
                 action()
             }
         }.show(supportFragmentManager, null)
+    }
+
+    private fun checkLocationPermission(action: () -> Unit) {
+        if (!isSystemLocationPermissionEnable()) {
+            startActivityIfNeeded(
+                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS),
+                PERMISSIONS_REQUEST_SYSTEM_LOCATION
+            )
+            return
+        }
+        checkAppLocationPermission {
+            action()
+        }
+    }
+
+    private fun isSystemLocationPermissionEnable(): Boolean {
+        return try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isLocationEnabled
+            } else {
+                Settings.Secure.getInt(
+                    contentResolver,
+                    Settings.Secure.LOCATION_MODE,
+                    Settings.Secure.LOCATION_MODE_OFF
+                ) != Settings.Secure.LOCATION_MODE_OFF
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 }
