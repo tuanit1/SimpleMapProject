@@ -69,6 +69,7 @@ class BaseMapFragment :
     private var lastSelectedMarker: Marker? = null
     private var aStarSearch: AStarSearch? = null
     private var currentGuildPath: Polyline? = null
+    private var currentUserNode: Node? = null
     private var allSuggestPaths: MutableList<Polyline> = mutableListOf()
     private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
 
@@ -603,6 +604,18 @@ class BaseMapFragment :
                     }
                 }
             }
+        }
+    }
+
+    fun updateCurrentLocation(location: Location) {
+        viewModel.viewModelScope.launch {
+            currentUserNode?.removeMarker()
+            currentUserNode =
+                Node(latitude = location.latitude, longitude = location.longitude).apply {
+                    drawNodeMarker(latLng = LatLng(latitude, longitude), onDrawn = {
+                        marker = it
+                    }).await()
+                }
         }
     }
 

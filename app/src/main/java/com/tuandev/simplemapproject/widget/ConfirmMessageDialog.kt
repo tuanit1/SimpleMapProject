@@ -9,8 +9,8 @@ class ConfirmMessageDialog(
     private val positiveTitle: String? = null,
     private val negativeTitle: String? = null
 ) : BaseDialogFragment<DialogConfirmMessageBinding>(DialogConfirmMessageBinding::inflate) {
-    var successAction: () -> Unit = {}
-    var cancelAction: () -> Unit = {}
+    var positiveAction: () -> Unit = {}
+    var negativeAction: () -> Unit = {}
     override fun initView() {
         binding?.run {
             tvTitle.text = title
@@ -20,11 +20,11 @@ class ConfirmMessageDialog(
             tvNegative.text = negativeTitle ?: "Cancel"
 
             btnOK.setOnClickListener {
-                successAction()
+                positiveAction()
                 dismiss()
             }
             btnCancel.setOnClickListener {
-                cancelAction()
+                negativeAction()
                 dismiss()
             }
         }

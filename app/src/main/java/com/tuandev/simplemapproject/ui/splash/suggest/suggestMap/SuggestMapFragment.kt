@@ -53,8 +53,12 @@ class SuggestMapFragment :
             }
 
             (parentFragment as? SuggestFragment)?.run {
-                invokeMapUpdate = {
+                invokeSuggestRouteUpdate = {
                     handleSuggestRouteUpdated()
+                }
+
+                onLocationUpdate = { location ->
+                    mapFragment?.updateCurrentLocation(location)
                 }
             }
         }

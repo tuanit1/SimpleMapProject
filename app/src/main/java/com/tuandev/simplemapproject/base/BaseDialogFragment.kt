@@ -19,7 +19,7 @@ abstract class BaseDialogFragment<VB : ViewBinding>(
     private var isReachedMaxSize = false
 
     companion object {
-        const val WIDTH_RATIO = 0.9f
+        const val WIDTH_RATIO = 0.8f
         const val HEIGHT_RATIO = 0.8f
     }
 

@@ -163,20 +163,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAppLocationPermission(action: () -> Unit) {
-        val requiredPermissions = mutableListOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+        val locationPermissions = listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
         )
 
-        requiredPermissions.forEach {
-            if (ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED) {
-                requiredPermissions.remove(it)
-            }
+        val requiredList = locationPermissions.filterNot {
+            ContextCompat.checkSelfPermission(
+                this,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
         }
-        onPermissionGranted = {
+
+
+        if (requiredList.isNotEmpty()) {
+            onPermissionGranted = {
+                action()
+            }
+            requestMultiplePermissionsLauncher.launch(requiredList.toTypedArray())
+        } else {
             action()
         }
-        requestMultiplePermissionsLauncher.launch(requiredPermissions.toTypedArray())
     }
 
     private val requestMultiplePermissionsLauncher = registerForActivityResult(
@@ -301,18 +308,27 @@ class MainActivity : AppCompatActivity() {
             title = title,
             message = content
         ).apply {
-            successAction = {
+            positiveAction = {
                 action()
             }
         }.show(supportFragmentManager, null)
     }
 
-    private fun checkLocationPermission(action: () -> Unit) {
+    fun checkLocationPermission(action: () -> Unit) {
         if (!isSystemLocationPermissionEnable()) {
-            startActivityIfNeeded(
-                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS),
-                PERMISSIONS_REQUEST_SYSTEM_LOCATION
-            )
+            ConfirmMessageDialog(
+                title = "Message",
+                message = "Your device's location is current off. Enable it",
+                positiveTitle = "Take to system settings",
+                negativeTitle = "Cancel"
+            ).apply {
+                positiveAction = {
+                    startActivityIfNeeded(
+                        Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS),
+                        PERMISSIONS_REQUEST_SYSTEM_LOCATION
+                    )
+                }
+            }.show(supportFragmentManager, null)
             return
         }
         checkAppLocationPermission {

@@ -88,10 +88,10 @@ class RouteDetailFragment :
             title = "Message",
             message = "The suggest route has exceeded your available time. Are you sure to continue?"
         ).apply {
-            successAction = {
+            positiveAction = {
                 handleUpdateUserFeatureView(viewState)
             }
-            cancelAction = {
+            negativeAction = {
                 viewModel.restoreSavedSuggestList()
             }
         }.show(childFragmentManager, null)

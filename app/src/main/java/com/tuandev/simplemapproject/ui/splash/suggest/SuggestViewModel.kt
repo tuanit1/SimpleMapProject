@@ -1,5 +1,6 @@
 package com.tuandev.simplemapproject.ui.splash.suggest
 
+import android.location.Location
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.tuandev.simplemapproject.base.BaseViewModel
@@ -22,6 +23,7 @@ class SuggestViewModel @Inject constructor(
 
     var mUserFeature: MutableLiveData<UserFeature?> = MutableLiveData()
     var mSuggestList: MutableList<SaveSuggestRoute> = mutableListOf()
+    var mCurrentLocation: MutableLiveData<Location> = MutableLiveData()
 
     init {
         mUserFeature.value = localRepository.getUserFeature()
