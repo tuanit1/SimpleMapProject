@@ -2,6 +2,7 @@ package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail
 
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tuandev.simplemapproject.R
@@ -18,6 +19,9 @@ import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.adapter.RouteI
 import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
 import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class RouteDetailFragment :
@@ -46,6 +50,7 @@ class RouteDetailFragment :
             }
             is RouteDetailViewState.OnUpdateCurrentPlace -> {
                 routeItemAdapter?.notifyItemRangeChanged(0, viewState.suggestList.size)
+                (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList(), true)
             }
             is RouteDetailViewState.OnFetchNodeLineDataSuccess -> {
                 handleLoadLocalData()
@@ -106,25 +111,37 @@ class RouteDetailFragment :
                 layoutManager = LinearLayoutManager(context)
             }
         }
-        viewModel.fetchAllNodesAndLines()
+        viewModel.run {
+            fetchAllNodesAndLines()
+        }
     }
 
     private fun handleLoadLocalData() {
         (parentFragment as? SuggestFragment)?.run {
             viewModel.run {
-                mUserFeature = getUserFeature()
-
-                if (mUserFeature != null) {
-                    updateFeatureView()
-                    getSaveSuggestList().let { saveSuggestList ->
-                        if (saveSuggestList.isNotEmpty()) {
-                            viewModel.updateSuggestList(saveSuggestList)
+                val currentLocation = getCurrentLocation()
+                if(currentLocation != null){
+                    viewModelScope.launch {
+                        mUserFeature = getUserFeature()
+                        if (mUserFeature != null) {
+                            withContext(Dispatchers.IO){
+                                setCurrentUserNode(currentLocation)
+                            }
+                            updateFeatureView()
+                            getSaveSuggestList().let { saveSuggestList ->
+                                if (saveSuggestList.isNotEmpty()) {
+                                    updateSuggestList(saveSuggestList)
+                                } else {
+                                    suggestRoute()
+                                }
+                            }
                         } else {
-                            suggestRoute()
+                            showFeatureQuestionFragment(false)
                         }
                     }
-                } else {
-                    showFeatureQuestionFragment(false)
+                }else{
+                    showErrorPopup("Error when retrieving user's location. Please try again!")
+                    parentActivity?.invokeBackPress()
                 }
             }
         }

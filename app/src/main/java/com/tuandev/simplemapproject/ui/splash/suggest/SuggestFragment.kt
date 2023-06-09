@@ -31,10 +31,11 @@ class SuggestFragment :
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
     private var isSuggestRouteUpdated = false
+    private var isUpdateSelectedPlace = false
     private var fusedLocationClient: FusedLocationProviderClient? = null
     var onLocationUpdate: (Location) -> Unit = {}
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
-    var invokeSuggestRouteUpdate: () -> Unit = {}
+    var invokeSuggestRouteUpdate: (Boolean) -> Unit = {}
 
     override fun initView() {
         parentActivity?.run {
@@ -139,8 +140,9 @@ class SuggestFragment :
         viewModel.updateUserFeature(userFeature)
     }
 
-    fun updateSuggestRouteList(suggestList: List<RouteItem>) {
+    fun updateSuggestRouteList(suggestList: List<RouteItem>, isSelect: Boolean = false) {
         isSuggestRouteUpdated = true
+        isUpdateSelectedPlace = isSelect
         viewModel.updateSuggestList(suggestList)
     }
 
@@ -148,12 +150,14 @@ class SuggestFragment :
         if (isSuggestRouteUpdated) {
             isSuggestRouteUpdated = false
             context?.showToast("Updating suggest route...")
-            invokeSuggestRouteUpdate()
+
+            invokeSuggestRouteUpdate(isUpdateSelectedPlace)
         }
     }
 
     fun getSaveSuggestList() = viewModel.getSuggestList()
     fun getUserFeature() = viewModel.mUserFeature.value
+    fun getCurrentLocation() = viewModel.mCurrentLocation.value
 
     override fun onResume() {
         super.onResume()

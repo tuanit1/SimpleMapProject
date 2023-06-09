@@ -1,5 +1,6 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.routeDetail
 
+import android.location.Location
 import androidx.lifecycle.viewModelScope
 import com.tuandev.simplemapproject.base.BaseViewModel
 import com.tuandev.simplemapproject.base.ViewState
@@ -48,58 +49,62 @@ class RouteDetailViewModel @Inject constructor(
     private var aStarSearch: AStarSearch? = null
     private var placeScoreList: MutableList<Pair<Place, Float>> = mutableListOf()
     private var latestEstimateTime = 0f
-    private var startNode: Node? = null
+    private var currentUserNode: Node? = null
     private var finishPLace = placeRepository.placeFountain
 
     fun suggestRoute() {
-        val listGamePlaces = listNode
-            .mapNotNull { it.placeId }
-            .mapNotNull { localRepository.listPlace.getPlaceById(it) }
-            .filter { it.game != null }
+        viewModelScope.launch(Dispatchers.IO) {
+            val listGamePlaces = listNode
+                .mapNotNull { it.placeId }
+                .mapNotNull { localRepository.listPlace.getPlaceById(it) }
+                .filter { it.game != null }
 
-        mUserFeature?.run {
-            suggestPlaceList.run {
-                clear()
-                addAll(
-                    when {
-                        isFamilyOnly -> listGamePlaces.filter { it.game?.thrillLevel?.score == 0 }
-                            .map { RouteItem(place = it) }
-                        isThrillOnly -> listGamePlaces.filter {
-                            it.game?.thrillLevel?.score!! in 1..(maxThrill?.score ?: 3)
-                        }.map { RouteItem(place = it) }
-                        else -> listGamePlaces.filter {
-                            it.game?.thrillLevel?.score!! in 0..(maxThrill?.score ?: 3)
-                        }.map { RouteItem(place = it) }
-                    }
-                )
-            }
+            mUserFeature?.run {
+                suggestPlaceList.run {
+                    clear()
+                    addAll(
+                        when {
+                            isFamilyOnly -> listGamePlaces.filter { it.game?.thrillLevel?.score == 0 }
+                                .map { RouteItem(place = it) }
+                            isThrillOnly -> listGamePlaces.filter {
+                                it.game?.thrillLevel?.score!! in 1..(maxThrill?.score ?: 3)
+                            }.map { RouteItem(place = it) }
+                            else -> listGamePlaces.filter {
+                                it.game?.thrillLevel?.score!! in 0..(maxThrill?.score ?: 3)
+                            }.map { RouteItem(place = it) }
+                        }
+                    )
+                }
 
-            sortRouteByTSP()
-            calculatePlaceScore()
+                sortRouteByTSP()
+                calculatePlaceScore()
 
-            log("Desired time: $availableTime")
-            while (calculateEstimateTime() > availableTime) {
-                val worstPlace = placeScoreList.maxBy { it.second }
-                suggestPlaceList.removeAll { it.place == worstPlace.first }
-                placeScoreList.remove(worstPlace)
-            }
+                log("Desired time: $availableTime")
+                while (calculateEstimateTime() > availableTime) {
+                    val worstPlace = placeScoreList.maxBy { it.second }
+                    suggestPlaceList.removeAll { it.place == worstPlace.first }
+                    placeScoreList.remove(worstPlace)
+                }
 
-            updateSuggestRouteIndex()
+                updateSuggestRouteIndex()
 
-            updateViewState(
-                RouteDetailViewState.OnSuggestListUpdated(
-                    suggestList = suggestPlaceList,
-                    estimatedTime = latestEstimateTime
-                )
-            )
+                withContext(Dispatchers.Main){
+                    updateViewState(
+                        RouteDetailViewState.OnSuggestListUpdated(
+                            suggestList = suggestPlaceList,
+                            estimatedTime = latestEstimateTime
+                        )
+                    )
+                }
 
-            log("\nSuggest list:")
-            suggestPlaceList.forEach { routeItem ->
-                routeItem.place.run {
-                    if (game != null) {
-                        log(game.name)
-                    } else {
-                        log(name)
+                log("\nSuggest list:")
+                suggestPlaceList.forEach { routeItem ->
+                    routeItem.place.run {
+                        if (game != null) {
+                            log(game.name)
+                        } else {
+                            log(name)
+                        }
                     }
                 }
             }
@@ -118,9 +123,9 @@ class RouteDetailViewModel @Inject constructor(
 
         val distanceAndThrills = suggestPlaceList.map { routeItem ->
             val node = getNodeByPlaceId(routeItem.place.id)
-            val distance = if (startNode != null && node != null) {
+            val distance = if (currentUserNode != null && node != null) {
                 var mDistance = Float.POSITIVE_INFINITY
-                aStarSearch?.findBestPath(startNode!!, node) { _, distance ->
+                aStarSearch?.findBestPath(currentUserNode!!, node) { _, distance ->
                     if (maxDistance < distance) {
                         maxDistance = distance
                     }
@@ -167,7 +172,7 @@ class RouteDetailViewModel @Inject constructor(
         tempList.add(0, RouteItem(isStart = true, place = placeRepository.placeStart))
 
         for (i in 0 until tempList.size - 1) {
-            val start = if (i == 0) startNode else getNodeByPlaceId(tempList[i].place.id)
+            val start = if (i == 0) currentUserNode else getNodeByPlaceId(tempList[i].place.id)
             val goal = getNodeByPlaceId(tempList[i + 1].place.id)
 
             if (start != null && goal != null) {
@@ -197,7 +202,7 @@ class RouteDetailViewModel @Inject constructor(
 
     private fun getSuggestPlaceNodesWithNeighbor(): List<Node> {
         val placeNodes = getSuggestedPlaceNodes()
-        startNode?.let { placeNodes.add(0, it) }
+        currentUserNode?.let { placeNodes.add(0, it) }
         val placeNodesWithNeighbor = placeNodes.map { it.copy(neighbors = mutableListOf()) }
 
         placeNodes.forEachIndexed { index, currentNode ->
@@ -296,8 +301,6 @@ class RouteDetailViewModel @Inject constructor(
             onSuccess = { nodeResult ->
                 listNode.clear()
                 listNode.addAll(nodeResult.map { it.mapToNode() })
-
-                startNode = listNode.find { it.placeId == placeRepository.placeFountain.id }
 
                 callApiFromFireStore(
                     task = fireStoreRepository.getAllLines(),
@@ -444,5 +447,13 @@ class RouteDetailViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    fun setCurrentUserNode(location: Location) {
+        val tempNode = Node(
+            latitude = location.latitude,
+            longitude = location.longitude
+        )
+        currentUserNode = listNode.minBy { aStarSearch?.getDistance(it, tempNode) ?: Float.POSITIVE_INFINITY }
     }
 }

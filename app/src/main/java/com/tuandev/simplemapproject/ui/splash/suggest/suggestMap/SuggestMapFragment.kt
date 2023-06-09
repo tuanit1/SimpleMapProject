@@ -5,6 +5,7 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
+import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.show
@@ -41,7 +42,9 @@ class SuggestMapFragment :
 
         binding?.run {
             llDest.setOnClickListener {
-                (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
+                parentActivity?.checkLocationPermission {
+                    (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
+                }
             }
 
             parentActivity?.onActivityBackPressListener = {
@@ -50,15 +53,31 @@ class SuggestMapFragment :
 
             mapFragment?.onNodesLinesLoaded = {
                 handleSuggestRouteUpdated()
+                drawSelectedGuildPath()
             }
 
             (parentFragment as? SuggestFragment)?.run {
-                invokeSuggestRouteUpdate = {
-                    handleSuggestRouteUpdated()
+                invokeSuggestRouteUpdate = { isUpdateSelectedPlace ->
+                    if (!isUpdateSelectedPlace) {
+                        handleSuggestRouteUpdated()
+                    }
+
+                    drawSelectedGuildPath()
                 }
 
                 onLocationUpdate = { location ->
                     mapFragment?.updateCurrentLocation(location)
+                    drawSelectedGuildPath()
+                }
+            }
+        }
+    }
+
+    private fun drawSelectedGuildPath() {
+        (parentFragment as? SuggestFragment)?.run {
+            getSaveSuggestList().find { it.itemState == RouteItem.SELECTED }?.let { selectedPlace ->
+                getCurrentLocation()?.let { currentLocation ->
+                    mapFragment?.drawSelectedGuildPath(selectedPlace, currentLocation)
                 }
             }
         }

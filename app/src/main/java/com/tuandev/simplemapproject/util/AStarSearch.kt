@@ -88,7 +88,7 @@ data class AStarSearch(
 
     private fun getNode(id: String?) = listNode.find { it.id == id }
 
-    private fun getDistance(node1: Node, node2: Node): Float? {
+    fun getDistance(node1: Node, node2: Node): Float? {
         return try {
             val results = FloatArray(1)
             Location.distanceBetween(

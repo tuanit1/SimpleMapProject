@@ -4,8 +4,8 @@ import com.google.android.gms.maps.model.Marker
 
 data class Node(
     var id: String? = null,
-    val latitude: Double,
-    val longitude: Double,
+    var latitude: Double,
+    var longitude: Double,
     var placeId: Int? = null,
     var marker: Marker? = null,
     var neighbors: MutableList<NeighborWithDistance> = mutableListOf()

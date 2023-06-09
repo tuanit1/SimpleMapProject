@@ -18,7 +18,6 @@ import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
-import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.extension.toRoundedFloat
@@ -66,11 +65,11 @@ class BaseMapFragment :
     var onNodeAdded: (Node) -> Unit = {}
     var onLineAdded: (Line) -> Unit = {}
     var onNodesLinesLoaded: () -> Unit = {}
+    private var currentUserNode: Node? = null
+    private var focusedGuildPath: Polyline? = null
     private var lastSelectedMarker: Marker? = null
     private var aStarSearch: AStarSearch? = null
     private var currentGuildPath: Polyline? = null
-    private var currentUserNode: Node? = null
-    private var allSuggestPaths: MutableList<Polyline> = mutableListOf()
     private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
 
     override val viewModel: BaseMapViewModel by viewModels()
@@ -97,7 +96,11 @@ class BaseMapFragment :
 
                 when (mapMode) {
                     MapMode.TOOL -> loadAllNodeAndLineToMap()
-                    MapMode.SUGGEST_ROUTE -> onNodesLinesLoaded()
+                    MapMode.SUGGEST_ROUTE -> {
+                        handleDisplayMapPaths()
+                        onNodesLinesLoaded()
+                    }
+
                 }
             }
 
@@ -337,13 +340,24 @@ class BaseMapFragment :
             tag = id
         }
 
-    private fun handleDrawGuildPath(nodes: List<Node>): Polyline? {
+    private fun handleDrawStreetPath(nodes: List<Node>): Polyline? {
         return mMap?.addPolyline(
             PolylineOptions()
                 .color(ContextCompat.getColor(requireContext(), R.color.guidePathColor))
                 .addAll(nodes.map { LatLng(it.latitude, it.longitude) })
                 .jointType(JointType.ROUND)
-                .width(20f)
+                .width(10f)
+        )
+    }
+
+    private fun handleDrawGuildPath(nodes: List<Node>): Polyline? {
+        return mMap?.addPolyline(
+            PolylineOptions()
+                .color(ContextCompat.getColor(requireContext(), R.color.cyanBlueAzure))
+                .addAll(nodes.map { LatLng(it.latitude, it.longitude) })
+                .jointType(JointType.ROUND)
+                .zIndex(Float.POSITIVE_INFINITY)
+                .width(15f)
         )
     }
 
@@ -468,7 +482,7 @@ class BaseMapFragment :
             if (lastSelectedMarker != marker && start != null && goal != null) {
                 aStarSearch?.findBestPath(start, goal) { nodes, _ ->
                     currentGuildPath?.remove()
-                    currentGuildPath = handleDrawGuildPath(nodes)
+                    currentGuildPath = handleDrawStreetPath(nodes)
                     viewModel.updateLineViewState(isVisible = false)
                 }
             }
@@ -579,28 +593,25 @@ class BaseMapFragment :
     fun removeNode(nodeId: String) = viewModel.removeNode(nodeId)
     fun removeLine(lineId: String) = viewModel.removeLine(lineId)
     fun handleSuggestRouteUpdated(suggestRoute: List<RouteItem>) {
-        removeCurrentSuggestViewData()
-        handleDisplayOverviewRoute(suggestRoute)
+        allSuggestPlaces.run {
+            forEach { it.remove() }
+            clear()
+        }
         handleDisplaySuggestPlaceMarker(suggestRoute)
     }
 
-    private fun handleDisplayOverviewRoute(suggestRoute: List<RouteItem>) {
+    private fun handleDisplayMapPaths() {
         viewModel.run {
             viewModelScope.launch(Dispatchers.IO) {
-                for (i in 0 until suggestRoute.size - 1) {
-                    val start = getNodeByPlaceId(suggestRoute[i].place.id)
-                    val goal = getNodeByPlaceId(suggestRoute[i + 1].place.id)
-
-                    if (start != null && goal != null) {
-                        aStarSearch?.findBestPath(start, goal) { nodes, _ ->
-                            viewModelScope.launch(Dispatchers.Main) {
-                                handleDrawGuildPath(nodes)?.let { polyline ->
-                                    allSuggestPaths.add(polyline)
-                                }
+                val visited = mutableListOf(listNode.first().id ?: "")
+                listNode.forEach { node ->
+                    node.neighbors.forEach { neighbor ->
+                        visited.add(neighbor.id ?: "")
+                        getNodeById(neighbor.id)?.let { neighborNode ->
+                            withContext(Dispatchers.Main) {
+                                handleDrawStreetPath(listOf(neighborNode, node))
                             }
                         }
-                    } else {
-                        log("Error when draw line between two place ${suggestRoute[i].place.id} & ${suggestRoute[i + 1].place.id}")
                     }
                 }
             }
@@ -608,14 +619,10 @@ class BaseMapFragment :
     }
 
     fun updateCurrentLocation(location: Location) {
-        viewModel.viewModelScope.launch {
-            currentUserNode?.removeMarker()
-            currentUserNode =
-                Node(latitude = location.latitude, longitude = location.longitude).apply {
-                    drawNodeMarker(latLng = LatLng(latitude, longitude), onDrawn = {
-                        marker = it
-                    }).await()
-                }
+        currentUserNode?.removeMarker()
+        currentUserNode = Node(latitude = location.latitude, longitude = location.longitude).apply {
+            marker =
+                drawMarker(latLng = LatLng(latitude, longitude), bitmapDescriptor = getNodeImage())
         }
     }
 
@@ -671,15 +678,27 @@ class BaseMapFragment :
         )
     }
 
-    private fun removeCurrentSuggestViewData() {
-        allSuggestPaths.run {
-            forEach { it.remove() }
-            clear()
-        }
-
-        allSuggestPlaces.run {
-            forEach { it.remove() }
-            clear()
+    fun drawSelectedGuildPath(routeItem: RouteItem, currentLocation: Location) {
+        focusedGuildPath?.remove()
+        viewModel.run {
+            viewModelScope.launch(Dispatchers.IO) {
+                getNodeByPlaceId(routeItem.place.id)?.let { goal ->
+                    val yourNode = Node(
+                        latitude = currentLocation.latitude,
+                        longitude = currentLocation.longitude
+                    )
+                    val nearestNode = listNode.minBy { aStarSearch?.getDistance(it, yourNode) ?: Float.POSITIVE_INFINITY }
+                    nearestNode.let { start ->
+                        aStarSearch?.findBestPath(start, goal) { nodes, _ ->
+                            launch(Dispatchers.Main) {
+                                focusedGuildPath = handleDrawGuildPath(nodes.toMutableList().apply {
+                                    add(0, yourNode)
+                                })
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
