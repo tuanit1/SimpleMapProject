@@ -16,7 +16,7 @@ import com.tuandev.simplemapproject.extension.showIf
 import dagger.hilt.android.EntryPointAccessors
 
 class RouteItemAdapter(
-    context: Context
+    private val context: Context
 ) : BaseListAdapter<RouteItem, RouteItemAdapter.RouteItemViewHolder>() {
 
     private var placeServiceRepository: PlaceServiceRepository? = null
@@ -47,12 +47,17 @@ class RouteItemAdapter(
                     llDuration.showIf(game != null)
                     llThrill.showIf(game != null)
                     if (game != null) {
-                        tvPlaceName.text = "#${item.itemIndex} - ${game.name}"
+                        tvPlaceName.text = context.getString(
+                            R.string.place_name_with_index,
+                            item.itemIndex,
+                            game.name
+                        )
                         tvDuration.text = "${game.duration}s"
                         tvThrill.text = game.thrillLevel.name
                         ivServiceType.setRes(R.drawable.ic_game_node)
                     } else {
-                        tvPlaceName.text = "#${item.itemIndex} - $name"
+                        tvPlaceName.text =
+                            context.getString(R.string.place_name_with_index, item.itemIndex, name)
                         ivServiceType.setRes(serviceType?.imgRes ?: R.drawable.ic_place_node)
                     }
                 }

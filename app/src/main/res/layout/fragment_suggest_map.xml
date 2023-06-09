@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".ui.splash.suggest.suggestMap.SuggestMapFragment"
     android:background="@color/white"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:orientation="vertical"
+    tools:context=".ui.splash.suggest.suggestMap.SuggestMapFragment">
 
     <FrameLayout
         android:id="@+id/container_suggest_route"
@@ -29,15 +29,17 @@
             android:layout_height="wrap_content"
             android:text="Current destination" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:paddingHorizontal="30dp"
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/ivPrevPlace"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_centerVertical="true"
                 android:src="@drawable/ic_arrow_prev" />
 
             <TextView
@@ -45,15 +47,18 @@
                 style="@style/titleTextStyleExtraLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="30dp"
+                android:layout_centerInParent="true"
                 android:text="Destination name" />
 
             <ImageView
+                android:id="@+id/ivNextPlace"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
                 android:src="@drawable/ic_arrow_next" />
 
-        </LinearLayout>
+        </RelativeLayout>
     </LinearLayout>
 
 

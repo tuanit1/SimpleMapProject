@@ -23,9 +23,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
-import com.tuandev.simplemapproject.data.models.PopBackStackOption
 import com.tuandev.simplemapproject.extension.compressBitmap
 import com.tuandev.simplemapproject.extension.compressBitmapFromUri
 import com.tuandev.simplemapproject.extension.openFragment
@@ -75,6 +75,15 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 val count = supportFragmentManager.backStackEntryCount
                 if (count > 1) {
+
+                    supportFragmentManager.fragments.last().run {
+                        if (tag == "SupportLifecycleFragmentImpl") {
+                            supportFragmentManager.commit {
+                                remove(this@run)
+                            }
+                        }
+                    }
+
                     when (val currentFragment = supportFragmentManager.fragments.last()) {
                         is SuggestFragment -> {
                             when (val childSuggestFragment =
@@ -87,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 is RouteDetailFragment -> {
                                     currentFragment.run {
-                                        checkIfNeedUpdateMap()
+                                        handleUpdateRouteFromBackPress()
                                         handleChildFragmentBackPress()
                                     }
                                 }
@@ -96,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        else -> {
+                        is SplashFragment, is ToolMapFragment -> {
                             supportFragmentManager.popBackStack()
                         }
                     }
@@ -137,8 +146,7 @@ class MainActivity : AppCompatActivity() {
     fun openToolMapFragment() {
         openFragment(
             containerId = getContainerId(),
-            fragment = ToolMapFragment.newInstance(),
-            popBackStackOption = PopBackStackOption.PopAll
+            fragment = ToolMapFragment.newInstance()
         )
     }
 

@@ -630,34 +630,37 @@ class BaseMapFragment :
         viewModel.run {
             loadingProgressLiveData.value = true
             viewModelScope.launch(Dispatchers.IO) {
-                suggestRoute.forEach { routeItem ->
-                    getNodeByPlaceId(routeItem.place.id)?.run {
-                        routeItem.run {
-                            withContext(Dispatchers.Main) {
-                                if (place.game != null) {
-                                    drawMarker(
-                                        latLng = LatLng(latitude, longitude),
-                                        nodeId = id,
-                                        bitmapDescriptor = getGameImage()
-                                    )?.let { allSuggestPlaces.add(it) }
-                                } else {
-                                    drawMarker(
-                                        latLng = LatLng(
-                                            latitude,
-                                            longitude
-                                        ),
-                                        nodeId = id,
-                                        bitmapDescriptor = getPlaceImageWithDrawable(
-                                            res = place.serviceType?.imgRes
-                                                ?: R.drawable.ic_place_node,
-                                            size = 90
-                                        )
-                                    )?.let { allSuggestPlaces.add(it) }
+                launch {
+                    suggestRoute.forEach { routeItem ->
+                        getNodeByPlaceId(routeItem.place.id)?.run {
+                            routeItem.run {
+                                withContext(Dispatchers.Main) {
+                                    if (place.game != null) {
+                                        drawMarker(
+                                            latLng = LatLng(latitude, longitude),
+                                            nodeId = id,
+                                            bitmapDescriptor = getGameImage()
+                                        )?.let { allSuggestPlaces.add(it) }
+                                    } else {
+                                        drawMarker(
+                                            latLng = LatLng(
+                                                latitude,
+                                                longitude
+                                            ),
+                                            nodeId = id,
+                                            bitmapDescriptor = getPlaceImageWithDrawable(
+                                                res = place.serviceType?.imgRes
+                                                    ?: R.drawable.ic_place_node,
+                                                size = 90
+                                            )
+                                        )?.let { allSuggestPlaces.add(it) }
+                                    }
                                 }
                             }
                         }
                     }
-                }
+
+                }.join()
                 withContext(Dispatchers.Main) {
                     loadingProgressLiveData.value = false
                 }

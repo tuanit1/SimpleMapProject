@@ -25,12 +25,13 @@ abstract class BaseViewModel<VS : ViewState> : ViewModel() {
         task.run {
             addOnSuccessListener { result ->
                 onSuccess(result)
-                loadingProgressLiveData.value = false
+                if (isShowLoading) loadingProgressLiveData.value = false
+
             }
             addOnFailureListener {
                 onError()
                 showErrorPopup(it.message.toString())
-                loadingProgressLiveData.value = false
+                if (isShowLoading) loadingProgressLiveData.value = false
             }
         }
     }

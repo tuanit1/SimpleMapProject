@@ -88,7 +88,7 @@ class RouteDetailViewModel @Inject constructor(
 
                 updateSuggestRouteIndex()
 
-                withContext(Dispatchers.Main){
+                withContext(Dispatchers.Main) {
                     updateViewState(
                         RouteDetailViewState.OnSuggestListUpdated(
                             suggestList = suggestPlaceList,
@@ -276,7 +276,12 @@ class RouteDetailViewModel @Inject constructor(
                         itemState = if (index == 0) RouteItem.SELECTED else RouteItem.NOT_VISITED
                     )
                 })
-            add(RouteItem(place = finishPLace))
+            add(
+                RouteItem(
+                    place = finishPLace,
+                    itemState = if (visited.isEmpty()) RouteItem.SELECTED else RouteItem.NOT_VISITED
+                )
+            )
         }
     }
 
@@ -454,6 +459,7 @@ class RouteDetailViewModel @Inject constructor(
             latitude = location.latitude,
             longitude = location.longitude
         )
-        currentUserNode = listNode.minBy { aStarSearch?.getDistance(it, tempNode) ?: Float.POSITIVE_INFINITY }
+        currentUserNode =
+            listNode.minBy { aStarSearch?.getDistance(it, tempNode) ?: Float.POSITIVE_INFINITY }
     }
 }

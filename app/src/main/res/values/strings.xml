@@ -136,4 +136,5 @@
     <string name="estimated_time">Estimated time: %s</string>
     <string name="game_type">Typical of games: %s</string>
     <string name="available_time">Available time: %s</string>
+    <string name="place_name_with_index">#%d - %s</string>
 </resources>

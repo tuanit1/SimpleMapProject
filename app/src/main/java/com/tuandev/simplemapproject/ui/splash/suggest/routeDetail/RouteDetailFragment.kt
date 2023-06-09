@@ -50,7 +50,11 @@ class RouteDetailFragment :
             }
             is RouteDetailViewState.OnUpdateCurrentPlace -> {
                 routeItemAdapter?.notifyItemRangeChanged(0, viewState.suggestList.size)
-                (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList(), true)
+                (parentFragment as? SuggestFragment)?.run {
+                    isUpdateRouteByBackPress = true
+                    isSelectedPlaceChanged = true
+                    updateSuggestRouteList(viewState.suggestList.toList())
+                }
             }
             is RouteDetailViewState.OnFetchNodeLineDataSuccess -> {
                 handleLoadLocalData()
@@ -82,7 +86,11 @@ class RouteDetailFragment :
                 routeItemAdapter?.submitList(viewState.suggestList.toList())
 
                 if (!viewState.isUpdateViewOnly) {
-                    (parentFragment as? SuggestFragment)?.updateSuggestRouteList(viewState.suggestList.toList())
+                    (parentFragment as? SuggestFragment)?.run {
+                        isUpdateRouteByBackPress = true
+                        isSuggestRouteChanged = true
+                        updateSuggestRouteList(viewState.suggestList.toList())
+                    }
                 }
             }
         }

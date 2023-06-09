@@ -12,7 +12,6 @@ import com.tuandev.simplemapproject.data.models.UserFeature
 import com.tuandev.simplemapproject.databinding.FragmentSuggestBinding
 import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
-import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.RouteDetailFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.featureQuestion.FeatureQuestionFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.suggestMap.SuggestMapFragment
@@ -30,20 +29,23 @@ class SuggestFragment :
     override val viewModel: SuggestViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
-    private var isSuggestRouteUpdated = false
-    private var isUpdateSelectedPlace = false
+    var isSuggestRouteChanged = false
+    var isSelectedPlaceChanged = false
+    var isUpdateRouteByBackPress = false
     private var fusedLocationClient: FusedLocationProviderClient? = null
+    var handleSelectedPositionUpdate: (Boolean) -> Unit = {}
     var onLocationUpdate: (Location) -> Unit = {}
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
-    var invokeSuggestRouteUpdate: (Boolean) -> Unit = {}
+    var invokeSuggestRouteUpdate: () -> Unit = {}
 
     override fun initView() {
         parentActivity?.run {
             checkLocationPermission {
                 fusedLocationClient = LocationServices.getFusedLocationProviderClient(this).apply {
-                    lastLocation.addOnSuccessListener { location ->
-                        viewModel.mCurrentLocation.value = location
-                    }
+                    this.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                        .addOnSuccessListener {
+                            viewModel.mCurrentLocation.value = it
+                        }
                 }
             }
         }
@@ -52,6 +54,42 @@ class SuggestFragment :
 
     override fun initListener() {
         listenOnLiveData()
+
+        handleSelectedPositionUpdate = { isNext ->
+            val suggestList = viewModel.getSuggestList().toMutableList()
+            var currentIndex = suggestList.indexOfFirst { it.itemState == RouteItem.SELECTED }
+            var isValid = false
+            if (isNext) {
+                if (currentIndex < suggestList.size - 1) {
+                    isValid = true
+                    currentIndex++
+                }
+            } else {
+                if (currentIndex > 0) {
+                    isValid = true
+                    currentIndex--
+                }
+            }
+
+            if (isValid) {
+                for (i in suggestList.indices) {
+                    when {
+                        i < currentIndex -> {
+                            suggestList[i].itemState = RouteItem.VISITED
+                        }
+                        i == currentIndex -> {
+                            suggestList[i].itemState = RouteItem.SELECTED
+                        }
+                        else -> {
+                            suggestList[i].itemState = RouteItem.NOT_VISITED
+                        }
+                    }
+                }
+                isUpdateRouteByBackPress = false
+                isSelectedPlaceChanged = true
+                updateSuggestRouteList(suggestList)
+            }
+        }
     }
 
     private fun listenOnLiveData() {
@@ -76,6 +114,10 @@ class SuggestFragment :
                     clear()
                     addAll(suggestList)
                 }
+
+                if (!isUpdateRouteByBackPress && suggestList.isNotEmpty()) {
+                    invokeSuggestRouteUpdate()
+                }
             }
 
             mCurrentLocation.observe(viewLifecycleOwner) { location ->
@@ -85,7 +127,7 @@ class SuggestFragment :
     }
 
     private fun getLocationRequest() = LocationRequest
-        .Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000)
+        .Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
         .setMinUpdateDistanceMeters(5f).build()
 
     private fun startLocationUpdates() {
@@ -140,18 +182,13 @@ class SuggestFragment :
         viewModel.updateUserFeature(userFeature)
     }
 
-    fun updateSuggestRouteList(suggestList: List<RouteItem>, isSelect: Boolean = false) {
-        isSuggestRouteUpdated = true
-        isUpdateSelectedPlace = isSelect
+    fun updateSuggestRouteList(suggestList: List<RouteItem>) {
         viewModel.updateSuggestList(suggestList)
     }
 
-    fun checkIfNeedUpdateMap() {
-        if (isSuggestRouteUpdated) {
-            isSuggestRouteUpdated = false
-            context?.showToast("Updating suggest route...")
-
-            invokeSuggestRouteUpdate(isUpdateSelectedPlace)
+    fun handleUpdateRouteFromBackPress() {
+        if (isUpdateRouteByBackPress) {
+            invokeSuggestRouteUpdate()
         }
     }
 

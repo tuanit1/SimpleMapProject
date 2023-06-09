@@ -1,16 +1,21 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.suggestMap
 
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.viewModelScope
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.show
+import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class SuggestMapFragment :
@@ -41,9 +46,21 @@ class SuggestMapFragment :
     override fun initListener() {
 
         binding?.run {
-            llDest.setOnClickListener {
+            tvDestName.setOnClickListener {
                 parentActivity?.checkLocationPermission {
                     (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
+                }
+            }
+
+            ivNextPlace.setOnClickListener {
+                (parentFragment as? SuggestFragment)?.run {
+                    handleSelectedPositionUpdate(true)
+                }
+            }
+
+            ivPrevPlace.setOnClickListener {
+                (parentFragment as? SuggestFragment)?.run {
+                    handleSelectedPositionUpdate(false)
                 }
             }
 
@@ -54,15 +71,30 @@ class SuggestMapFragment :
             mapFragment?.onNodesLinesLoaded = {
                 handleSuggestRouteUpdated()
                 drawSelectedGuildPath()
+                updateRouteDestinationView()
             }
 
             (parentFragment as? SuggestFragment)?.run {
-                invokeSuggestRouteUpdate = { isUpdateSelectedPlace ->
-                    if (!isUpdateSelectedPlace) {
-                        handleSuggestRouteUpdated()
-                    }
+                invokeSuggestRouteUpdate = {
+                    viewModel.viewModelScope.launch {
+                        val updateRouteJob = launch {
+                            if (isSuggestRouteChanged) {
+                                isSuggestRouteChanged = false
+                                handleSuggestRouteUpdated()
+                            }
+                        }
 
-                    drawSelectedGuildPath()
+                        val updateSelectedJob = launch {
+                            if (isSelectedPlaceChanged) {
+                                isSelectedPlaceChanged = false
+                                drawSelectedGuildPath()
+                            }
+                        }
+
+                        joinAll(updateRouteJob, updateSelectedJob)
+                        updateRouteDestinationView()
+
+                    }
                 }
 
                 onLocationUpdate = { location ->
@@ -79,6 +111,26 @@ class SuggestMapFragment :
                 getCurrentLocation()?.let { currentLocation ->
                     mapFragment?.drawSelectedGuildPath(selectedPlace, currentLocation)
                 }
+            }
+        }
+    }
+
+    private fun updateRouteDestinationView() {
+        binding?.run {
+            (parentFragment as? SuggestFragment)?.run {
+                getSaveSuggestList().find { it.itemState == RouteItem.SELECTED }
+                    ?.let { selectedPlace ->
+                        tvDestName.text = getString(
+                            R.string.place_name_with_index,
+                            selectedPlace.itemIndex,
+                            selectedPlace.place.run {
+                                game?.name ?: name
+                            })
+                        log(tvDestName.text.toString())
+
+                        ivNextPlace.showIf(selectedPlace.itemIndex != getSaveSuggestList().lastIndex + 1)
+                        ivPrevPlace.showIf(selectedPlace.itemIndex != 1)
+                    }
             }
         }
     }
