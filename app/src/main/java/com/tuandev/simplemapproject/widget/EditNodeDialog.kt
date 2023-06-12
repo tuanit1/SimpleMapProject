@@ -8,7 +8,7 @@ import com.tuandev.simplemapproject.data.repositories.local.LocalRepository
 import com.tuandev.simplemapproject.databinding.DialogEditNodeBinding
 import com.tuandev.simplemapproject.extension.gone
 import com.tuandev.simplemapproject.extension.showIf
-import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
+import com.tuandev.simplemapproject.widget.markerSelectedDialog.OptionItemDialog
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

@@ -2,6 +2,7 @@ package com.tuandev.simplemapproject.util
 
 import android.location.Location
 import com.tuandev.simplemapproject.data.models.Node
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.toRoundedFloat
 
 data class AStarSearch(
@@ -51,7 +52,6 @@ data class AStarSearch(
                         val tentativeGScore = g.plus(neighborWithDistance.distance ?: 0f)
                         val neighBorGScore = gScore[neighBor] ?: Float.POSITIVE_INFINITY
 
-
                         if (tentativeGScore < neighBorGScore) {
                             cameFrom[neighBor] = current
                             gScore[neighBor] = tentativeGScore
@@ -65,7 +65,7 @@ data class AStarSearch(
                 }
         }
 
-//        log("Open set is empty but goal was never reached")
+        log("Open set is empty but goal was never reached")
         onFindPathFail()
     }
 

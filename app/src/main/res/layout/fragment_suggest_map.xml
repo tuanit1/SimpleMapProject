@@ -44,7 +44,7 @@
 
             <TextView
                 android:id="@+id/tvDestName"
-                style="@style/titleTextStyleExtraLarge"
+                style="@style/titleTextStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"

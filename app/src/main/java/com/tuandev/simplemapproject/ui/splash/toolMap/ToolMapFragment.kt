@@ -6,12 +6,12 @@ import com.google.android.gms.maps.model.Polyline
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
-import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchEvent
+import com.tuandev.simplemapproject.base.map.BaseMapFragment.Companion.TouchState
 import com.tuandev.simplemapproject.data.models.OptionItem
 import com.tuandev.simplemapproject.databinding.FragmentToolMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showIf
-import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
+import com.tuandev.simplemapproject.widget.markerSelectedDialog.OptionItemDialog
 
 class ToolMapFragment :
     BaseFragment<FragmentToolMapBinding, ToolMapViewModel, ToolMapViewState>(FragmentToolMapBinding::inflate) {
@@ -34,7 +34,7 @@ class ToolMapFragment :
                         if (vs.isToggle) {
                             when (viewModel.currentTool) {
                                 ToolMapViewModel.ADD_POINT -> {
-                                    mapFragment?.setCurrentTouchEvent(TouchEvent.DRAW_MARKER)
+                                    mapFragment?.setCurrentTouchEvent(TouchState.DRAW_MARKER)
                                 }
 
                                 ToolMapViewModel.ADD_LINE -> {
@@ -108,7 +108,7 @@ class ToolMapFragment :
             }
 
             btnSave.setOnClickListener {
-                mapFragment?.setCurrentTouchEvent(TouchEvent.OFF)
+                mapFragment?.setCurrentTouchEvent(TouchState.OFF)
                 viewModel.quitTool()
             }
 
@@ -126,16 +126,16 @@ class ToolMapFragment :
                 viewModel.addTempLine(line)
             }
 
-            onMarkerClick = { marker ->
+            onMarkerClick = { node ->
                 OptionItemDialog(
                     optionList = listOf(
                         OptionItem(OptionItem.KEY_EDIT_MAP_ITEM, "Edit"),
                         OptionItem(OptionItem.KEY_DELETE_MAP_ITEM, "Remove")
                     ),
-                    title = "Node #${marker.tag}"
+                    title = "Node #${node.id}"
                 ).apply {
                     onItemClick = {
-                        markerItemClickListener(it, marker)
+                        markerItemClickListener(it, node.id.toString())
                     }
                 }.show(this@ToolMapFragment.childFragmentManager, null)
             }
@@ -155,17 +155,13 @@ class ToolMapFragment :
 
     private val containerID = R.id.container_tool_map
 
-    private val markerItemClickListener: (String, Marker) -> Unit = { key, marker ->
+    private val markerItemClickListener: (String, String) -> Unit = { key, nodeId ->
         when (key) {
             OptionItem.KEY_DELETE_MAP_ITEM -> {
-                marker.tag.toString().let { nodeId ->
-                    mapFragment?.removeNode(nodeId)
-                }
+                mapFragment?.removeNode(nodeId)
             }
             OptionItem.KEY_EDIT_MAP_ITEM -> {
-                marker.tag.toString().let { nodeId ->
-                    mapFragment?.handleUpdateNode(nodeId)
-                }
+                mapFragment?.handleUpdateNode(nodeId)
             }
         }
     }

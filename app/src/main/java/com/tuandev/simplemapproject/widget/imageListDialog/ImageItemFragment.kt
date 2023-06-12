@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.widget.imagelistdialog
+package com.tuandev.simplemapproject.widget.imageListDialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,7 +15,6 @@ class ImageItemFragment(
 ) : Fragment() {
 
     private var binding: FragmentImageItemBinding? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

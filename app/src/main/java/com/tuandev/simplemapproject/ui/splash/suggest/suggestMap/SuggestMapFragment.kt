@@ -6,6 +6,7 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
+import com.tuandev.simplemapproject.data.models.ActionItem
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
 import com.tuandev.simplemapproject.extension.log
@@ -13,6 +14,7 @@ import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.show
 import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.widget.placeInfoDialog.PlaceInfoDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -28,6 +30,7 @@ class SuggestMapFragment :
     }
 
     private var mapFragment: BaseMapFragment? = null
+    private var placeInfoBottomDialog: PlaceInfoDialog? = null
     override val viewModel: SuggestMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
@@ -68,10 +71,18 @@ class SuggestMapFragment :
                 llDest.show()
             }
 
-            mapFragment?.onNodesLinesLoaded = {
-                handleSuggestRouteUpdated()
-                drawSelectedGuildPath()
-                updateRouteDestinationView()
+            mapFragment?.run {
+                onNodesLinesLoaded = {
+                    handleSuggestRouteUpdated()
+                    drawSelectedGuildPath()
+                    updateRouteDestinationView()
+                }
+
+                onMarkerClick = { node ->
+                    viewModel.getPlaceById(node.placeId)?.let { place ->
+                        openPlaceInfoBottomDialog(place.id)
+                    }
+                }
             }
 
             (parentFragment as? SuggestFragment)?.run {
@@ -102,6 +113,32 @@ class SuggestMapFragment :
                     drawSelectedGuildPath()
                 }
             }
+        }
+    }
+
+    private fun openPlaceInfoBottomDialog(placeId: Int) {
+        placeInfoBottomDialog?.run {
+            updatePlace(placeId)
+            dialog?.show()
+        } ?: run {
+
+            val tempList = listOf(
+                ActionItem("1") {
+                    log("1")
+                },
+                ActionItem("2") {
+                    log("2")
+                },
+                ActionItem("3") {
+                    log("3")
+                },
+                ActionItem("4") {
+                    log("4")
+                }
+            )
+
+            placeInfoBottomDialog = PlaceInfoDialog.newInstance(placeId, tempList)
+            placeInfoBottomDialog?.show(childFragmentManager, null)
         }
     }
 

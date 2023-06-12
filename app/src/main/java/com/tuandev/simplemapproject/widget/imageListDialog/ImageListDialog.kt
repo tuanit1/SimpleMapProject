@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.widget.imagelistdialog
+package com.tuandev.simplemapproject.widget.imageListDialog
 
 import com.tuandev.simplemapproject.base.BaseDialogFragment
 import com.tuandev.simplemapproject.data.models.ImageData

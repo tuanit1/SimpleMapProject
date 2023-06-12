@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.widget.markerselecteddialog
+package com.tuandev.simplemapproject.widget.markerSelectedDialog
 
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.DefaultItemAnimator

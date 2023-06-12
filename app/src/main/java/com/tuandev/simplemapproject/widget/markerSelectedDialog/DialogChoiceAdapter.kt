@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.widget.markerselecteddialog
+package com.tuandev.simplemapproject.widget.markerSelectedDialog
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

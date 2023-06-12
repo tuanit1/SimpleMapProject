@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingHorizontal="20dp"
-    android:paddingTop="30dp"
-    android:paddingBottom="20dp"
-    android:background="@color/white">
+    android:paddingBottom="20dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="20dp"
+        android:layout_height="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center"
+        app:cardBackgroundColor="@color/black"/>
 
     <TextView
+        android:id="@+id/tvPlaceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         style="@style/titleTextStyleExtraLarge"
+        android:textColor="@color/stPatrickBlue"
         android:text="PLACE NAME" />
 
     <LinearLayout
         android:id="@+id/llGameInfo"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -34,10 +43,10 @@
                 android:text="Zone: " />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:id="@+id/tvZone"
                 style="@style/contentBlackTextStyleLarge"
-                android:text="Content" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         <LinearLayout
@@ -54,10 +63,10 @@
                 android:text="Thrill level: " />
 
             <TextView
+                android:id="@+id/tvThrillLevel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/contentBlackTextStyleLarge"
-                android:text="Content" />
+                style="@style/contentBlackTextStyleLarge" />
         </LinearLayout>
 
         <LinearLayout
@@ -74,10 +83,10 @@
                 android:text="Duration: " />
 
             <TextView
+                android:id="@+id/tvDuration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/contentBlackTextStyleLarge"
-                android:text="Content" />
+                style="@style/contentBlackTextStyleLarge" />
         </LinearLayout>
 
         <LinearLayout
@@ -91,25 +100,31 @@
                 android:layout_height="wrap_content"
                 style="@style/titleTextStyleLarge"
                 android:layout_marginEnd="5dp"
-                android:text="Available: " />
+                android:text="Status: " />
 
             <TextView
+                android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/contentBlackTextStyleLarge"
-                android:text="Content" />
+                style="@style/contentBlackTextStyleLarge"/>
         </LinearLayout>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvPhotos"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="200dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvActionButtons"
-        android:layout_marginTop="15dp"
+    <HorizontalScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/llActionButtons"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </HorizontalScrollView>
 </LinearLayout>

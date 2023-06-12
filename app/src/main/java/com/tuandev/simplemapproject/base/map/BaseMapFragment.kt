@@ -25,7 +25,7 @@ import com.tuandev.simplemapproject.util.AStarSearch
 import com.tuandev.simplemapproject.util.Constants
 import com.tuandev.simplemapproject.util.Event
 import com.tuandev.simplemapproject.widget.EditNodeDialog
-import com.tuandev.simplemapproject.widget.imagelistdialog.ImageListDialog
+import com.tuandev.simplemapproject.widget.imageListDialog.ImageListDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
@@ -34,7 +34,7 @@ class BaseMapFragment :
     BaseFragment<FragmentBaseMapBinding, BaseMapViewModel, BaseMapViewState>(FragmentBaseMapBinding::inflate) {
 
     companion object {
-        object TouchEvent {
+        object TouchState {
             const val DRAW_MARKER = "draw_marker"
             const val DRAW_LINE_STEP_1 = "draw_line_step_1"
             const val DRAW_LINE_STEP_2 = "draw_line_step_2"
@@ -60,7 +60,7 @@ class BaseMapFragment :
     private var supportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
     private var mapMode = ""
-    var onMarkerClick: (Marker) -> Unit = {}
+    var onMarkerClick: (Node) -> Unit = {}
     var onPolylineClick: (Polyline) -> Unit = {}
     var onNodeAdded: (Node) -> Unit = {}
     var onLineAdded: (Line) -> Unit = {}
@@ -147,7 +147,7 @@ class BaseMapFragment :
     override fun initListener() {
         viewModel.currentTouchEvent.observe(viewLifecycleOwner) { event ->
             when (event) {
-                TouchEvent.OFF -> {
+                TouchState.OFF -> {
                     lastSelectedMarker?.let {
                         updateMarkerIcon(it, it.tag.toString())
                     }
@@ -160,7 +160,7 @@ class BaseMapFragment :
 
     private fun initMap() {
 
-        setCurrentTouchEvent(TouchEvent.OFF)
+        setCurrentTouchEvent(TouchState.OFF)
 
         mapMode = arguments?.getString("mapMode") ?: ""
 
@@ -207,31 +207,33 @@ class BaseMapFragment :
         mMap?.run {
 
             setOnPolylineClickListener { polyline ->
-                if (viewModel.currentTouchEvent.value == TouchEvent.OFF) {
+                if (viewModel.currentTouchEvent.value == TouchState.OFF) {
                     onPolylineClick(polyline)
                 }
             }
 
             setOnMarkerClickListener { marker ->
                 when (viewModel.currentTouchEvent.value) {
-                    TouchEvent.DRAW_LINE_STEP_1 -> {
+                    TouchState.DRAW_LINE_STEP_1 -> {
                         handleDrawLineStep1(marker)
                     }
 
-                    TouchEvent.DRAW_LINE_STEP_2 -> {
+                    TouchState.DRAW_LINE_STEP_2 -> {
                         handleDrawLineStep2(marker)
                     }
 
-                    TouchEvent.FIND_ROUTE_STEP_1 -> {
+                    TouchState.FIND_ROUTE_STEP_1 -> {
                         handleFindRouteStep1(marker)
                     }
 
-                    TouchEvent.FIND_ROUTE_STEP_2 -> {
+                    TouchState.FIND_ROUTE_STEP_2 -> {
                         handleFindRouteStep2(marker)
                     }
 
-                    TouchEvent.OFF -> {
-                        onMarkerClick(marker)
+                    TouchState.OFF -> {
+                        getNodeById(marker.tag.toString())?.let { node ->
+                            onMarkerClick(node)
+                        }
                     }
                 }
 
@@ -239,7 +241,7 @@ class BaseMapFragment :
             }
 
             setOnMapClickListener { latLng ->
-                TouchEvent.run {
+                TouchState.run {
                     when (viewModel.currentTouchEvent.value) {
                         DRAW_MARKER -> {
                             viewModel.viewModelScope.launch {
@@ -362,11 +364,11 @@ class BaseMapFragment :
     }
 
     fun startDrawLine() {
-        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+        setCurrentTouchEvent(TouchState.DRAW_LINE_STEP_1)
     }
 
     fun startFindRoute() {
-        setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
+        setCurrentTouchEvent(TouchState.FIND_ROUTE_STEP_1)
     }
 
     fun setCurrentTouchEvent(event: String) {
@@ -430,7 +432,7 @@ class BaseMapFragment :
     private fun handleDrawLineStep1(marker: Marker) {
         lastSelectedMarker = marker
         marker.setIcon(getSelectedNodeImage())
-        setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_2)
+        setCurrentTouchEvent(TouchState.DRAW_LINE_STEP_2)
     }
 
     private fun handleDrawLineStep2(marker: Marker) {
@@ -453,7 +455,7 @@ class BaseMapFragment :
                     }
 
                     lastMarker.setIcon((getNodeImage()))
-                    setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+                    setCurrentTouchEvent(TouchState.DRAW_LINE_STEP_1)
                 } else {
                     context?.run {
                         showToast(getString(R.string.err_conflict_line))
@@ -461,7 +463,7 @@ class BaseMapFragment :
                 }
             } else {
                 lastMarker.setIcon((getNodeImage()))
-                setCurrentTouchEvent(TouchEvent.DRAW_LINE_STEP_1)
+                setCurrentTouchEvent(TouchState.DRAW_LINE_STEP_1)
             }
         }
     }
@@ -471,7 +473,7 @@ class BaseMapFragment :
         currentGuildPath?.remove()
         marker.setIcon(getSelectedNodeImage())
         viewModel.updateLineViewState(isVisible = true)
-        setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_2)
+        setCurrentTouchEvent(TouchState.FIND_ROUTE_STEP_2)
     }
 
     private fun handleFindRouteStep2(marker: Marker) {
@@ -488,7 +490,7 @@ class BaseMapFragment :
             }
 
             updateMarkerIcon(lastMarker, lastMarker.tag.toString())
-            setCurrentTouchEvent(TouchEvent.FIND_ROUTE_STEP_1)
+            setCurrentTouchEvent(TouchState.FIND_ROUTE_STEP_1)
         }
     }
 

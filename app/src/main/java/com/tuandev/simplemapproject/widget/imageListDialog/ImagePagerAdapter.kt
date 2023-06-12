@@ -1,4 +1,4 @@
-package com.tuandev.simplemapproject.widget.imagelistdialog
+package com.tuandev.simplemapproject.widget.imageListDialog
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter

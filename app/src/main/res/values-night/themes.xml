@@ -1,6 +1,6 @@
 <resources>
     <!-- Base application theme. -->
-    <style name="Theme.SimpleMapProject" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.SimpleMapProject" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/stPatrickBlue</item>
         <item name="colorPrimaryVariant">@color/stPatrickBlue</item>

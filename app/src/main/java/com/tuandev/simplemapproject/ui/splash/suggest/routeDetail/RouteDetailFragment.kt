@@ -17,7 +17,7 @@ import com.tuandev.simplemapproject.extension.showIf
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.ui.splash.suggest.routeDetail.adapter.RouteItemAdapter
 import com.tuandev.simplemapproject.widget.ConfirmMessageDialog
-import com.tuandev.simplemapproject.widget.markerselecteddialog.OptionItemDialog
+import com.tuandev.simplemapproject.widget.markerSelectedDialog.OptionItemDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

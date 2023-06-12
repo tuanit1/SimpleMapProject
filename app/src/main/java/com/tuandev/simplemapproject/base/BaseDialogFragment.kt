@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.DialogFragment
 import androidx.viewbinding.ViewBinding
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tuandev.simplemapproject.extension.getHeightScreen
 import com.tuandev.simplemapproject.extension.getWidthScreen
 
