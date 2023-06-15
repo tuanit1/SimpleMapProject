@@ -57,13 +57,13 @@ class SuggestMapFragment :
 
             ivNextPlace.setOnClickListener {
                 (parentFragment as? SuggestFragment)?.run {
-                    handleSelectedPositionUpdate(true)
+                    handleSelectNextPLace()
                 }
             }
 
             ivPrevPlace.setOnClickListener {
                 (parentFragment as? SuggestFragment)?.run {
-                    handleSelectedPositionUpdate(false)
+                    handleSelectPreviousPLace()
                 }
             }
 
@@ -123,17 +123,8 @@ class SuggestMapFragment :
         } ?: run {
 
             val tempList = listOf(
-                ActionItem("1") {
-                    log("1")
-                },
-                ActionItem("2") {
-                    log("2")
-                },
-                ActionItem("3") {
-                    log("3")
-                },
-                ActionItem("4") {
-                    log("4")
+                ActionItem("Move to this place") {
+
                 }
             )
 

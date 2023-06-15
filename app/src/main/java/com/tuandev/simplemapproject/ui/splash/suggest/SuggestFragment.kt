@@ -33,7 +33,7 @@ class SuggestFragment :
     var isSelectedPlaceChanged = false
     var isUpdateRouteByBackPress = false
     private var fusedLocationClient: FusedLocationProviderClient? = null
-    var handleSelectedPositionUpdate: (Boolean) -> Unit = {}
+    private var handleSelectedPositionUpdate: (Int) -> Unit = {}
     var onLocationUpdate: (Location) -> Unit = {}
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
     var invokeSuggestRouteUpdate: () -> Unit = {}
@@ -55,40 +55,25 @@ class SuggestFragment :
     override fun initListener() {
         listenOnLiveData()
 
-        handleSelectedPositionUpdate = { isNext ->
+        handleSelectedPositionUpdate = { updatePosition ->
             val suggestList = viewModel.getSuggestList().toMutableList()
-            var currentIndex = suggestList.indexOfFirst { it.itemState == RouteItem.SELECTED }
-            var isValid = false
-            if (isNext) {
-                if (currentIndex < suggestList.size - 1) {
-                    isValid = true
-                    currentIndex++
-                }
-            } else {
-                if (currentIndex > 0) {
-                    isValid = true
-                    currentIndex--
-                }
-            }
 
-            if (isValid) {
-                for (i in suggestList.indices) {
-                    when {
-                        i < currentIndex -> {
-                            suggestList[i].itemState = RouteItem.VISITED
-                        }
-                        i == currentIndex -> {
-                            suggestList[i].itemState = RouteItem.SELECTED
-                        }
-                        else -> {
-                            suggestList[i].itemState = RouteItem.NOT_VISITED
-                        }
+            for (i in suggestList.indices) {
+                when {
+                    i < updatePosition -> {
+                        suggestList[i].itemState = RouteItem.VISITED
+                    }
+                    i == updatePosition -> {
+                        suggestList[i].itemState = RouteItem.SELECTED
+                    }
+                    else -> {
+                        suggestList[i].itemState = RouteItem.NOT_VISITED
                     }
                 }
-                isUpdateRouteByBackPress = false
-                isSelectedPlaceChanged = true
-                updateSuggestRouteList(suggestList)
             }
+            isUpdateRouteByBackPress = false
+            isSelectedPlaceChanged = true
+            updateSuggestRouteList(suggestList)
         }
     }
 
@@ -195,6 +180,28 @@ class SuggestFragment :
     fun getSaveSuggestList() = viewModel.getSuggestList()
     fun getUserFeature() = viewModel.mUserFeature.value
     fun getCurrentLocation() = viewModel.mCurrentLocation.value
+
+    fun handleSelectNextPLace() {
+        viewModel.run {
+            var currentIndex = getSuggestList().indexOfFirst { it.itemState == RouteItem.SELECTED }
+            if (currentIndex < getSuggestList().size - 1) {
+                handleSelectedPositionUpdate(++currentIndex)
+            }
+        }
+    }
+
+    fun handleSelectPreviousPLace() {
+        viewModel.run {
+            var currentIndex = getSuggestList().indexOfFirst { it.itemState == RouteItem.SELECTED }
+            if (currentIndex > 0) {
+                handleSelectedPositionUpdate(--currentIndex)
+            }
+        }
+    }
+
+    fun handleSelectPreviousPlace() {
+
+    }
 
     override fun onResume() {
         super.onResume()
