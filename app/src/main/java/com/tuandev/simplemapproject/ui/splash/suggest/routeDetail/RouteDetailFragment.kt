@@ -169,9 +169,7 @@ class RouteDetailFragment :
             }
 
             btnAddPlace.setOnClickListener {
-                showChoosePlaceDialog { placeId ->
-                    viewModel.handleAddRouteItem(placeId.toInt())
-                }
+                handleSelectedPlaceFromMap()
             }
 
             suggestFragment.run {
@@ -221,6 +219,13 @@ class RouteDetailFragment :
                     }
                 }.show(childFragmentManager, null)
             }
+        }
+    }
+
+    private fun handleSelectedPlaceFromMap() {
+        (parentFragment as SuggestFragment).run {
+            showSuggestMapFragment()
+            getSuggestMapFragment()?.handleDisplaySelectableNode(viewModel.getAddablePlace())
         }
     }
 
@@ -277,6 +282,10 @@ class RouteDetailFragment :
         val hour = availableTime.toInt()
         val min = ((availableTime - hour) * 60).toInt()
         return context?.getString(R.string.formatted_time, hour, min)
+    }
+
+    fun addNewPlaceToRoute(placeId: Int) {
+        viewModel.handleAddRouteItem(placeId)
     }
 
 }

@@ -23,6 +23,8 @@ class SuggestFragment :
     BaseFragment<FragmentSuggestBinding, SuggestViewModel, ViewState>(FragmentSuggestBinding::inflate) {
 
     companion object {
+        const val ROUTE_DETAIL = "route_detail"
+        const val SUGGEST_MAP = "suggest_map"
         fun newInstance() = SuggestFragment()
     }
 
@@ -33,7 +35,7 @@ class SuggestFragment :
     var isSelectedPlaceChanged = false
     var isUpdateRouteByBackPress = false
     private var fusedLocationClient: FusedLocationProviderClient? = null
-    private var handleSelectedPositionUpdate: (Int) -> Unit = {}
+    var handleSelectedPositionUpdate: (Int) -> Unit = {}
     var onLocationUpdate: (Location) -> Unit = {}
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}
     var invokeSuggestRouteUpdate: () -> Unit = {}
@@ -49,7 +51,7 @@ class SuggestFragment :
                 }
             }
         }
-        openSuggestMapFragment()
+        showSuggestMapFragment()
     }
 
     override fun initListener() {
@@ -140,29 +142,6 @@ class SuggestFragment :
 
     private fun getContainerId() = R.id.container_suggest
 
-    private fun openSuggestMapFragment() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = SuggestMapFragment.newInstance()
-        )
-    }
-
-    fun showRouteDetailFragment() {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = RouteDetailFragment.newInstance()
-        )
-    }
-
-    fun showFeatureQuestionFragment(isInitFeature: Boolean) {
-        openFragment(
-            containerId = getContainerId(),
-            fragment = FeatureQuestionFragment.newInstance().apply {
-                this.isInitFeature = isInitFeature
-            }
-        )
-    }
-
     fun updateUserFeature(userFeature: UserFeature) {
         viewModel.updateUserFeature(userFeature)
     }
@@ -199,9 +178,59 @@ class SuggestFragment :
         }
     }
 
-    fun handleSelectPreviousPlace() {
+    fun showSuggestMapFragment() {
+        childFragmentManager.run {
+            val routeDetailFragment = findFragmentByTag(ROUTE_DETAIL)
+            val suggestMapFragment = findFragmentByTag(SUGGEST_MAP)
 
+            if (routeDetailFragment != null && suggestMapFragment != null) {
+                beginTransaction().run {
+                    hide(routeDetailFragment)
+                    commit()
+                }
+            } else {
+                openFragment(
+                    containerId = getContainerId(),
+                    fragment = SuggestMapFragment.newInstance(),
+                    tag = SUGGEST_MAP
+                )
+            }
+        }
     }
+
+    fun showRouteDetailFragment() {
+        childFragmentManager.run {
+            val routeDetailFragment = findFragmentByTag(ROUTE_DETAIL)
+            val suggestMapFragment = findFragmentByTag(SUGGEST_MAP)
+            if (routeDetailFragment != null && suggestMapFragment != null) {
+                beginTransaction().run {
+                    show(routeDetailFragment)
+                    commit()
+                }
+            } else {
+                openFragment(
+                    containerId = getContainerId(),
+                    fragment = RouteDetailFragment.newInstance(),
+                    tag = ROUTE_DETAIL
+                )
+            }
+        }
+    }
+
+    fun showFeatureQuestionFragment(isInitFeature: Boolean) {
+        openFragment(
+            containerId = getContainerId(),
+            fragment = FeatureQuestionFragment.newInstance().apply {
+                this.isInitFeature = isInitFeature
+            }
+        )
+    }
+
+    fun getSuggestMapFragment() =
+        childFragmentManager.findFragmentByTag(SUGGEST_MAP) as? SuggestMapFragment
+
+    fun getRouteDetailFragment() =
+        childFragmentManager.findFragmentByTag(ROUTE_DETAIL) as? RouteDetailFragment
 
     override fun onResume() {
         super.onResume()

@@ -96,6 +96,9 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 is RouteDetailFragment -> {
                                     currentFragment.run {
+                                        if (childSuggestFragment.isHidden) {
+                                            getSuggestMapFragment()?.disableSelectingPlace()
+                                        }
                                         handleUpdateRouteFromBackPress()
                                         handleChildFragmentBackPress()
                                     }

@@ -1,18 +1,14 @@
 package com.tuandev.simplemapproject.widget.placeInfoDialog
 
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
-import android.widget.Button
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.data.models.ActionItem
 import com.tuandev.simplemapproject.databinding.DialogBottomPlaceInfoBinding
 import com.tuandev.simplemapproject.extension.showIf
@@ -24,12 +20,12 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
     private var binding: DialogBottomPlaceInfoBinding? = null
     private val viewModel: PlaceInfoDialogViewModel by viewModels()
     private var imageInfoAdapter: ImageInfoAdapter? = null
-    private var mListActions = mutableListOf<ActionItem>()
+    private var mActionItem: ActionItem? = null
 
     companion object {
         private const val KEY_PLACE_ID = "key_place_id"
-        fun newInstance(placeId: Int, listActions: List<ActionItem>) = PlaceInfoDialog().apply {
-            mListActions.addAll(listActions)
+        fun newInstance(placeId: Int, actionItem: ActionItem) = PlaceInfoDialog().apply {
+            mActionItem = actionItem
             arguments = Bundle().apply {
                 putInt(KEY_PLACE_ID, placeId)
             }
@@ -72,21 +68,22 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
                 itemAnimator = DefaultItemAnimator()
             }
 
-            mListActions.forEach { item ->
-                llActionButtons.addView(
-                    Button(context).apply {
-                        layoutParams = MarginLayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        ).apply {
-                            marginEnd = 20
-                        }
-                        text = item.title
-                        setTextColor(Color.WHITE)
-                        setBackgroundResource(R.drawable.bg_button_question)
-                        setOnClickListener { item.action() }
-                    })
+            loadActionButton()
+        }
+    }
+
+    fun updateActionItem(item: ActionItem) {
+        mActionItem = item
+        loadActionButton()
+    }
+
+    private fun loadActionButton() {
+        binding?.run {
+            btnActionButtons.setOnClickListener {
+                dismiss()
+                mActionItem?.action?.invoke()
             }
+            tvActionTitle.text = mActionItem?.title
         }
     }
 

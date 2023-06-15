@@ -13,6 +13,7 @@ fun Fragment.openFragment(
     exitAnim: Int = 0,
     popEnter: Int = 0,
     popExit: Int = 0,
+    tag: String? = null
 ) {
     childFragmentManager.run {
         if (findFragmentByTag(fragment.tag) == null) {
@@ -34,12 +35,15 @@ fun Fragment.openFragment(
             }
             commit {
                 setCustomAnimations(enterAnim, exitAnim, popEnter, popExit)
-                if(isReplace){
-                    replace(containerId, fragment, fragment.tag)
-                }else{
-                    add(containerId, fragment, fragment.tag)
+
+                val fragmentTag = tag ?: fragment.tag
+
+                if (isReplace) {
+                    replace(containerId, fragment, fragmentTag)
+                } else {
+                    add(containerId, fragment, fragmentTag)
                 }
-                addToBackStack(fragment.tag)
+                addToBackStack(tag ?: fragmentTag)
             }
         }
     }

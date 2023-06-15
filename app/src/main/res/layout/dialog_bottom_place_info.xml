@@ -117,16 +117,20 @@
         android:layout_width="match_parent"
         android:layout_height="200dp" />
 
-    <HorizontalScrollView
+    <RelativeLayout
+        android:id="@+id/btnActionButtons"
+        android:layout_marginTop="15dp"
         android:layout_width="match_parent"
-        android:layout_marginTop="20dp"
-        android:scrollbars="none"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:background="@drawable/bg_button_question">
 
-        <LinearLayout
-            android:id="@+id/llActionButtons"
-            android:orientation="horizontal"
+        <TextView
+            android:id="@+id/tvActionTitle"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </HorizontalScrollView>
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            style="@style/titleTextStyleMedium"
+            android:textColor="@color/white" />
+    </RelativeLayout>
 </LinearLayout>

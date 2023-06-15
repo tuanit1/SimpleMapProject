@@ -16,6 +16,7 @@ import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.data.models.Line
 import com.tuandev.simplemapproject.data.models.Node
+import com.tuandev.simplemapproject.data.models.Place
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
 import com.tuandev.simplemapproject.extension.openFragment
@@ -71,6 +72,7 @@ class BaseMapFragment :
     private var aStarSearch: AStarSearch? = null
     private var currentGuildPath: Polyline? = null
     private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
+    private var selectablePlaces: MutableList<Marker> = mutableListOf()
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -602,6 +604,56 @@ class BaseMapFragment :
         handleDisplaySuggestPlaceMarker(suggestRoute)
     }
 
+    fun handleDisplaySelectableNode(listPlace: List<Place>) {
+        allSuggestPlaces.run {
+            forEach {
+                it.alpha = 0.5f
+            }
+        }
+        selectablePlaces.run {
+            forEach {
+                it.remove()
+            }
+            clear()
+        }
+        viewModel.run {
+            loadingProgressLiveData.value = true
+            viewModelScope.launch(Dispatchers.IO) {
+                launch {
+                    listPlace.forEach { place ->
+                        getNodeByPlaceId(place.id)?.run {
+                            withContext(Dispatchers.Main) {
+                                if (place.game != null) {
+                                    drawMarker(
+                                        latLng = LatLng(latitude, longitude),
+                                        nodeId = id,
+                                        bitmapDescriptor = getGameImage()
+                                    )?.let { selectablePlaces.add(it) }
+                                } else {
+                                    drawMarker(
+                                        latLng = LatLng(
+                                            latitude,
+                                            longitude
+                                        ),
+                                        nodeId = id,
+                                        bitmapDescriptor = getPlaceImageWithDrawable(
+                                            res = place.serviceType?.imgRes
+                                                ?: R.drawable.ic_place_node,
+                                            size = 90
+                                        )
+                                    )?.let { selectablePlaces.add(it) }
+                                }
+                            }
+                        }
+                    }
+                }.join()
+                withContext(Dispatchers.Main) {
+                    loadingProgressLiveData.value = false
+                }
+            }
+        }
+    }
+
     private fun handleDisplayMapPaths() {
         viewModel.run {
             viewModelScope.launch(Dispatchers.IO) {
@@ -692,7 +744,9 @@ class BaseMapFragment :
                         latitude = currentLocation.latitude,
                         longitude = currentLocation.longitude
                     )
-                    val nearestNode = listNode.minBy { aStarSearch?.getDistance(it, yourNode) ?: Float.POSITIVE_INFINITY }
+                    val nearestNode = listNode.minBy {
+                        aStarSearch?.getDistance(it, yourNode) ?: Float.POSITIVE_INFINITY
+                    }
                     nearestNode.let { start ->
                         aStarSearch?.findBestPath(start, goal) { nodes, _ ->
                             launch(Dispatchers.Main) {
@@ -704,6 +758,20 @@ class BaseMapFragment :
                     }
                 }
             }
+        }
+    }
+
+    fun clearDisplayedSelectableNode() {
+        allSuggestPlaces.run {
+            forEach {
+                it.alpha = 1f
+            }
+        }
+        selectablePlaces.run {
+            forEach {
+                it.remove()
+            }
+            clear()
         }
     }
 }

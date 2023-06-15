@@ -7,12 +7,10 @@ import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
 import com.tuandev.simplemapproject.base.map.BaseMapFragment
 import com.tuandev.simplemapproject.data.models.ActionItem
+import com.tuandev.simplemapproject.data.models.Place
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
-import com.tuandev.simplemapproject.extension.log
-import com.tuandev.simplemapproject.extension.openFragment
-import com.tuandev.simplemapproject.extension.show
-import com.tuandev.simplemapproject.extension.showIf
+import com.tuandev.simplemapproject.extension.*
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
 import com.tuandev.simplemapproject.widget.placeInfoDialog.PlaceInfoDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +29,7 @@ class SuggestMapFragment :
 
     private var mapFragment: BaseMapFragment? = null
     private var placeInfoBottomDialog: PlaceInfoDialog? = null
+    private var isSelectingPlace: Boolean = false
     override val viewModel: SuggestMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
@@ -80,7 +79,11 @@ class SuggestMapFragment :
 
                 onMarkerClick = { node ->
                     viewModel.getPlaceById(node.placeId)?.let { place ->
-                        openPlaceInfoBottomDialog(place.id)
+                        (this@SuggestMapFragment.parentFragment as? SuggestFragment)?.run {
+                            if (!getSaveSuggestList().any { it.place.id == place.id } || !isSelectingPlace) {
+                                openPlaceInfoBottomDialog(place.id)
+                            }
+                        }
                     }
                 }
             }
@@ -117,19 +120,42 @@ class SuggestMapFragment :
     }
 
     private fun openPlaceInfoBottomDialog(placeId: Int) {
+        val actionItem = ActionItem(if (!isSelectingPlace) "Set to destination" else "Select") {
+            if (isSelectingPlace) {
+                handleSelectingPlaceResult(placeId)
+            } else {
+                handleUpdateSelectedPlaceResult(placeId)
+            }
+        }
+
         placeInfoBottomDialog?.run {
             updatePlace(placeId)
+            updateActionItem(actionItem)
             dialog?.show()
         } ?: run {
-
-            val tempList = listOf(
-                ActionItem("Move to this place") {
-
-                }
-            )
-
-            placeInfoBottomDialog = PlaceInfoDialog.newInstance(placeId, tempList)
+            placeInfoBottomDialog = PlaceInfoDialog.newInstance(placeId, actionItem)
             placeInfoBottomDialog?.show(childFragmentManager, null)
+        }
+    }
+
+    private fun handleUpdateSelectedPlaceResult(placeId: Int) {
+        (parentFragment as? SuggestFragment)?.run {
+            getSaveSuggestList().find { it.place.id == placeId }?.let { routeItem ->
+                if (routeItem.itemState != RouteItem.SELECTED) {
+                    context?.showToast("Your destination has been updated")
+                    handleSelectedPositionUpdate(routeItem.itemIndex - 1)
+                } else {
+                    context?.showToast("This is already your destination")
+                }
+            }
+        }
+    }
+
+    private fun handleSelectingPlaceResult(placeId: Int) {
+        (parentFragment as? SuggestFragment)?.run {
+            disableSelectingPlace()
+            showRouteDetailFragment()
+            getRouteDetailFragment()?.addNewPlaceToRoute(placeId)
         }
     }
 
@@ -167,5 +193,17 @@ class SuggestMapFragment :
         (parentFragment as? SuggestFragment)?.getSaveSuggestList()?.let { suggestRoute ->
             mapFragment?.handleSuggestRouteUpdated(suggestRoute)
         }
+    }
+
+    fun handleDisplaySelectableNode(listPlace: List<Place>) {
+        isSelectingPlace = true
+        binding?.llDest?.gone()
+        mapFragment?.handleDisplaySelectableNode(listPlace)
+    }
+
+    fun disableSelectingPlace() {
+        isSelectingPlace = false
+        binding?.llDest?.show()
+        mapFragment?.clearDisplayedSelectableNode()
     }
 }
