@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tuandev.simplemapproject.data.models.ActionItem
 import com.tuandev.simplemapproject.databinding.DialogBottomPlaceInfoBinding
+import com.tuandev.simplemapproject.extension.gone
+import com.tuandev.simplemapproject.extension.show
 import com.tuandev.simplemapproject.extension.showIf
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -106,7 +108,10 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
 
             mImageList.observe(viewLifecycleOwner) { listImage ->
                 binding?.run {
+                    pbLoadingImage.gone()
+                    rvPhotos.show()
                     rvPhotos.showIf(listImage.isNotEmpty())
+                    tvPhotoEmpty.showIf(listImage.isEmpty())
                     imageInfoAdapter?.submitList(listImage)
                 }
             }
@@ -115,6 +120,10 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
 
     fun updatePlace(placeId: Int) {
         viewModel.run {
+            binding?.run {
+                pbLoadingImage.show()
+                rvPhotos.gone()
+            }
             updatePlace(placeId)
             loadPlaceImages()
         }

@@ -31,10 +31,10 @@ class SuggestFragment :
     override val viewModel: SuggestViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
+    private var fusedLocationClient: FusedLocationProviderClient? = null
     var isSuggestRouteChanged = false
     var isSelectedPlaceChanged = false
     var isUpdateRouteByBackPress = false
-    private var fusedLocationClient: FusedLocationProviderClient? = null
     var handleSelectedPositionUpdate: (Int) -> Unit = {}
     var onLocationUpdate: (Location) -> Unit = {}
     var onUserFeatureUpdatedListener: (UserFeature) -> Unit = {}

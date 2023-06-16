@@ -30,10 +30,14 @@ class RouteDetailFragment :
     ) {
 
     companion object {
+        const val ADD_SELECTED_PLACE = "add_selected_place"
+        const val REPLACE_SELECTED_PLACE = "replace_selected_place"
         fun newInstance() = RouteDetailFragment()
     }
 
     private var routeItemAdapter: RouteItemAdapter? = null
+    private var saveReplaceIndex: Int? = null
+    private var currentActionSelectPlace: String = ""
 
     override val viewModel: RouteDetailViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = { viewState ->
@@ -128,11 +132,11 @@ class RouteDetailFragment :
         (parentFragment as? SuggestFragment)?.run {
             viewModel.run {
                 val currentLocation = getCurrentLocation()
-                if(currentLocation != null){
+                if (currentLocation != null) {
                     viewModelScope.launch {
                         mUserFeature = getUserFeature()
                         if (mUserFeature != null) {
-                            withContext(Dispatchers.IO){
+                            withContext(Dispatchers.IO) {
                                 setCurrentUserNode(currentLocation)
                             }
                             updateFeatureView()
@@ -147,7 +151,7 @@ class RouteDetailFragment :
                             showFeatureQuestionFragment(false)
                         }
                     }
-                }else{
+                } else {
                     showErrorPopup("Error when retrieving user's location. Please try again!")
                     parentActivity?.invokeBackPress()
                 }
@@ -169,6 +173,7 @@ class RouteDetailFragment :
             }
 
             btnAddPlace.setOnClickListener {
+                currentActionSelectPlace = ADD_SELECTED_PLACE
                 handleSelectedPlaceFromMap()
             }
 
@@ -201,12 +206,9 @@ class RouteDetailFragment :
                                 if (viewModel.getSuggestList()[position].itemState == RouteItem.VISITED) {
                                     viewModel.showMessagePopup("Replacing a VISITED place is not allowed")
                                 } else {
-                                    showChoosePlaceDialog { placeId ->
-                                        viewModel.handleReplaceItem(
-                                            placeId = placeId.toInt(),
-                                            replaceIndex = position
-                                        )
-                                    }
+                                    currentActionSelectPlace = REPLACE_SELECTED_PLACE
+                                    saveReplaceIndex = position
+                                    handleSelectedPlaceFromMap()
                                 }
                             }
                             OptionItem.KEY_REMOVE_PLACE -> {
@@ -284,8 +286,16 @@ class RouteDetailFragment :
         return context?.getString(R.string.formatted_time, hour, min)
     }
 
-    fun addNewPlaceToRoute(placeId: Int) {
-        viewModel.handleAddRouteItem(placeId)
+    fun handleSelectingPlaceResult(placeId: Int) {
+        when (currentActionSelectPlace) {
+            ADD_SELECTED_PLACE -> viewModel.handleAddRouteItem(placeId)
+            REPLACE_SELECTED_PLACE -> {
+                saveReplaceIndex?.let { replaceIndex ->
+                    viewModel.handleReplaceItem(placeId, replaceIndex)
+                    saveReplaceIndex = null
+                }
+            }
+        }
+        currentActionSelectPlace = ""
     }
-
 }

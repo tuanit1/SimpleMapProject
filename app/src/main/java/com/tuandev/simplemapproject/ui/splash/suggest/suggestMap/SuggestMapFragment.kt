@@ -155,7 +155,7 @@ class SuggestMapFragment :
         (parentFragment as? SuggestFragment)?.run {
             disableSelectingPlace()
             showRouteDetailFragment()
-            getRouteDetailFragment()?.addNewPlaceToRoute(placeId)
+            getRouteDetailFragment()?.handleSelectingPlaceResult(placeId)
         }
     }
 

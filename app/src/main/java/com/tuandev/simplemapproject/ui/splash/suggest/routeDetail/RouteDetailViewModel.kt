@@ -40,7 +40,6 @@ class RouteDetailViewModel @Inject constructor(
 ) : BaseViewModel<RouteDetailViewState>() {
 
     var mUserFeature: UserFeature? = null
-
     var isFirstLoad = true
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
