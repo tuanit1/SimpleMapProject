@@ -55,21 +55,31 @@
                         android:layout_height="match_parent"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
-                        android:text="add line"/>
+                        android:text="add line" />
+
                     <Button
                         android:id="@+id/btnToolAddNode"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
-                        android:text="add node"/>
+                        android:text="add node" />
+
+                    <Button
+                        android:id="@+id/btnToolAddNodeLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_margin="5dp"
+                        android:layout_weight="1"
+                        android:text="add current node" />
+
                     <Button
                         android:id="@+id/btnFindRoute"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
-                        android:text="Find route"/>
+                        android:text="Find route" />
                 </LinearLayout>
             </HorizontalScrollView>
 

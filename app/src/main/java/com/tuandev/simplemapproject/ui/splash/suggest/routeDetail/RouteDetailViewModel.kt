@@ -41,6 +41,7 @@ class RouteDetailViewModel @Inject constructor(
 
     var mUserFeature: UserFeature? = null
     var isFirstLoad = true
+    var isUpdateFromDelete: Boolean = false
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
@@ -383,12 +384,13 @@ class RouteDetailViewModel @Inject constructor(
         if (removeIndex == suggestPlaceList.lastIndex) {
             showErrorPopup("You can not remove the finishing place")
         } else {
+            isUpdateFromDelete = true
             suggestPlaceList.removeAt(removeIndex)
             handleUpdateSuggestNode()
         }
     }
 
-    private fun handleUpdateSuggestNode() {
+    fun handleUpdateSuggestNode() {
         viewModelScope.launch(Dispatchers.IO) {
             sortRouteByTSP()
             updateSuggestRouteIndex()

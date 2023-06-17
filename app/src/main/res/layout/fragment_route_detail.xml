@@ -81,31 +81,48 @@
         <LinearLayout
             android:id="@+id/llButton"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:visibility="gone"
-            android:orientation="horizontal">
+            android:visibility="visible"
+            android:orientation="vertical">
 
             <Button
                 android:id="@+id/btnRegenerateRoute"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
                 android:textColor="@color/white"
                 android:backgroundTint="@color/stPatrickBlue"
                 android:text="Regenerate route"
                 android:textAllCaps="false" />
 
-            <Button
-                android:id="@+id/btnAddPlace"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:backgroundTint="@color/stPatrickBlue"
-                android:text="Add a place"
-                android:textColor="@color/white"
-                android:textAllCaps="false" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnSort"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="10dp"
+                    android:layout_weight="1"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/stPatrickBlue"
+                    android:text="Auto re-arrange"
+                    android:textAllCaps="false" />
+
+                <Button
+                    android:id="@+id/btnAddPlace"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/stPatrickBlue"
+                    android:text="Add a place"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false" />
+            </LinearLayout>
+
+
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView

@@ -68,32 +68,38 @@ class RouteDetailFragment :
 
     private fun handleUpdateUserFeatureView(viewState: RouteDetailViewState.OnSuggestListUpdated) {
         binding?.run {
-            viewModel.mUserFeature?.run {
-                tvEstimatedTime.setTextColor(
-                    if (viewState.estimatedTime > availableTime)
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.maximumRed
-                        )
-                    else
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.blackTextColor
-                        )
-                )
-                tvEstimatedTime.text = context?.getString(
-                    R.string.estimated_time,
-                    getFormattedTimeString(viewState.estimatedTime)
-                )?.handleHighlightSpannable(
-                    listOf("Estimated time:")
-                )
-                routeItemAdapter?.submitList(viewState.suggestList.toList())
+            viewModel.run {
+                mUserFeature?.run {
+                    tvEstimatedTime.setTextColor(
+                        if (viewState.estimatedTime > availableTime)
+                            ContextCompat.getColor(
+                                requireContext(),
+                                R.color.maximumRed
+                            )
+                        else
+                            ContextCompat.getColor(
+                                requireContext(),
+                                R.color.blackTextColor
+                            )
+                    )
+                    tvEstimatedTime.text = context?.getString(
+                        R.string.estimated_time,
+                        getFormattedTimeString(viewState.estimatedTime)
+                    )?.handleHighlightSpannable(
+                        listOf("Estimated time:")
+                    )
+                    routeItemAdapter?.submitList(viewState.suggestList.toList())
 
-                if (!viewState.isUpdateViewOnly) {
-                    (parentFragment as? SuggestFragment)?.run {
-                        isUpdateRouteByBackPress = true
-                        isSuggestRouteChanged = true
-                        updateSuggestRouteList(viewState.suggestList.toList())
+                    if (!viewState.isUpdateViewOnly) {
+                        (parentFragment as? SuggestFragment)?.run {
+                            if (isUpdateFromDelete) {
+                                isUpdateFromDelete = false
+                                isSelectedPlaceChanged = true
+                            }
+                            isUpdateRouteByBackPress = true
+                            isSuggestRouteChanged = true
+                            updateSuggestRouteList(viewState.suggestList.toList())
+                        }
                     }
                 }
             }
@@ -169,12 +175,32 @@ class RouteDetailFragment :
             }
 
             btnRegenerateRoute.setOnClickListener {
-                (parentFragment as? SuggestFragment)?.showFeatureQuestionFragment(false)
+                ConfirmMessageDialog(
+                    title = "Regenerate route",
+                    message = "You will lose your current route data. Do you want to proceed?"
+                ).apply {
+                    positiveAction = {
+                        (this@RouteDetailFragment.parentFragment as? SuggestFragment)?.showFeatureQuestionFragment(
+                            false
+                        )
+                    }
+                }.show(childFragmentManager, null)
             }
 
             btnAddPlace.setOnClickListener {
                 currentActionSelectPlace = ADD_SELECTED_PLACE
                 handleSelectedPlaceFromMap()
+            }
+
+            btnSort.setOnClickListener {
+                ConfirmMessageDialog(
+                    title = "Auto re-arrange",
+                    message = "Your route will be re-arranged to our best recommend order, exclude VISITED places"
+                ).apply {
+                    positiveAction = {
+                        viewModel.handleUpdateSuggestNode()
+                    }
+                }.show(childFragmentManager, null)
             }
 
             suggestFragment.run {
@@ -229,27 +255,6 @@ class RouteDetailFragment :
             showSuggestMapFragment()
             getSuggestMapFragment()?.handleDisplaySelectableNode(viewModel.getAddablePlace())
         }
-    }
-
-    private fun showChoosePlaceDialog(onItemSelected: (String) -> Unit) {
-        val placeOptionList = viewModel.getAddablePlace().map { place ->
-            if (place.game != null) {
-                OptionItem(place.id.toString(), "Game: ${place.game.name}")
-            } else {
-                OptionItem(place.id.toString(), "Place: ${place.name}")
-            }
-        }
-
-        OptionItemDialog(
-            title = "Choose a place",
-            optionList = placeOptionList,
-            isSearchEnable = true
-        ).apply {
-            onItemClick = { placeId ->
-                onItemSelected(placeId)
-
-            }
-        }.show(childFragmentManager, null)
     }
 
     private fun updateFeatureView() {

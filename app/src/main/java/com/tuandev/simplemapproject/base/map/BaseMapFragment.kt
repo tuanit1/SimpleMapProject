@@ -7,6 +7,9 @@ import android.os.Bundle
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMapOptions
@@ -58,6 +61,7 @@ class BaseMapFragment :
         }
     }
 
+
     private var supportMapFragment: SupportMapFragment? = null
     private var mMap: GoogleMap? = null
     private var mapMode = ""
@@ -73,6 +77,7 @@ class BaseMapFragment :
     private var currentGuildPath: Polyline? = null
     private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
     private var selectablePlaces: MutableList<Marker> = mutableListOf()
+    private var fusedLocationClient: FusedLocationProviderClient? = null
 
     override val viewModel: BaseMapViewModel by viewModels()
 
@@ -142,6 +147,13 @@ class BaseMapFragment :
     }
 
     override fun initView() {
+
+        parentActivity?.run {
+            checkLocationPermission {
+                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            }
+        }
+
         initMap()
         handleMap()
     }
@@ -542,7 +554,7 @@ class BaseMapFragment :
         }
     }
 
-    private fun getDistance(p1: LatLng, p2: LatLng): Float? {
+    fun getDistance(p1: LatLng, p2: LatLng): Float? {
         return try {
             val results = FloatArray(1)
             Location.distanceBetween(
@@ -772,6 +784,34 @@ class BaseMapFragment :
                 it.remove()
             }
             clear()
+        }
+    }
+
+    fun getNodeByPlaceId(placeId: Int) = viewModel.getNodeByPlaceId(placeId)
+
+    private fun getLatestLocation(action: (Location) -> Unit) {
+        parentActivity?.checkLocationPermission {
+            fusedLocationClient?.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                ?.addOnSuccessListener { location ->
+                    location?.let(action)
+                }
+        }
+    }
+
+    fun addCurrentLocationNode() {
+        getLatestLocation { location ->
+            viewModel.run {
+                loadingProgressLiveData.value = true
+                viewModelScope.launch {
+                    drawNodeMarker(
+                        latLng = LatLng(location.latitude, location.longitude),
+                        onDrawn = { marker ->
+                            viewModel.addNode(marker)
+                            loadingProgressLiveData.value = false
+                            context?.showToast("Your current location added")
+                        }).await()
+                }
+            }
         }
     }
 }

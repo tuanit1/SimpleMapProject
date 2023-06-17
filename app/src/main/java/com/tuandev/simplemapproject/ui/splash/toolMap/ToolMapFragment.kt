@@ -1,7 +1,6 @@
 package com.tuandev.simplemapproject.ui.splash.toolMap
 
 import androidx.fragment.app.viewModels
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.Polyline
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
@@ -101,6 +100,10 @@ class ToolMapFragment :
 
             btnToolAddLine.setOnClickListener {
                 viewModel.openTool(ToolMapViewModel.ADD_LINE)
+            }
+
+            btnToolAddNodeLocation.setOnClickListener {
+                mapFragment?.addCurrentLocationNode()
             }
 
             btnFindRoute.setOnClickListener {

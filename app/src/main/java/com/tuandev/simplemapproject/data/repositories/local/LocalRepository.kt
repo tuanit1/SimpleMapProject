@@ -71,7 +71,7 @@ class LocalRepository(
             placeMarinaStage,
             placeMerlionLake,
             placeIndoRestaurant,
-//            gamePlaceSunWheel,
+            gamePlaceSunWheel,
             gamePlaceNinjaFlyer,
             gamePlaceKabukiTrucks,
             gamePlaceFirefliesForest,

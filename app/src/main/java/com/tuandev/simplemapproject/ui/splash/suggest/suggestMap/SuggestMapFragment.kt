@@ -1,7 +1,9 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.suggestMap
 
+import android.location.Location
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.base.BaseFragment
 import com.tuandev.simplemapproject.base.ViewState
@@ -12,6 +14,7 @@ import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
 import com.tuandev.simplemapproject.extension.*
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.widget.MessageDialog
 import com.tuandev.simplemapproject.widget.placeInfoDialog.PlaceInfoDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.joinAll
@@ -27,6 +30,8 @@ class SuggestMapFragment :
         fun newInstance() = SuggestMapFragment()
     }
 
+    private var mCurrentLocation: Location? = null
+    private var isArrivedDestination: Boolean = false
     private var mapFragment: BaseMapFragment? = null
     private var placeInfoBottomDialog: PlaceInfoDialog? = null
     private var isSelectingPlace: Boolean = false
@@ -100,7 +105,9 @@ class SuggestMapFragment :
 
                         val updateSelectedJob = launch {
                             if (isSelectedPlaceChanged) {
+                                isArrivedDestination = true
                                 isSelectedPlaceChanged = false
+                                checkIfArrivedDestination()
                                 drawSelectedGuildPath()
                             }
                         }
@@ -112,12 +119,41 @@ class SuggestMapFragment :
                 }
 
                 onLocationUpdate = { location ->
+                    mCurrentLocation = location
                     mapFragment?.updateCurrentLocation(location)
+                    checkIfArrivedDestination()
                     drawSelectedGuildPath()
                 }
             }
         }
     }
+
+    private fun checkIfArrivedDestination() {
+        mCurrentLocation?.let { location ->
+            (parentFragment as? SuggestFragment)?.getSaveSuggestList()
+                ?.find { it.itemState == RouteItem.SELECTED }?.place?.let { place ->
+                    mapFragment?.run {
+                        getNodeByPlaceId(place.id)?.let { destNode ->
+                            getDistance(
+                                p1 = LatLng(destNode.latitude, destNode.longitude),
+                                p2 = LatLng(location.latitude, location.longitude)
+                            )?.let { distanceToDest ->
+                                log("About ${distanceToDest}m to ${getPlaceName(place)}")
+                                if (distanceToDest <= 8f) {
+                                    isArrivedDestination = false
+                                    MessageDialog(
+                                        title = "Message",
+                                        message = "You have arrived ${getPlaceName(place)}"
+                                    ).show(childFragmentManager, null)
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun getPlaceName(place: Place?) = place?.game?.name ?: place?.name
 
     private fun openPlaceInfoBottomDialog(placeId: Int) {
         val actionItem = ActionItem(if (!isSelectingPlace) "Set to destination" else "Select") {
@@ -142,7 +178,13 @@ class SuggestMapFragment :
         (parentFragment as? SuggestFragment)?.run {
             getSaveSuggestList().find { it.place.id == placeId }?.let { routeItem ->
                 if (routeItem.itemState != RouteItem.SELECTED) {
-                    context?.showToast("Your destination has been updated")
+                    context?.showToast(
+                        "Your destination has been updated to ${
+                            getPlaceName(
+                                routeItem.place
+                            )
+                        }"
+                    )
                     handleSelectedPositionUpdate(routeItem.itemIndex - 1)
                 } else {
                     context?.showToast("This is already your destination")

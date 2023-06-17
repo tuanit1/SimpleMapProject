@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.squareup.picasso.Picasso
+import com.tuandev.simplemapproject.R
 import com.tuandev.simplemapproject.data.models.ActionItem
 import com.tuandev.simplemapproject.databinding.DialogBottomPlaceInfoBinding
 import com.tuandev.simplemapproject.extension.gone
@@ -93,6 +95,8 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
         viewModel.run {
             mPlace.observe(viewLifecycleOwner) { place ->
                 binding?.run {
+                    llService.showIf(place.game == null)
+                    tvService.text = place.serviceType?.name ?: ""
                     tvPlaceName.text = place.name
                     tvZone.text = place.zone.name
                     llGameInfo.showIf(place.game != null)
@@ -102,6 +106,16 @@ class PlaceInfoDialog : BottomSheetDialogFragment() {
                         tvThrillLevel.text = place.game.thrillLevel.name
                         tvDuration.text = "${place.game.duration}s"
                         tvStatus.text = if (place.game.isAvailable) "Open" else "Closed"
+
+                        Picasso.get()
+                            .load(R.drawable.ic_game_node)
+                            .into(ivPlace)
+                    } else {
+                        if (place.serviceType != null) {
+                            Picasso.get()
+                                .load(place.serviceType.imgRes)
+                                .into(ivPlace)
+                        }
                     }
                 }
             }
