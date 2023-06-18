@@ -210,6 +210,10 @@ class BaseMapFragment :
     private fun handleMap() {
         supportMapFragment?.getMapAsync { map ->
             mMap = map
+
+            if (mapMode == MapMode.SUGGEST_ROUTE) {
+                mMap?.setPadding(0, 0, 0, 350)
+            }
             setMapStyle()
             setMapListener()
             drawBorderLine()

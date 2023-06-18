@@ -1,65 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
     android:clickable="true"
     android:focusable="true"
-    android:orientation="vertical"
     tools:context=".ui.splash.suggest.suggestMap.SuggestMapFragment">
 
     <FrameLayout
         android:id="@+id/container_suggest_route"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent" />
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/llDest"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="110dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginBottom="15dp"
         android:gravity="center"
-        android:orientation="vertical"
+        android:background="@drawable/bg_map_controller"
+        android:clickable="true"
+        android:focusable="true"
         android:paddingVertical="20dp">
 
-        <TextView
-            style="@style/contentBlackTextStyleLarge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Current destination" />
-
-        <RelativeLayout
+        <LinearLayout
+            android:id="@+id/llSelectPlace"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="30dp"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/ivPrevPlace"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_arrow_prev" />
+            android:gravity="center"
+            android:visibility="gone"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvDestName"
+                style="@style/contentBlackTextStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select a place"
+                android:textSize="17sp"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/btnBackToRouteDetail"
                 style="@style/titleTextStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="Destination name" />
+                android:layout_marginTop="10dp"
+                android:text="Back to route detail"
+                android:textColor="@color/white" />
+        </LinearLayout>
 
-            <ImageView
-                android:id="@+id/ivNextPlace"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/ic_arrow_next" />
+        <LinearLayout
+            android:id="@+id/llController"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="visible">
 
-        </RelativeLayout>
-    </LinearLayout>
+            <TextView
+                style="@style/contentBlackTextStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Current destination"
+                android:textColor="@color/white" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="30dp">
+
+                <ImageView
+                    android:id="@+id/ivPrevPlace"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_arrowhead_prev"
+                    app:tint="@color/white" />
+
+                <TextView
+                    android:id="@+id/tvDestName"
+                    style="@style/titleTextStyleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="Destination name"
+                    android:textColor="@color/white" />
+
+                <ImageView
+                    android:id="@+id/ivNextPlace"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_arrowhead_next"
+                    app:tint="@color/white" />
+
+            </RelativeLayout>
+        </LinearLayout>
 
 
-</LinearLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -71,6 +71,13 @@ class SuggestMapFragment :
                 }
             }
 
+            btnBackToRouteDetail.setOnClickListener {
+                (parentFragment as? SuggestFragment)?.run {
+                    disableSelectingPlace()
+                    showRouteDetailFragment()
+                }
+            }
+
             parentActivity?.onActivityBackPressListener = {
                 llDest.show()
             }
@@ -239,13 +246,19 @@ class SuggestMapFragment :
 
     fun handleDisplaySelectableNode(listPlace: List<Place>) {
         isSelectingPlace = true
-        binding?.llDest?.gone()
+        binding?.run {
+            llController.gone()
+            llSelectPlace.show()
+        }
         mapFragment?.handleDisplaySelectableNode(listPlace)
     }
 
     fun disableSelectingPlace() {
         isSelectingPlace = false
-        binding?.llDest?.show()
+        binding?.run {
+            llController.show()
+            llSelectPlace.gone()
+        }
         mapFragment?.clearDisplayedSelectableNode()
     }
 }
