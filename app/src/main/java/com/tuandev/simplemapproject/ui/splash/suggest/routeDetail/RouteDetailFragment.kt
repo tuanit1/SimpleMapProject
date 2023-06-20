@@ -92,11 +92,8 @@ class RouteDetailFragment :
 
                     if (!viewState.isUpdateViewOnly) {
                         (parentFragment as? SuggestFragment)?.run {
-                            if (isUpdateFromDelete) {
-                                isUpdateFromDelete = false
-                                isSelectedPlaceChanged = true
-                            }
                             isUpdateRouteByBackPress = true
+                            isSelectedPlaceChanged = true
                             isSuggestRouteChanged = true
                             updateSuggestRouteList(viewState.suggestList.toList())
                         }

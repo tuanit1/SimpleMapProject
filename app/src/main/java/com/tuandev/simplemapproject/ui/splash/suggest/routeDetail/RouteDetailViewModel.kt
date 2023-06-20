@@ -41,7 +41,6 @@ class RouteDetailViewModel @Inject constructor(
 
     var mUserFeature: UserFeature? = null
     var isFirstLoad = true
-    var isUpdateFromDelete: Boolean = false
     private val suggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var saveSuggestPlaceList: MutableList<RouteItem> = mutableListOf()
     private var listNode: MutableList<Node> = mutableListOf()
@@ -121,17 +120,18 @@ class RouteDetailViewModel @Inject constructor(
         var maxDistance = 0f
         val maxThrillScore = localRepository.listThrillLevel.maxOfOrNull { it.score } ?: 0
 
-        val distanceAndThrills = suggestPlaceList.map { routeItem ->
-            val node = getNodeByPlaceId(routeItem.place.id)
-            val distance = if (currentUserNode != null && node != null) {
-                var mDistance = Float.POSITIVE_INFINITY
-                aStarSearch?.findBestPath(currentUserNode!!, node) { _, distance ->
-                    if (maxDistance < distance) {
-                        maxDistance = distance
+        val distanceAndThrills =
+            suggestPlaceList.filterNot { it.place == finishPLace }.map { routeItem ->
+                val node = getNodeByPlaceId(routeItem.place.id)
+                val distance = if (currentUserNode != null && node != null) {
+                    var mDistance = Float.POSITIVE_INFINITY
+                    aStarSearch?.findBestPath(currentUserNode!!, node) { _, distance ->
+                        if (maxDistance < distance) {
+                            maxDistance = distance
+                        }
+                        mDistance = distance
                     }
-                    mDistance = distance
-                }
-                mDistance
+                    mDistance
             } else {
                 Float.POSITIVE_INFINITY
             }
@@ -384,7 +384,6 @@ class RouteDetailViewModel @Inject constructor(
         if (removeIndex == suggestPlaceList.lastIndex) {
             showErrorPopup("You can not remove the finishing place")
         } else {
-            isUpdateFromDelete = true
             suggestPlaceList.removeAt(removeIndex)
             handleUpdateSuggestNode()
         }
