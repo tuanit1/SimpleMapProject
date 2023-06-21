@@ -15,6 +15,26 @@
         android:layout_height="match_parent" />
 
     <RelativeLayout
+        android:id="@+id/rlNotInBound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:background="@drawable/bg_map_controller"
+        android:layout_marginTop="15dp">
+
+        <TextView
+            style="@style/titleTextStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginVertical="10dp"
+            android:layout_marginHorizontal="15dp"
+            android:textAlignment="center"
+            android:text="You are not currently in Asia Park area. Please make sure you are standing within the grey border."
+            android:textColor="@color/white" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/llDest"
         android:layout_width="match_parent"
         android:layout_height="110dp"

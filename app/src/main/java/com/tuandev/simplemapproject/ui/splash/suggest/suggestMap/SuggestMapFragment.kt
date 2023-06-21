@@ -14,6 +14,7 @@ import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentSuggestMapBinding
 import com.tuandev.simplemapproject.extension.*
 import com.tuandev.simplemapproject.ui.splash.suggest.SuggestFragment
+import com.tuandev.simplemapproject.util.Constants
 import com.tuandev.simplemapproject.widget.MessageDialog
 import com.tuandev.simplemapproject.widget.placeInfoDialog.PlaceInfoDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,6 +36,7 @@ class SuggestMapFragment :
     private var mapFragment: BaseMapFragment? = null
     private var placeInfoBottomDialog: PlaceInfoDialog? = null
     private var isSelectingPlace: Boolean = false
+    private var isInMapBound: Boolean = false
     override val viewModel: SuggestMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
 
@@ -55,7 +57,11 @@ class SuggestMapFragment :
         binding?.run {
             tvDestName.setOnClickListener {
                 parentActivity?.checkLocationPermission {
-                    (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
+                    if (isInMapBound) {
+                        (parentFragment as? SuggestFragment)?.showRouteDetailFragment()
+                    } else {
+                        viewModel.showMessagePopup("Make sure you are in Asia Park area to continue")
+                    }
                 }
             }
 
@@ -129,10 +135,18 @@ class SuggestMapFragment :
                     mCurrentLocation = location
                     mapFragment?.updateCurrentLocation(location)
                     checkIfArrivedDestination()
+                    checkIfInMapBound()
                     drawSelectedGuildPath()
                 }
             }
         }
+    }
+
+    private fun checkIfInMapBound() {
+        isInMapBound = mCurrentLocation?.run {
+            Constants.AsiaParkMap.bound.contains(LatLng(latitude, longitude))
+        } ?: false
+        binding?.rlNotInBound?.showIf(!isInMapBound)
     }
 
     private fun checkIfArrivedDestination() {

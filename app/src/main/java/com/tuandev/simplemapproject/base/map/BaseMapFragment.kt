@@ -22,6 +22,7 @@ import com.tuandev.simplemapproject.data.models.Node
 import com.tuandev.simplemapproject.data.models.Place
 import com.tuandev.simplemapproject.data.models.RouteItem
 import com.tuandev.simplemapproject.databinding.FragmentBaseMapBinding
+import com.tuandev.simplemapproject.extension.log
 import com.tuandev.simplemapproject.extension.openFragment
 import com.tuandev.simplemapproject.extension.showToast
 import com.tuandev.simplemapproject.extension.toRoundedFloat
@@ -211,9 +212,9 @@ class BaseMapFragment :
         supportMapFragment?.getMapAsync { map ->
             mMap = map
 
-            if (mapMode == MapMode.SUGGEST_ROUTE) {
-                mMap?.setPadding(0, 0, 0, 350)
-            }
+//            if (mapMode == MapMode.SUGGEST_ROUTE) {
+//                mMap?.setPadding(0, 0, 0, 350)
+//            }
             setMapStyle()
             setMapListener()
             drawBorderLine()
@@ -259,6 +260,7 @@ class BaseMapFragment :
             }
 
             setOnMapClickListener { latLng ->
+                log(latLng.toString())
                 TouchState.run {
                     when (viewModel.currentTouchEvent.value) {
                         DRAW_MARKER -> {
