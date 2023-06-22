@@ -625,9 +625,10 @@ class BaseMapFragment :
     fun handleDisplaySelectableNode(listPlace: List<Place>) {
         allSuggestPlaces.run {
             forEach {
-                it.alpha = 0.5f
+                it.isVisible = false
             }
         }
+        focusedGuildPath?.isVisible = false
         selectablePlaces.run {
             forEach {
                 it.remove()
@@ -782,9 +783,10 @@ class BaseMapFragment :
     fun clearDisplayedSelectableNode() {
         allSuggestPlaces.run {
             forEach {
-                it.alpha = 1f
+                it.isVisible = true
             }
         }
+        focusedGuildPath?.isVisible = true
         selectablePlaces.run {
             forEach {
                 it.remove()

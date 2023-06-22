@@ -132,18 +132,18 @@ class RouteDetailViewModel @Inject constructor(
                         mDistance = distance
                     }
                     mDistance
-            } else {
-                Float.POSITIVE_INFINITY
-            }
+                } else {
+                    Float.POSITIVE_INFINITY
+                }
 
-            val invertNormalizerThrillLevel = if (routeItem.place.game != null) {
-                (maxThrillScore - routeItem.place.game.thrillLevel.score) / maxThrillScore.toFloat()
-            } else {
-                0f
-            }
+                val invertNormalizerThrillLevel = if (routeItem.place.game != null) {
+                    (maxThrillScore - routeItem.place.game!!.thrillLevel.score) / maxThrillScore.toFloat()
+                } else {
+                    0f
+                }
 
-            Triple(routeItem.place, distance, invertNormalizerThrillLevel)
-        }.toMutableList()
+                Triple(routeItem.place, distance, invertNormalizerThrillLevel)
+            }.toMutableList()
 
         for (index in distanceAndThrills.indices) {
             val item = distanceAndThrills[index]
@@ -185,7 +185,7 @@ class RouteDetailViewModel @Inject constructor(
 
         tempList.forEach { place ->
             totalDurationInSec += if (place.place.game != null) {
-                (place.place.game.duration + 120)
+                (place.place.game!!.duration + 120)
             } else {
                 120
             }
@@ -353,6 +353,14 @@ class RouteDetailViewModel @Inject constructor(
         }
     }
 
+    fun getReplaceablePlace(replaceIndex: Int?): List<Place> {
+        return replaceIndex?.run {
+            localRepository.listPlace.filter { place ->
+                (getNodeByPlaceId(place.id) != null) && (suggestPlaceList[replaceIndex].place != place)
+            }
+        } ?: listOf()
+    }
+
     fun handleAddRouteItem(placeId: Int) {
         if (getNodeByPlaceId(placeId) != null) {
             localRepository.listPlace.find { it.id == placeId }?.let { place ->
@@ -372,8 +380,17 @@ class RouteDetailViewModel @Inject constructor(
                     finishPLace = place
                 }
                 saveCurrentSuggestList()
+
+                if (suggestPlaceList.map { it.place }.contains(place)) {
+                    suggestPlaceList.indexOfFirst { it.place == place }.takeIf { it != -1 }
+                        ?.let { selectedIndex ->
+                            suggestPlaceList[selectedIndex].place =
+                                suggestPlaceList[replaceIndex].place
+                        }
+                }
                 suggestPlaceList[replaceIndex] = RouteItem(place = place)
-                handleUpdateSuggestNode()
+
+                handleUpdateSuggestNode(isSort = false)
             }
         } else {
             showErrorPopup("Node of this place has not been assigned yet")
@@ -389,9 +406,11 @@ class RouteDetailViewModel @Inject constructor(
         }
     }
 
-    fun handleUpdateSuggestNode() {
+    fun handleUpdateSuggestNode(isSort: Boolean = true) {
         viewModelScope.launch(Dispatchers.IO) {
-            sortRouteByTSP()
+            if (isSort) {
+                sortRouteByTSP()
+            }
             updateSuggestRouteIndex()
             val newEstimatedTime = calculateEstimateTime()
             withContext(Dispatchers.Main) {

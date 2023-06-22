@@ -250,7 +250,20 @@ class RouteDetailFragment :
     private fun handleSelectedPlaceFromMap() {
         (parentFragment as SuggestFragment).run {
             showSuggestMapFragment()
-            getSuggestMapFragment()?.handleDisplaySelectableNode(viewModel.getAddablePlace())
+            if (currentActionSelectPlace == REPLACE_SELECTED_PLACE) {
+                getSuggestMapFragment()?.run {
+                    handleDisplaySelectableNode(
+                        viewModel.getReplaceablePlace(
+                            saveReplaceIndex
+                        )
+                    )
+                }
+
+            } else {
+                getSuggestMapFragment()?.handleDisplaySelectableNode(
+                    viewModel.getAddablePlace()
+                )
+            }
         }
     }
 

@@ -2,7 +2,7 @@ package com.tuandev.simplemapproject.data.models
 
 data class RouteItem(
     var isStart: Boolean = false,
-    val place: Place,
+    var place: Place,
     var itemState: String = NOT_VISITED,
     var itemIndex: Int = 0,
 ) {

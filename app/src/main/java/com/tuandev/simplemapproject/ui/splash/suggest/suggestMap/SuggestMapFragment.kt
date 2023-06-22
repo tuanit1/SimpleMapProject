@@ -98,9 +98,7 @@ class SuggestMapFragment :
                 onMarkerClick = { node ->
                     viewModel.getPlaceById(node.placeId)?.let { place ->
                         (this@SuggestMapFragment.parentFragment as? SuggestFragment)?.run {
-                            if (!getSaveSuggestList().any { it.place.id == place.id } || !isSelectingPlace) {
-                                openPlaceInfoBottomDialog(place.id)
-                            }
+                            openPlaceInfoBottomDialog(place.id)
                         }
                     }
                 }
