@@ -348,15 +348,15 @@ class RouteDetailViewModel @Inject constructor(
     private fun getNodeByPlaceId(placeId: Int) = listNode.find { it.placeId == placeId }
     fun getAddablePlace(): List<Place> {
         return localRepository.listPlace.filter { place ->
-            !suggestPlaceList.map { routeItem -> routeItem.place }
-                .contains(place) && getNodeByPlaceId(place.id) != null
+            (place.game != null) && (!suggestPlaceList.map { routeItem -> routeItem.place }
+                .contains(place)) && (getNodeByPlaceId(place.id) != null)
         }
     }
 
     fun getReplaceablePlace(replaceIndex: Int?): List<Place> {
         return replaceIndex?.run {
             localRepository.listPlace.filter { place ->
-                (getNodeByPlaceId(place.id) != null) && (suggestPlaceList[replaceIndex].place != place)
+                (place.game != null) && (getNodeByPlaceId(place.id) != null) && (suggestPlaceList[replaceIndex].place != place)
             }
         } ?: listOf()
     }

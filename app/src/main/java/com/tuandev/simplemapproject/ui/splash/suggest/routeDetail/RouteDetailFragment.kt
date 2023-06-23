@@ -217,17 +217,17 @@ class RouteDetailFragment :
                         OptionItem(OptionItem.KEY_OPEN_PLACE_DETAIL, "View place's detail"),
                         OptionItem(
                             OptionItem.KEY_UPDATE_CURRENT_PLACE,
-                            "Update your current to this place"
+                            "Update your current to this game"
                         ),
-                        OptionItem(OptionItem.KEY_REPLACE_PLACE, "Replace this place"),
-                        OptionItem(OptionItem.KEY_REMOVE_PLACE, "Remove this place")
+                        OptionItem(OptionItem.KEY_REPLACE_PLACE, "Replace this game"),
+                        OptionItem(OptionItem.KEY_REMOVE_PLACE, "Remove this game")
                     )
                 ).apply {
                     onItemClick = { key ->
                         when (key) {
                             OptionItem.KEY_REPLACE_PLACE -> {
                                 if (viewModel.getSuggestList()[position].itemState == RouteItem.VISITED) {
-                                    viewModel.showMessagePopup("Replacing a VISITED place is not allowed")
+                                    viewModel.showMessagePopup("Replacing a VISITED game is not allowed")
                                 } else {
                                     currentActionSelectPlace = REPLACE_SELECTED_PLACE
                                     saveReplaceIndex = position

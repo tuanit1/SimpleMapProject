@@ -77,6 +77,7 @@ class BaseMapFragment :
     private var aStarSearch: AStarSearch? = null
     private var currentGuildPath: Polyline? = null
     private var allSuggestPlaces: MutableList<Marker> = mutableListOf()
+    private var allServicePlaces: MutableList<Marker> = mutableListOf()
     private var selectablePlaces: MutableList<Marker> = mutableListOf()
     private var fusedLocationClient: FusedLocationProviderClient? = null
 
@@ -106,6 +107,7 @@ class BaseMapFragment :
                     MapMode.TOOL -> loadAllNodeAndLineToMap()
                     MapMode.SUGGEST_ROUTE -> {
                         handleDisplayMapPaths()
+                        showServicePlacesToMap()
                         onNodesLinesLoaded()
                     }
 
@@ -628,6 +630,11 @@ class BaseMapFragment :
                 it.isVisible = false
             }
         }
+        allServicePlaces.run {
+            forEach {
+                it.isVisible = false
+            }
+        }
         focusedGuildPath?.isVisible = false
         selectablePlaces.run {
             forEach {
@@ -683,6 +690,33 @@ class BaseMapFragment :
                         getNodeById(neighbor.id)?.let { neighborNode ->
                             withContext(Dispatchers.Main) {
                                 handleDrawStreetPath(listOf(neighborNode, node))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showServicePlacesToMap() {
+        viewModel.run {
+            viewModelScope.launch(Dispatchers.IO) {
+                listNode.forEach { node ->
+                    getPlaceById(node.placeId)?.let { place ->
+                        if(place.game == null){
+                            withContext(Dispatchers.Main){
+                                drawMarker(
+                                    latLng = LatLng(
+                                        node.latitude,
+                                        node.longitude
+                                    ),
+                                    nodeId = node.id,
+                                    bitmapDescriptor = getPlaceImageWithDrawable(
+                                        res = place.serviceType?.imgRes
+                                            ?: R.drawable.ic_place_node,
+                                        size = 90
+                                    )
+                                )?.let { allServicePlaces.add(it) }
                             }
                         }
                     }
@@ -754,11 +788,11 @@ class BaseMapFragment :
         )
     }
 
-    fun drawSelectedGuildPath(routeItem: RouteItem, currentLocation: Location) {
+    fun drawSelectedGuildPath(placeId: Int, currentLocation: Location) {
         focusedGuildPath?.remove()
         viewModel.run {
             viewModelScope.launch(Dispatchers.IO) {
-                getNodeByPlaceId(routeItem.place.id)?.let { goal ->
+                getNodeByPlaceId(placeId)?.let { goal ->
                     val yourNode = Node(
                         latitude = currentLocation.latitude,
                         longitude = currentLocation.longitude
@@ -782,6 +816,11 @@ class BaseMapFragment :
 
     fun clearDisplayedSelectableNode() {
         allSuggestPlaces.run {
+            forEach {
+                it.isVisible = true
+            }
+        }
+        allServicePlaces.run {
             forEach {
                 it.isVisible = true
             }

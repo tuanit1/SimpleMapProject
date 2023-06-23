@@ -74,6 +74,24 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/llBackToSuggestMap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:visibility="gone"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/btnBackToSuggestMap"
+                style="@style/titleTextStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="Back to suggest map"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/llController"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

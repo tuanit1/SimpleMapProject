@@ -55,6 +55,14 @@ class SuggestMapFragment :
     override fun initListener() {
 
         binding?.run {
+
+            btnBackToSuggestMap.setOnClickListener {
+                llController.show()
+                llSelectPlace.gone()
+                llBackToSuggestMap.gone()
+                drawSelectedGuildPath()
+            }
+
             tvDestName.setOnClickListener {
                 parentActivity?.checkLocationPermission {
                     if (isInMapBound) {
@@ -208,6 +216,21 @@ class SuggestMapFragment :
                 } else {
                     context?.showToast("This is already your destination")
                 }
+            } ?: run {
+                handleDrawPathToServicePlace(placeId)
+            }
+        }
+    }
+
+    private fun handleDrawPathToServicePlace(placeId: Int){
+        binding?.run {
+            llBackToSuggestMap.show()
+            llController.gone()
+            llController.gone()
+        }
+        (parentFragment as? SuggestFragment)?.run {
+            getCurrentLocation()?.let { currentLocation ->
+                mapFragment?.drawSelectedGuildPath(placeId, currentLocation)
             }
         }
     }
@@ -224,7 +247,7 @@ class SuggestMapFragment :
         (parentFragment as? SuggestFragment)?.run {
             getSaveSuggestList().find { it.itemState == RouteItem.SELECTED }?.let { selectedPlace ->
                 getCurrentLocation()?.let { currentLocation ->
-                    mapFragment?.drawSelectedGuildPath(selectedPlace, currentLocation)
+                    mapFragment?.drawSelectedGuildPath(selectedPlace.place.id, currentLocation)
                 }
             }
         }

@@ -117,7 +117,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:backgroundTint="@color/stPatrickBlue"
-                    android:text="Add a place"
+                    android:text="Add game"
                     android:textColor="@color/white"
                     android:textAllCaps="false" />
             </LinearLayout>
