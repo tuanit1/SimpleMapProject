@@ -28,6 +28,10 @@ class SuggestMapFragment :
     ) {
 
     companion object {
+        const val SUGGEST_ROUTE = "suggest_route"
+        const val SELECT_PLACE = "select_place"
+        const val GUILD_PLACE = "guild_place"
+
         fun newInstance() = SuggestMapFragment()
     }
 
@@ -35,7 +39,8 @@ class SuggestMapFragment :
     private var isArrivedDestination: Boolean = false
     private var mapFragment: BaseMapFragment? = null
     private var placeInfoBottomDialog: PlaceInfoDialog? = null
-    private var isSelectingPlace: Boolean = false
+    private var selectedServicePlaceId: Int? = null
+    private var currentViewMode: String = SUGGEST_ROUTE
     private var isInMapBound: Boolean = false
     override val viewModel: SuggestMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
@@ -57,9 +62,7 @@ class SuggestMapFragment :
         binding?.run {
 
             btnBackToSuggestMap.setOnClickListener {
-                llController.show()
-                llSelectPlace.gone()
-                llBackToSuggestMap.gone()
+                updateDestinationView(SUGGEST_ROUTE)
                 drawSelectedGuildPath()
             }
 
@@ -142,7 +145,15 @@ class SuggestMapFragment :
                     mapFragment?.updateCurrentLocation(location)
                     checkIfArrivedDestination()
                     checkIfInMapBound()
-                    drawSelectedGuildPath()
+
+                    when (currentViewMode) {
+                        SUGGEST_ROUTE -> {
+                            drawSelectedGuildPath()
+                        }
+                        GUILD_PLACE -> {
+                            handleDrawPathToServicePlace()
+                        }
+                    }
                 }
             }
         }
@@ -183,13 +194,14 @@ class SuggestMapFragment :
     private fun getPlaceName(place: Place?) = place?.game?.name ?: place?.name
 
     private fun openPlaceInfoBottomDialog(placeId: Int) {
-        val actionItem = ActionItem(if (!isSelectingPlace) "Set to destination" else "Select") {
-            if (isSelectingPlace) {
-                handleSelectingPlaceResult(placeId)
-            } else {
-                handleUpdateSelectedPlaceResult(placeId)
+        val actionItem =
+            ActionItem(if (currentViewMode != SELECT_PLACE) "Set to destination" else "Select") {
+                if (currentViewMode == SELECT_PLACE) {
+                    handleSelectingPlaceResult(placeId)
+                } else {
+                    handleUpdateSelectedPlaceResult(placeId)
+                }
             }
-        }
 
         placeInfoBottomDialog?.run {
             updatePlace(placeId)
@@ -216,21 +228,26 @@ class SuggestMapFragment :
                 } else {
                     context?.showToast("This is already your destination")
                 }
+                updateDestinationView(SUGGEST_ROUTE)
             } ?: run {
-                handleDrawPathToServicePlace(placeId)
+                selectedServicePlaceId = placeId
+                handleDrawPathToServicePlace()
             }
         }
     }
 
-    private fun handleDrawPathToServicePlace(placeId: Int){
-        binding?.run {
-            llBackToSuggestMap.show()
-            llController.gone()
-            llController.gone()
-        }
-        (parentFragment as? SuggestFragment)?.run {
-            getCurrentLocation()?.let { currentLocation ->
-                mapFragment?.drawSelectedGuildPath(placeId, currentLocation)
+    private fun handleDrawPathToServicePlace() {
+        selectedServicePlaceId?.let { placeId ->
+            binding?.run {
+                tvGuildServicePlace.text =
+                    "You are guilding to ${viewModel.getPlaceById(placeId)?.name}"
+                updateDestinationView(GUILD_PLACE)
+            }
+            (parentFragment as? SuggestFragment)?.run {
+                getCurrentLocation()?.let { currentLocation ->
+                    selectedServicePlaceId?.let { }
+                    mapFragment?.drawSelectedGuildPath(placeId, currentLocation)
+                }
             }
         }
     }
@@ -280,20 +297,21 @@ class SuggestMapFragment :
     }
 
     fun handleDisplaySelectableNode(listPlace: List<Place>) {
-        isSelectingPlace = true
-        binding?.run {
-            llController.gone()
-            llSelectPlace.show()
-        }
+        updateDestinationView(SELECT_PLACE)
         mapFragment?.handleDisplaySelectableNode(listPlace)
     }
 
     fun disableSelectingPlace() {
-        isSelectingPlace = false
-        binding?.run {
-            llController.show()
-            llSelectPlace.gone()
-        }
+        updateDestinationView(SUGGEST_ROUTE)
         mapFragment?.clearDisplayedSelectableNode()
+    }
+
+    private fun updateDestinationView(state: String) {
+        binding?.run {
+            currentViewMode = state
+            llController.showIf(state == SUGGEST_ROUTE)
+            llSelectPlace.showIf(state == SELECT_PLACE)
+            llGuildServicePlace.showIf(state == GUILD_PLACE)
+        }
     }
 }

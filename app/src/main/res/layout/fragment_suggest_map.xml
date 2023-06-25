@@ -74,7 +74,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/llBackToSuggestMap"
+            android:id="@+id/llGuildServicePlace"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -82,11 +82,19 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/tvGuildServicePlace"
+                style="@style/titleTextStyleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="You are guilding to "
+                android:textColor="@color/white" />
+
+            <TextView
                 android:id="@+id/btnBackToSuggestMap"
                 style="@style/titleTextStyleLarge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20sp"
+                android:layout_marginTop="10dp"
                 android:text="Back to suggest map"
                 android:textColor="@color/white" />
         </LinearLayout>
