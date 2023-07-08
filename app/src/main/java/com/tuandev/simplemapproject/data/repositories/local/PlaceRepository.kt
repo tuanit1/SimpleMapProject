@@ -36,9 +36,17 @@ class PlaceRepository(
         zone = zoneRepository.zoneVietnam,
         serviceType = serviceRepository.serviceTicket,
     )
-    val placeSightSeeingCabin = Place(
+    val placeSightSeeingCabin1 = Place(
         id = 3,
-        name = if (isEnglish) context.getString(R.string.en_place_sightseeing_cabin) else context.getString(
+        name = if (isEnglish) context.getString(R.string.en_place_sightseeing_cabin1) else context.getString(
+            R.string.vi_place_sightseeing_cabin
+        ),
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceFood,
+    )
+    val placeSightSeeingCabin2 = Place(
+        id = 38,
+        name = if (isEnglish) context.getString(R.string.en_place_sightseeing_cabin2) else context.getString(
             R.string.vi_place_sightseeing_cabin
         ),
         zone = zoneRepository.zoneVietnam,
@@ -60,9 +68,17 @@ class PlaceRepository(
         zone = zoneRepository.zoneVietnam,
         serviceType = serviceRepository.serviceSightSeeing,
     )
-    val placeDragonBoat = Place(
+    val placeDragonBoat1 = Place(
         id = 6,
-        name = if (isEnglish) context.getString(R.string.en_place_dragon_boat) else context.getString(
+        name = if (isEnglish) context.getString(R.string.en_place_dragon_boat1) else context.getString(
+            R.string.vi_place_dragon_boat
+        ),
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceSightSeeing,
+    )
+    val placeDragonBoat2 = Place(
+        id = 39,
+        name = if (isEnglish) context.getString(R.string.en_place_dragon_boat2) else context.getString(
             R.string.vi_place_dragon_boat
         ),
         zone = zoneRepository.zoneVietnam,

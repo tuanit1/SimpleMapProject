@@ -1,6 +1,7 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.suggestMap
 
 import android.location.Location
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
@@ -95,6 +96,10 @@ class SuggestMapFragment :
                 }
             }
 
+            edtSearch.doAfterTextChanged {
+                mapFragment?.showPlaceByFilter(it?.toString() ?: "")
+            }
+
             parentActivity?.onActivityBackPressListener = {
                 llDest.show()
             }
@@ -120,6 +125,7 @@ class SuggestMapFragment :
                     viewModel.viewModelScope.launch {
                         val updateRouteJob = launch {
                             if (isSuggestRouteChanged) {
+                                edtSearch.setText("")
                                 isSuggestRouteChanged = false
                                 handleSuggestRouteUpdated()
                             }

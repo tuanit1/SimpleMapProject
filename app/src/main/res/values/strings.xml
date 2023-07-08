@@ -61,10 +61,12 @@
     <!-- Place-->
     <string name="en_place_fountain">Fountain</string>
     <string name="en_place_entry_gate">Entry gate</string>
-    <string name="en_place_sightseeing_cabin">Sightseeing cabin</string>
+    <string name="en_place_sightseeing_cabin1">Sightseeing cabin (left)</string>
+    <string name="en_place_sightseeing_cabin2">Sightseeing cabin (right)</string>
     <string name="en_place_night_market">Night marker</string>
     <string name="en_place_sun_wheel_stage">Sun Wheel stage</string>
-    <string name="en_place_dragon_boat">Dragon boat</string>
+    <string name="en_place_dragon_boat1">Dragon boat (left)</string>
+    <string name="en_place_dragon_boat2">Dragon boat (right)</string>
     <string name="en_place_buddha_statue">Buddha statue</string>
     <string name="en_place_dragon_statue">Dragon statue</string>
     <string name="en_place_bamboo_garden">Bamboo garden</string>

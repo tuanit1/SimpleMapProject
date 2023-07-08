@@ -432,6 +432,15 @@ class BaseMapFragment :
             )
         )
 
+    private fun getUnselectedGameImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_unselected_game,
+                height = 90,
+                width = 90
+            )
+        )
+
     private fun getSelectedNodeImage() =
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
@@ -703,8 +712,8 @@ class BaseMapFragment :
             viewModelScope.launch(Dispatchers.IO) {
                 listNode.forEach { node ->
                     getPlaceById(node.placeId)?.let { place ->
-                        if(place.game == null){
-                            withContext(Dispatchers.Main){
+                        if (place.game == null) {
+                            withContext(Dispatchers.Main) {
                                 drawMarker(
                                     latLng = LatLng(
                                         node.latitude,
@@ -738,34 +747,30 @@ class BaseMapFragment :
             loadingProgressLiveData.value = true
             viewModelScope.launch(Dispatchers.IO) {
                 launch {
-                    suggestRoute.forEach { routeItem ->
-                        getNodeByPlaceId(routeItem.place.id)?.run {
-                            routeItem.run {
-                                withContext(Dispatchers.Main) {
-                                    if (place.game != null) {
-                                        drawMarker(
-                                            latLng = LatLng(latitude, longitude),
-                                            nodeId = id,
-                                            bitmapDescriptor = getGameImage()
-                                        )?.let { allSuggestPlaces.add(it) }
-                                    } else {
-                                        drawMarker(
-                                            latLng = LatLng(
-                                                latitude,
-                                                longitude
-                                            ),
-                                            nodeId = id,
-                                            bitmapDescriptor = getPlaceImageWithDrawable(
-                                                res = place.serviceType?.imgRes
-                                                    ?: R.drawable.ic_place_node,
-                                                size = 90
-                                            )
-                                        )?.let { allSuggestPlaces.add(it) }
-                                    }
+                    localRepository.listPlace.forEach { place ->
+                        getNodeByPlaceId(place.id)?.run {
+                            withContext(Dispatchers.Main) {
+                                if (place.game != null) {
+                                    drawMarker(
+                                        latLng = LatLng(latitude, longitude),
+                                        nodeId = id,
+                                        bitmapDescriptor =
+                                        if (suggestRoute.map { it.place }.contains(place)) {
+                                            getGameImage()
+                                        } else {
+                                            getUnselectedGameImage()
+                                        }
+                                    )?.let { allSuggestPlaces.add(it) }
                                 }
                             }
                         }
                     }
+                    localRepository.listPlace.filterNot { place ->
+                        suggestRoute.map { it.place }.contains(place)
+                    }
+                        .forEach {
+
+                        }
 
                 }.join()
                 withContext(Dispatchers.Main) {
@@ -797,9 +802,7 @@ class BaseMapFragment :
                         latitude = currentLocation.latitude,
                         longitude = currentLocation.longitude
                     )
-                    val nearestNode = listNode.minBy {
-                        aStarSearch?.getDistance(it, yourNode) ?: Float.POSITIVE_INFINITY
-                    }
+                    val nearestNode = getNearestNode(yourNode, goal)
                     nearestNode.let { start ->
                         aStarSearch?.findBestPath(start, goal) { nodes, _ ->
                             launch(Dispatchers.Main) {
@@ -811,6 +814,33 @@ class BaseMapFragment :
                     }
                 }
             }
+        }
+    }
+
+    private fun getNearestNode(currentNode: Node, destination: Node): Node {
+        return viewModel.run {
+            listNode
+                .filter { node ->
+                    val isOnNorthEast =
+                        destination.latitude > currentNode.latitude && destination.longitude > currentNode.longitude
+                    val isOnSouthEast =
+                        destination.latitude < currentNode.latitude && destination.longitude > currentNode.longitude
+                    val isOnNorthWest =
+                        destination.latitude > currentNode.latitude && destination.longitude < currentNode.longitude
+                    val isOnSouthWest =
+                        destination.latitude < currentNode.latitude && destination.longitude < currentNode.longitude
+
+                    when {
+                        isOnNorthEast -> destination.latitude > node.latitude && node.longitude > currentNode.longitude
+                        isOnSouthEast -> destination.latitude < node.latitude && node.longitude > currentNode.longitude
+                        isOnNorthWest -> destination.latitude > node.latitude && node.longitude < currentNode.longitude
+                        isOnSouthWest -> destination.latitude < node.latitude && node.longitude < currentNode.longitude
+                        else -> false
+                    }
+                }
+                .minBy {
+                    aStarSearch?.getDistance(it, currentNode) ?: Float.POSITIVE_INFINITY
+                }
         }
     }
 
@@ -857,6 +887,22 @@ class BaseMapFragment :
                             loadingProgressLiveData.value = false
                             context?.showToast("Your current location added")
                         }).await()
+                }
+            }
+        }
+    }
+
+    fun showPlaceByFilter(filter: String) {
+        viewModel.run {
+            allSuggestPlaces.forEach { marker ->
+                getPlaceById(getNodeById(marker.tag.toString())?.placeId)?.let { place ->
+                    marker.isVisible =
+                        place.game?.name?.lowercase()?.contains(filter.lowercase()) == true
+                }
+            }
+            allServicePlaces.forEach { marker ->
+                getPlaceById(getNodeById(marker.tag.toString())?.placeId)?.let { place ->
+                    marker.isVisible = place.name.lowercase().contains(filter.lowercase()) == true
                 }
             }
         }

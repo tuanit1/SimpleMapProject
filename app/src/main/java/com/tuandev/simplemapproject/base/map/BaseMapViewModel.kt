@@ -38,7 +38,7 @@ sealed class BaseMapViewState : ViewState() {
 @HiltViewModel
 class BaseMapViewModel @Inject constructor(
     private val fireStoreRepository: FireStoreRepository,
-    private val localRepository: LocalRepository,
+    val localRepository: LocalRepository,
 ) : BaseViewModel<BaseMapViewState>() {
 
 
