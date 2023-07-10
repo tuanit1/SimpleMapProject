@@ -92,7 +92,19 @@ class LocalRepository(
             gamePlaceAngryMotors,
             gamePlaceDinoIsland,
             gamePlaceFestivalCarousel,
-            gamePlaceGarudaValley
+            gamePlaceGarudaValley,
+            placeWC1,
+            placeWC2,
+            placeWC3,
+            placeWC4,
+            placeWC5,
+            placeWC6,
+            placeWC7,
+            placeWC8,
+            placeTicket1,
+            placeTicket2,
+            placeTicket3,
+            placeTicket4
         )
     }
 

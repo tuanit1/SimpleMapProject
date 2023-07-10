@@ -34,7 +34,7 @@ class PlaceRepository(
             R.string.vi_place_entry_gate
         ),
         zone = zoneRepository.zoneVietnam,
-        serviceType = serviceRepository.serviceTicket,
+        serviceType = serviceRepository.serviceSightSeeing,
     )
     val placeSightSeeingCabin1 = Place(
         id = 3,
@@ -271,5 +271,77 @@ class PlaceRepository(
         id = 37,
         zone = zoneRepository.zoneIndonesia,
         game = gameRepository.gameGarudaValley
+    )
+    val placeWC1 = Place(
+        id = 40,
+        name = "Toilet/WC 1",
+        zone = zoneRepository.zoneJapan,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC2 = Place(
+        id = 41,
+        name = "Toilet/WC 2",
+        zone = zoneRepository.zoneIndia,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC3 = Place(
+        id = 42,
+        name = "Toilet/WC 3",
+        zone = zoneRepository.zoneIndia,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC4 = Place(
+        id = 43,
+        name = "Toilet/WC 4",
+        zone = zoneRepository.zoneSingapore,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC5 = Place(
+        id = 44,
+        name = "Toilet/WC 5",
+        zone = zoneRepository.zoneIndonesia,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC6 = Place(
+        id = 45,
+        name = "Toilet/WC 6",
+        zone = zoneRepository.zoneIndonesia,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC7 = Place(
+        id = 50,
+        name = "Toilet/WC 7",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC8 = Place(
+        id = 51,
+        name = "Toilet/WC 8",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeTicket1 = Place(
+        id = 46,
+        name = "Ticket counter 1",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceTicket,
+    )
+    val placeTicket2 = Place(
+        id = 47,
+        name = "Ticket counter 2",
+        zone = zoneRepository.zoneChina,
+        serviceType = serviceRepository.serviceTicket,
+    )
+    val placeTicket3 = Place(
+        id = 48,
+        name = "Ticket counter 3",
+        zone = zoneRepository.zoneSingapore,
+        serviceType = serviceRepository.serviceTicket,
+    )
+    val placeTicket4 = Place(
+        id = 49,
+        name = "Ticket counter 4",
+        zone = zoneRepository.zoneIndonesia,
+        serviceType = serviceRepository.serviceTicket,
     )
 }

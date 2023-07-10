@@ -341,7 +341,11 @@ class BaseMapFragment :
                 if (place.game != null) {
                     getGameImage()
                 } else {
-                    getPlaceImage()
+                    getPlaceImageWithDrawable(
+                        res = place.serviceType?.imgRes
+                            ?: R.drawable.ic_place_node,
+                        size = 90
+                    )
                 }
             } else {
                 getNodeImage()
