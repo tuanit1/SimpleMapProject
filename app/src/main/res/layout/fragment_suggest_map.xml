@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textColorHint="@color/guidePathColor"
-            android:hint="Search a game or place"
+            android:hint="Search for game or place"
             android:background="@null" />
     </RelativeLayout>
 

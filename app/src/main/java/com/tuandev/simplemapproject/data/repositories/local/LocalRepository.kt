@@ -101,10 +101,16 @@ class LocalRepository(
             placeWC6,
             placeWC7,
             placeWC8,
+            placeWC9,
+            placeExitGate,
+            placeSouvenirShop,
+            placeGuestService,
             placeTicket1,
             placeTicket2,
             placeTicket3,
-            placeTicket4
+            placeTicket4,
+            placeTicket5,
+            placeMedicalHelp
         )
     }
 

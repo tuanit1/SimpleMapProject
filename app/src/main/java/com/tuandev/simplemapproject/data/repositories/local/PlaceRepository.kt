@@ -308,18 +308,6 @@ class PlaceRepository(
         zone = zoneRepository.zoneIndonesia,
         serviceType = serviceRepository.serviceWC,
     )
-    val placeWC7 = Place(
-        id = 50,
-        name = "Toilet/WC 7",
-        zone = zoneRepository.zoneVietnam,
-        serviceType = serviceRepository.serviceWC,
-    )
-    val placeWC8 = Place(
-        id = 51,
-        name = "Toilet/WC 8",
-        zone = zoneRepository.zoneVietnam,
-        serviceType = serviceRepository.serviceWC,
-    )
     val placeTicket1 = Place(
         id = 46,
         name = "Ticket counter 1",
@@ -343,5 +331,53 @@ class PlaceRepository(
         name = "Ticket counter 4",
         zone = zoneRepository.zoneIndonesia,
         serviceType = serviceRepository.serviceTicket,
+    )
+    val placeWC7 = Place(
+        id = 50,
+        name = "Toilet/WC 7",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeWC8 = Place(
+        id = 51,
+        name = "Toilet/WC 8",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeGuestService = Place(
+        id = 52,
+        name = "Guest Service",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceGuest,
+    )
+    val placeSouvenirShop = Place(
+        id = 53,
+        name = "Souvenir shop",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceSouvenir,
+    )
+    val placeExitGate = Place(
+        id = 54,
+        name = "Exit gate",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceSightSeeing,
+    )
+    val placeTicket5 = Place(
+        id = 55,
+        name = "Ticket counter 5",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceTicket,
+    )
+    val placeWC9 = Place(
+        id = 56,
+        name = "Toilet/WC 9",
+        zone = zoneRepository.zoneVietnam,
+        serviceType = serviceRepository.serviceWC,
+    )
+    val placeMedicalHelp = Place(
+        id = 57,
+        name = "Medical help",
+        zone = zoneRepository.zoneJapan,
+        serviceType = serviceRepository.serviceMedical,
     )
 }

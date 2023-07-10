@@ -418,6 +418,15 @@ class BaseMapFragment :
             )
         )
 
+    private fun getCurrentUserNodeImage() =
+        BitmapDescriptorFactory.fromBitmap(
+            resizeMapIcons(
+                resId = R.drawable.ic_user_node,
+                height = 100,
+                width = 100
+            )
+        )
+
     private fun getPlaceImage() =
         BitmapDescriptorFactory.fromBitmap(
             resizeMapIcons(
@@ -696,7 +705,7 @@ class BaseMapFragment :
     private fun handleDisplayMapPaths() {
         viewModel.run {
             viewModelScope.launch(Dispatchers.IO) {
-                val visited = mutableListOf(listNode.first().id ?: "")
+                val visited = mutableListOf(listNode.firstOrNull()?.id ?: "")
                 listNode.forEach { node ->
                     node.neighbors.forEach { neighbor ->
                         visited.add(neighbor.id ?: "")
@@ -742,8 +751,17 @@ class BaseMapFragment :
         currentUserNode?.removeMarker()
         currentUserNode = Node(latitude = location.latitude, longitude = location.longitude).apply {
             marker =
-                drawMarker(latLng = LatLng(latitude, longitude), bitmapDescriptor = getNodeImage())
+                drawMarker(
+                    latLng = LatLng(latitude, longitude),
+                    bitmapDescriptor = getCurrentUserNodeImage()
+                )?.apply {
+                    zIndex = Float.MAX_VALUE
+                }
         }
+    }
+
+    fun updateCurrentBearing(value: Float) {
+        currentUserNode?.marker?.rotation = value
     }
 
     private fun handleDisplaySuggestPlaceMarker(suggestRoute: List<RouteItem>) {
@@ -769,13 +787,6 @@ class BaseMapFragment :
                             }
                         }
                     }
-                    localRepository.listPlace.filterNot { place ->
-                        suggestRoute.map { it.place }.contains(place)
-                    }
-                        .forEach {
-
-                        }
-
                 }.join()
                 withContext(Dispatchers.Main) {
                     loadingProgressLiveData.value = false

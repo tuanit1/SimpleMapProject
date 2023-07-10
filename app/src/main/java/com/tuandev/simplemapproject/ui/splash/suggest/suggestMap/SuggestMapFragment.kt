@@ -1,5 +1,10 @@
 package com.tuandev.simplemapproject.ui.splash.suggest.suggestMap
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -21,12 +26,13 @@ import com.tuandev.simplemapproject.widget.placeInfoDialog.PlaceInfoDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlin.math.PI
 
 @AndroidEntryPoint
 class SuggestMapFragment :
     BaseFragment<FragmentSuggestMapBinding, SuggestMapViewModel, ViewState>(
         FragmentSuggestMapBinding::inflate
-    ) {
+    ), SensorEventListener {
 
     companion object {
         const val SUGGEST_ROUTE = "suggest_route"
@@ -45,6 +51,12 @@ class SuggestMapFragment :
     private var isInMapBound: Boolean = false
     override val viewModel: SuggestMapViewModel by viewModels()
     override val viewStateObserver: (viewState: ViewState) -> Unit = {}
+    private var sensorManager: SensorManager? = null
+    private val accelerometerReading = FloatArray(3)
+    private val magnetometerReading = FloatArray(3)
+    private val rotationMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
+
 
     override fun initView() {
         mapFragment = BaseMapFragment.newInstance(BaseMapFragment.Companion.MapMode.SUGGEST_ROUTE)
@@ -54,6 +66,7 @@ class SuggestMapFragment :
                 fragment = it
             )
         }
+        sensorManager = parentActivity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
 
     private fun getContainerId() = R.id.container_suggest_route
@@ -246,7 +259,7 @@ class SuggestMapFragment :
         selectedServicePlaceId?.let { placeId ->
             binding?.run {
                 tvGuildServicePlace.text =
-                    "You are guilding to ${viewModel.getPlaceById(placeId)?.name}"
+                    "You are heading to ${viewModel.getPlaceById(placeId)?.name}"
                 updateDestinationView(GUILD_PLACE)
             }
             (parentFragment as? SuggestFragment)?.run {
@@ -319,5 +332,54 @@ class SuggestMapFragment :
             llSelectPlace.showIf(state == SELECT_PLACE)
             llGuildServicePlace.showIf(state == GUILD_PLACE)
         }
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
+        }
+        updateOrientationAngles()
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {}
+
+    private fun updateOrientationAngles() {
+        SensorManager.getRotationMatrix(
+            rotationMatrix,
+            null,
+            accelerometerReading,
+            magnetometerReading
+        )
+        SensorManager.getOrientation(rotationMatrix, orientationAngles)
+
+        val degree = orientationAngles[0] * (180 / PI).toFloat()
+        mapFragment?.updateCurrentBearing(degree.toFloat())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
+            sensorManager?.registerListener(
+                this,
+                accelerometer,
+                SensorManager.SENSOR_DELAY_NORMAL,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
+        sensorManager?.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also { magneticField ->
+            sensorManager?.registerListener(
+                this,
+                magneticField,
+                SensorManager.SENSOR_DELAY_NORMAL,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
     }
 }

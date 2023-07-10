@@ -49,7 +49,7 @@ class RouteDetailViewModel @Inject constructor(
     private var placeScoreList: MutableList<Pair<Place, Float>> = mutableListOf()
     private var latestEstimateTime = 0f
     private var currentUserNode: Node? = null
-    private var finishPLace = placeRepository.placeFountain
+    private var finishPLace = placeRepository.placeExitGate
 
     fun suggestRoute() {
         viewModelScope.launch(Dispatchers.IO) {
